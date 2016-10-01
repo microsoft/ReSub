@@ -1,6 +1,6 @@
 {
   "name": "resub",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
@@ -8,7 +8,7 @@
     "webtestbuild": "webpack",
     "build": "tsc"
   },
-  "main": "src/ReSub.ts",
+  "main": "dist/src/ReSub.js",
   "dependencies": {
     "assert": "^1.4.1",
     "lodash": "^3.10.1",
