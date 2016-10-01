@@ -8,7 +8,6 @@
     "webtestbuild": "webpack",
     "build": "tsc"
   },
-  "main": "dist/src/ReSub.js",
   "dependencies": {
     "assert": "^1.4.1",
     "lodash": "^3.10.1",
