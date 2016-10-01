@@ -1,0 +1,40 @@
+{
+  "name": "resub",
+  "version": "0.0.1",
+  "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
+  "author": "David de Regt <David.de.Regt@microsoft.com>",
+  "scripts": {
+    "webtestbuild": "webpack",
+    "build": "tsc"
+  },
+  "main": "src/ReSub.ts",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "lodash": "^3.10.1",
+    "react": "^15.0.0",
+    "ts-loader": "^0.8.2"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.4",
+    "react-addons-test-utils": "^15.0.0",
+    "ts-loader": "^0.8.2",
+    "typescript": "^2.0.0",
+    "webpack": "^1.12.14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/ReSub"
+  },
+  "bugs": {
+    "url": "https://github.com/Microsoft/ReSub/issues"
+  },
+  "keywords": [
+    "react",
+    "flux",
+    "automatic",
+    "subscriptions",
+    "stores"
+  ],
+  "license": "MIT",
+	"types": "dist/src/ReSub.d.ts"
+}

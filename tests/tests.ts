@@ -1,0 +1,2 @@
+import './AutoSubscribeTests';
+import './StoreBaseTests';

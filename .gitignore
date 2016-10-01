@@ -1,0 +1,7 @@
+/node_modules
+/dist
+/src/.vs
+/src/bin
+/src/obj
+*.user
+/ReSubTestsPack.js
