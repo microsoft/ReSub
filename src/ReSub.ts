@@ -10,6 +10,7 @@ import ComponentBaseI = require('./ComponentBase');
 import AutoSubscriptionsI = require('./AutoSubscriptions');
 import StoreBaseI = require('./StoreBase');
 import TypesI = require('./Types');
+import OptionsI = require('./Options');
 
 export const ComponentBase = ComponentBaseI.default;
 
@@ -20,5 +21,7 @@ export const autoSubscribe = AutoSubscriptionsI.autoSubscribe;
 export const autoSubscribeWithKey = AutoSubscriptionsI.autoSubscribeWithKey;
 export const key = AutoSubscriptionsI.key;
 export const disableWarnings = AutoSubscriptionsI.disableWarnings;
+
+export const Options = OptionsI.default;
 
 export import Types = TypesI;
