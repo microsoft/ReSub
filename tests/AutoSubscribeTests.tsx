@@ -59,17 +59,17 @@ class SimpleStore extends StoreBase {
         }
     }
 
-    // Internal methods to SXStoreBase are safe to call regardless of auto-subscribe, so disable any warnings.
+    // Internal methods to StoreBase are safe to call regardless of auto-subscribe, so disable any warnings.
     @disableWarnings
     protected _getSubscriptionKeys() {
         const keys = super._getSubscriptionKeys();
-        assert.deepEqual(keys, _.uniq(keys), 'Internal failure: SXStoreBase should not report duplicate keys');
+        assert.deepEqual(keys, _.uniq(keys), 'Internal failure: StoreBase should not report duplicate keys');
         return keys;
     }
 
     // No need to decorate private methods with @autoSubscribe or @disableWarnings. If auto-subscriptions are enabled
     // (e.g. from the _buildState of some component) then we can only reach here by being called from other public
-    // methods (e.g. getStoreData), or protected methods on SXStoreBase. Thus only public/protected methods need the
+    // methods (e.g. getStoreData), or protected methods on StoreBase. Thus only public/protected methods need the
     // appropriate decorator.
     // Note: @warnIfAutoSubscribeEnabled is automatically added (in debug mode) to this method, but that decorator does
     // nothing if another decorated method is calling this one (e.g. getStoreData).
@@ -134,10 +134,10 @@ interface SimpleState {
 
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
 
-    // Note: _buildState is called from SXComponentBase's constructor, when props change, and when a store triggers
+    // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
 
-    // Auto-subscriptions are enabled in _buildState due to SXComponentBase.
+    // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): SimpleState {
         if (props.test_useAll) {
             // Auto-subscribes to Key_All, even though we do not use the returned data.
