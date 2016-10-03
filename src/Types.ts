@@ -19,7 +19,7 @@ export interface StoreSubscription<S> {
     // against (and detecting changes to)
     keyPropertyName?: string;
     // To subscribe to a specific key instead of the contents of a property, use this
-    specificKeyValue?: string;
+    specificKeyValue?: string|number;
     // Allow toggling of subscription based on prop
     enablePropertyName?: string;
 }

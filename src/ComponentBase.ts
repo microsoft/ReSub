@@ -240,7 +240,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         return removed;
     }
 
-    private _registerSubscription(subscription: StoreSubscriptionInternal<S>, key = StoreBase.Key_All) {
+    private _registerSubscription(subscription: StoreSubscriptionInternal<S>, key: string|number = StoreBase.Key_All) {
         assert.ok(!subscription._subscriptionToken,
             'Subscription already subscribed!');
         assert.ok(!subscription.keyPropertyName || key !== StoreBase.Key_All,
@@ -249,6 +249,9 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
                 'Subscription created with specific key of all');
 
         if (key) {
+            if (_.isNumber(key)) {
+                key = key.toString();
+            }
             subscription._subscriptionToken = subscription.store.subscribe(subscription._lambda, key);
             subscription._subscriptionKey = key;
         } else {

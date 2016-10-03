@@ -222,11 +222,15 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
             const metaForMethod = target.__metadata[methodName];
             assert.ok(metaForMethod, 'Internal failure: what happened to the metadata for this method?');
             if (metaForMethod.hasIndex) {
-                const keyArg = args[metaForMethod.index];
+                let keyArg = args[metaForMethod.index];
 
-                assert.ok(keyArg, '@key parameter must be given a non-empty string: "' + methodName + '"@' + metaForMethod.index
+                if (_.isNumber(keyArg)) {
+                    keyArg = keyArg.toString();
+                }
+
+                assert.ok(keyArg, '@key parameter must be given a non-empty string or number: "' + methodName + '"@' + metaForMethod.index
                     + ' was given ' + JSON.stringify(keyArg));
-                assert.ok(_.isString(keyArg), '@key parameter must be given a string: "' + methodName + '"@' + metaForMethod.index);
+                assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodName + '"@' + metaForMethod.index);
 
                 specificKeyValue = keyArg;
             }
