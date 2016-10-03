@@ -383,7 +383,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Check if we already handle a subscription (auto) for store with key.
     private _hasMatchingAutoSubscription(store: StoreBase, key: string) {
-        return _.any(this._handledAutoSubscriptions, sub => {
+        return _.some(this._handledAutoSubscriptions, sub => {
             if (sub.store.storeId === store.storeId && (sub.key === key || sub.key === StoreBase.Key_All)) {
                 sub.used = true;
                 return true;

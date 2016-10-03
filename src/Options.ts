@@ -18,9 +18,9 @@ export interface IOptions {
 };
 
 let OptionsVals: IOptions = {
-    setTimeout: _.bind(setTimeout, null),
-    clearTimeout: _.bind(clearTimeout, null),
-    
+    setTimeout: setTimeout,
+    clearTimeout: clearTimeout,
+
     development: true
 };
 

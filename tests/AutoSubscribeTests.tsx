@@ -169,7 +169,7 @@ describe('AutoSubscribeTests', function () {
     // Makes a new SimpleComponent and performs some internal checks.
     function makeComponent(props: SimpleProps): SimpleComponent {
         // Make the component, calling _buildState in the constructor.
-        const component = TestUtils.renderIntoDocument<SimpleComponent>(<SimpleComponent { ...props } />);
+        const component = TestUtils.renderIntoDocument<SimpleProps>(<SimpleComponent { ...props } />) as SimpleComponent;
 
         // Internal check: state should have one change.
         assert.deepEqual(component.state.stateChanges, 1, 'Internal failure: state should have one change');

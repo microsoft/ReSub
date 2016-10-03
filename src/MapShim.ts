@@ -69,7 +69,7 @@ class MapShim<K, V> implements Map<K, V> {
     }
 
     has(key: K): boolean {
-        return _.any(this._mapShimItems, item => item.key === key);
+        return _.some(this._mapShimItems, item => item.key === key);
     }
 
     set(key: K, value?: V): Map<K, V> {
@@ -81,7 +81,7 @@ class MapShim<K, V> implements Map<K, V> {
             this.size++;
         }
         return this;
-    }    
+    }
 }
 
 export default (typeof Map !== 'undefined' ? Map : MapShim) as MapConstructor;
