@@ -26,6 +26,7 @@
     "type": "git",
     "url": "https://github.com/Microsoft/ReSub"
   },
+  "main": "index.js",
   "bugs": {
     "url": "https://github.com/Microsoft/ReSub/issues"
   },
