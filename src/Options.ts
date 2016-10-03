@@ -3,7 +3,7 @@
 * Author: David de Regt
 * Copyright: Microsoft 2015
 *
-* Basic options for ReSub. 
+* Basic options for ReSub.
 */
 
 import _ = require('lodash');
@@ -18,9 +18,9 @@ export interface IOptions {
 };
 
 let OptionsVals: IOptions = {
-    setTimeout: _.bind(setTimeout, null),
-    clearTimeout: _.bind(clearTimeout, null),
-    
+    setTimeout: setTimeout.bind(null),
+    clearTimeout: clearTimeout.bind(null),
+
     development: true
 };
 

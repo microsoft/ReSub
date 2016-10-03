@@ -185,7 +185,7 @@ export abstract class StoreBase {
 
         storedCallbacks.forEach((keys, callback) => {
             // Do a quick dedupe on keys
-            const uniquedKeys = keys ? _.unique(keys) : keys;
+            const uniquedKeys = keys ? _.uniq(keys) : keys;
             callback(uniquedKeys);
         });
     };
