@@ -204,7 +204,7 @@ describe('AutoSubscribeTests', function () {
             assert.deepEqual(subscriptionKeys.sort(), _.uniq(component.props.ids).sort(), 'Should be subscribed to each id in props.id');
             // Should not be subscribed to Key_All if subscribed to other keys.
             // Note: this might not be true in general, especially if there are explicit subscriptions.
-            assert.ok(!_.contains(subscriptionKeys, StoreBase.Key_All), 'Should not be subscribed to Key_All (in this case)');
+            assert.ok(!_.includes(subscriptionKeys, StoreBase.Key_All), 'Should not be subscribed to Key_All (in this case)');
         }
 
         // Auto-subscriptions should check for an existing subscription before adding a new one, thus there should
