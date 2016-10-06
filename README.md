@@ -141,6 +141,37 @@ protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
 
 Here, `ComponentBase` will automatically read the value from `props.username` and use this as the subscription key on `TodosStore`. If `props.username` is ever modified, the old subscription will be unregistered and a new one will be formed with the new key.
 
+#### Autosubscriptions using `@key`:
+
+Key-based subscriptions are very powerful, but they can be even more powerful and can reduce more boilerplate code when combined with autosubscriptions. Let’s update our `TodosStore` to add the `@key` decorator:
+
+```javascript
+class TodosStore extends StoreBase {
+    ...
+    
+    @autoSubscribe
+    getTodosForUser(@key username: string) {
+        return this._todosByUser[username];
+    }
+}
+```
+
+Now, we can establish the autosubscription for this user in `_buildState`:
+
+```javascript
+class TodoList extends ComponentBase<TodoListProps, TodoListState> {
+    ...
+    
+    protected _buildState(props: {}, initialBuild: boolean): TodoListState {
+        return {
+            todos: TodosStore.getTodosForUser(this.props.username)
+        }
+    }
+}
+```
+
+`_buildState` will be called when `TodoStore` triggers any changes for the specified username, but not for any other usernames. This eliminates the need completely for any manual subscriptions to be made in `_initStoreSubscriptions`.
+
 #### Custom subscription callbacks:
 
 `StoreSubscriptions` created inside of `_initStoreSubscriptions` will call `_buildState` by default when they trigger. Instead, developers can specify a custom callback in `StoreSubscription` definitions using either `callbackBuildState` (with autosubscription support just like using `_buildState`) or `callback` (no autosubscription support):
