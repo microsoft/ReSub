@@ -8,7 +8,7 @@ In React’s early days, Flux gave us guidance on how to manage data flow in our
 
 While Flux works well, it can also be cumbersome and error prone. Separate actions, action creators, and stores can result in a great deal of boilerplate code. Developers can fetch data from a store but fail to subscribe to changes, or components can oversubscribe and cause performance issues. Furthermore, developers are left to implement these patterns from scratch.
 
-ReSub aims to eliminate these limitations (and more) through the use of automatic data binding between stores and components called autosubscriptions. By using TypeScript’s function annotation feature, ReSub components can subscribe to only the data they need on only the stores that provide it, all without writing any code.
+ReSub aims to eliminate these limitations (and more) through the use of automatic data binding between stores and components called autosubscriptions. By using TypeScript’s method decorators, ReSub components can subscribe to only the data they need on only the stores that provide it, all without writing any code.
 
 ## Basic Example
 
@@ -71,7 +71,16 @@ export = TodoList;
 
 That’s it. *Done!*
 
-When future todos are added to the `TodoStore`, `TodoList` will automatically fetch them and re-render. This is achieved because `TodoList._buildState` makes a call to `TodosStore.getTodos()` which is annotated as an `@autoSubscribe` method.
+When future todos are added to the `TodoStore`, `TodoList` will automatically fetch them and re-render. This is achieved because `TodoList._buildState` makes a call to `TodosStore.getTodos()` which is decorated as an `@autoSubscribe` method.
+
+## Subscriptions and Scaling
+
+ReSub is built with scalability in mind; it works for apps of all sizes with all scales of data traffic. But this doesn’t mean scalability should be the top concern for every developer. Instead, ReSub encourages developers to create the simplest code possible and to only add complexity and tune performance when it becomes an issue. Follow these guidelines for best results:
+
+1. Start by doing all your work in `_buildState` and rebuilding the state from scratch using autosubscriptions. Tracking deltas and only rebuilding partial state at this stage is unnecessary for the vast majority of components.
+2. If you find that components are re-rendering too often, introduce subscriptions keys. For more information, see the “Subscriptions by key” and “Subscriptions by props” sections below.
+3. If components are still re-rendering too often, consider using trigger throttling and trigger blocks to cut down on the number of callbacks. For more information, see the “Trigger throttling” and “Trigger blocks” sections below.
+4. If rebuilding state completely from scratch is expensive, manual subscriptions with custom callbacks may help. For more information, see the “Custom subscription callbacks” section below.
 
 ## A Deep Dive on ReSub Features
 
@@ -85,7 +94,24 @@ Consider an example where our Todo app differentiates between high and low prior
 
 Let’s make `TodosStore` smarter. When a new high priority todo item is added, it should trigger with a special key `TodosStore.Key_HighPriorityTodoAdded` instead of using the default `StoreBase.Key_All` key. Our `HighPriorityTodoItems` component can now subscribe to just this key, and its subscription will trigger whenever `TodosStore` triggers with either `TodosStore.Key_HighPriorityTodoAdded` or `StoreBase.Key_All`, but not for `TodosStore.Key_LowPriorityTodoAdded`.
 
-To create this subscription, subclasses of `ComponentBase` would implement a `_initStoreSubscriptions` method that returns a custom `StoreSubscription` like the following:
+All of this can still be accomplished using method decorators and autosubscriptions. Let’s create a new method in `TodosStore`:
+
+```javascript
+class TodosStore extends StoreBase {
+    ...
+    
+    static Key_HighPriorityTodoAdded = "Key_HighPriorityTodoAdded";
+
+    @autoSubscribeWithKey(TodosStore.Key_HighPriorityTodoAdded)
+    getHighPriorityTodos() {
+        return this._highPriorityTodos;
+    }
+}
+```
+
+Components that call `TodosStore.getHighPriorityTodos()` inside `_buildState` will automatically subscribe to all future high priority todos triggers from `TodosStore`.
+
+Alternatively, this subscription can be made manually. Subclasses of `ComponentBase` would implement a `_initStoreSubscriptions` method that returns a custom `StoreSubscription` like the following:
 
 ```javascript
 protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
@@ -115,6 +141,22 @@ protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
 
 Here, `ComponentBase` will automatically read the value from `props.username` and use this as the subscription key on `TodosStore`. If `props.username` is ever modified, the old subscription will be unregistered and a new one will be formed with the new key.
 
+#### Custom subscription callbacks:
+
+`StoreSubscriptions` created inside of `_initStoreSubscriptions` will call `_buildState` by default when they trigger. Instead, developers can specify a custom callback in `StoreSubscription` definitions using either `callbackBuildState` (with autosubscription support just like using `_buildState`) or `callback` (no autosubscription support):
+
+```javascript
+protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
+    return [{
+        store: TodosStore,
+        keyPropertyName: 'username',
+        callbackBuildState: this._userUpdated.bind(this)
+    }];
+}
+```
+
+Custom callbacks are usually unnecessary, but they do give components the opportunity to do delta state management and other performance tuning.
+
 ### ComponentBase
 
 To get the most out of ReSub, your components should inherit `ComponentBase` and should implement some or all of the methods below.
@@ -131,6 +173,8 @@ This method is provided by ReSub already, but can be overridden. Subclasses that
 
 ReSub’s implementation of this method uses `_.isEqual` to compare new state and props with their previous values and returns true if a change is found.
 
+*Note: `_.isEqual` is a deep comparison operator, and hence can cause performance issues with deep data structures.*
+
 #### Subclassing:
 
 Subclasses should implement some or all of the following methods:
@@ -143,7 +187,7 @@ This method is called to rebuild the module’s state. All but the simplest of c
 2. In the React lifecycle, during a `componentWillReceiveProps`, if the props change (determined by a `_.isEqual`), this is called so that the component can rebuild its state from the new props.
 3. When this component subscribes to any stores, this will be called whenever the subscription is triggered. This is the most common usage of subscriptions, and the usage created by autosubscriptions.
 
-Any calls within this method to store methods that have the `@autoSubscribe` annotation will establish an autosubscription.
+Any calls from this method to store methods decorated with `@autoSubscribe` will establish an autosubscription.
 
 React’s `setState` method should not be called directly in this function. Instead, the new state should be returned and `ComponentBase` will call `setState`.
 
@@ -257,7 +301,7 @@ Whether using ReSub or not, your app will likely scale best if it follows these 
 
 ## Using ReSub Without TypeScript
 
-It is fine to use ReSub without TypeScript, but without access to TypeScript’s annotated functions, stores and components cannot leverage autosubscriptions, and as such, lose a lot of their value.
+It is fine to use ReSub without TypeScript, but without access to TypeScript’s method decorators, stores and components cannot leverage autosubscriptions, and as such, lose a lot of their value.
 
 At the very least, developers can still leverage the organizational patterns of `ComponentBase` and `StoreBase`, and any virtual functions that subclasses implement will still be called.
 
