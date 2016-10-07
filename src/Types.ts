@@ -6,11 +6,12 @@
 * Shared basic types for ReSub.
 */
 
+import { StoreBase } from './StoreBase';
 export type SubscriptionCallbackFunction = { (keys?: string[]): void; }
 export type SubscriptionCallbackBuildStateFunction<S> = { (keys?: string[]): S | void; }
 
 export interface StoreSubscription<S> {
-    store: any; // Should be StoreBase but not a good way to do the interfaces that I could find for that to work...
+    store: StoreBase;
     callbackBuildState?: SubscriptionCallbackBuildStateFunction<S>;
     callback?: SubscriptionCallbackFunction;
     autoForceUpdate?: boolean;
