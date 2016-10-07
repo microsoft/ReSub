@@ -73,7 +73,10 @@ export abstract class StoreBase {
     // If you trigger a specific set of keys, then it will only trigger that specific set of callbacks (and subscriptions marked
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
     protected trigger(keyOrKeys?: string|number|(string|number)[]) {
-        const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], (key, i) => _.isNumber(key) ? key.toString() : key);
+        let keys: string[];
+        if (keyOrKeys) {
+            keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], (key, i) => _.isNumber(key) ? key.toString() : key);
+        }
 
         // Build a list of callbacks to call, trying to accumulate keys into a single callback set to avoid multiple callbacks
         // to the same target with different keys.
