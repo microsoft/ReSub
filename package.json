@@ -1,6 +1,6 @@
 {
   "name": "resub",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
