@@ -12,7 +12,7 @@ import React = require('react');
 import TestUtils = require('react-addons-test-utils');
 
 import ComponentBase from '../src/ComponentBase';
-import { AutoSubscribeStore, autoSubscribe, disableWarnings, key, warnIfAutoSubscribeEnabled } from '../src/AutoSubscriptions';
+import { AutoSubscribeStore, autoSubscribe, autoSubscribeWithKey, disableWarnings, key, warnIfAutoSubscribeEnabled } from '../src/AutoSubscriptions';
 import { StoreBase } from '../src/StoreBase';
 
 // ----------------------------------------------------------------------------
@@ -25,6 +25,10 @@ type StoreData = number;
 @AutoSubscribeStore
 class SimpleStore extends StoreBase {
     private _storeDataById: { [id: string]: StoreData } = {};
+    private _subscribeWithKeyData = {
+        A: 0,
+        B: 0
+    }
 
     // Auto-subscribes to Key_All (by default) since any change will affect the returned data.
     // Note: using the dangerous*Mutable convention since the returned data is not a copy.
@@ -38,6 +42,21 @@ class SimpleStore extends StoreBase {
     @autoSubscribe
     getStoreData(@key id: string) {
         return this._get(id);
+    }
+
+    @autoSubscribeWithKey("A")
+    getDataSingleKeyed(): number {
+        return this._subscribeWithKeyData.A;
+    }
+
+    @autoSubscribeWithKey(["A", "B"])
+    getDataMultiKeyed(): number {
+        return this._subscribeWithKeyData.A + this._subscribeWithKeyData.B;
+    }
+
+    setStoreDataForKeyedSubscription(key: "A"|"B", data: number): void {
+        this._subscribeWithKeyData[key] = data;
+        this.trigger(key);
     }
 
     // Setters should not be called when auto-subscribe is enabled.
@@ -124,12 +143,15 @@ interface SimpleProps extends React.Props<any> {
     test_useAll?: boolean;
     // Test implementation detail: makes sure to use a method that will cause a warning (e.g. a setter).
     test_causeWarning?: boolean;
+    // Test implementation detail: set to test key'd subscriptins
+    test_keyedSub?: boolean;
 }
 
 // State for component. Could use 'Stateless' if component has no state.
 interface SimpleState {
     storeDatas?: StoreData[];
     stateChanges?: number;
+    keyedDataSum?: number;
 }
 
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
@@ -139,6 +161,9 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): SimpleState {
+        const newState: SimpleState = {
+            keyedDataSum: 0
+        }
         if (props.test_useAll) {
             // Auto-subscribes to Key_All, even though we do not use the returned data.
             // Note: this line of code is an anit-pattern. Use explicit subscriptions (_initStoreSubscriptions()) instead.
@@ -148,11 +173,12 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
             // Should cause a warning since setters are not allowed when auto-subscriptions are enabled.
             SimpleStoreInstance.setStoreData(keys.warn_in_build_state, uniqStoreDataValue++);
         }
+        if (props.test_keyedSub) {
+            newState.keyedDataSum = SimpleStoreInstance.getDataSingleKeyed() + SimpleStoreInstance.getDataMultiKeyed()
+        }
 
-        const newState: SimpleState = {
-            storeDatas: _.map(props.ids, id => SimpleStoreInstance.getStoreData(id)),
-            stateChanges: initialBuild ? 1 : this.state.stateChanges + 1
-        };
+        newState.storeDatas= _.map(props.ids, id => SimpleStoreInstance.getStoreData(id));
+        newState.stateChanges= initialBuild ? 1 : this.state.stateChanges + 1;
         return newState;
     }
 
@@ -362,5 +388,29 @@ describe('AutoSubscribeTests', function () {
         _.each(updatedSubscriptions, (subs, key) => {
             assert.equal(initialSubscriptions[key], subs, 'Auto-subscription was not re-used');
         });
+    });
+
+    it('autoSubscribeWithKey triggers _buildState on change', () => {
+        let expectedState = 1;
+        const component = makeComponent({ test_keyedSub: true, ids:[] });
+        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 1)
+        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
+        assert.deepEqual(component.state.keyedDataSum, 2, "Expected Sum incorrect");
+        SimpleStoreInstance.setStoreDataForKeyedSubscription("B", 7)
+        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
+        assert.deepEqual(component.state.keyedDataSum, 9, "Expected Sum incorrect");
+        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 3)
+        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
+        assert.deepEqual(component.state.keyedDataSum, 13, "Expected Sum incorrect");
+    });
+
+    it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
+        let expectedState = 1;
+        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 1)
+        SimpleStoreInstance.setStoreDataForKeyedSubscription("B", 7)
+        const component = makeComponent({ test_keyedSub: true, ids:[] });
+        SimpleStoreInstance.setStoreData("foo", 77);
+        assert.deepEqual(component.state.stateChanges, expectedState, "State change should not have changed");
+        assert.deepEqual(component.state.keyedDataSum, 9, "Expected Sum incorrect");
     });
 });
