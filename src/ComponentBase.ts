@@ -64,9 +64,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // Finally, when ComponentBase receives a subscription trigger, there are two ways for the component to respond to
     // the trigger:
     // 1. If you don't provide a callback function in the subscription, _buildState will be called, providing an opportunity to rebuild
-    //    the component's state now that the stores have changed.  You can optionally also add the autoForceUpdate flag to the
-    //    subscription, which will force React to call render() on the component after the _buildState call, even if no new state was
-    //    returned from buildState.
+    //    the component's state now that the stores have changed.
     // 2. You can provide a callbackBuildState (or callback) in the subscription, which will be called whenever that specific
     //    subscription is triggered. If the subscription is granular to a specific key (not Key_All), then the callback will be invoked
     //    with the specific key that was triggered as the only parameter to the function.
@@ -283,10 +281,6 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         let nsubscription = subscription as StoreSubscriptionInternal<S>;
         if (nsubscription._callback) {
             newState = nsubscription._callback(changedItem);
-        } else if (subscription.autoForceUpdate) {
-            if (this.isComponentMounted()) {
-                this.forceUpdate();
-            }
         } else {
             newState = this._buildStateWithAutoSubscriptions(this.props, false);
         }

@@ -14,7 +14,6 @@ export interface StoreSubscription<S> {
     store: StoreBase;
     callbackBuildState?: SubscriptionCallbackBuildStateFunction<S>;
     callback?: SubscriptionCallbackFunction;
-    autoForceUpdate?: boolean;
 
     // If we're subscribing to a specific key of a type, what's the name of the React property that we're subscribing
     // against (and detecting changes to)
