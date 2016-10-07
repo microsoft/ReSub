@@ -186,7 +186,7 @@ export var AutoSubscribeStore: ClassDecorator = (func: Function) => {
 };
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
-function makeAutoSubscribeDecorator<T extends Function>(shallow = false, defaultKeyValue: string): MethodDecorator {
+function makeAutoSubscribeDecorator<T extends Function>(shallow = false, defaultKeyValues: string[]): MethodDecorator {
     return (target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) => {
         target.__metadata = target.__metadata || {};
         target.__metadata[methodName] = target.__metadata[methodName] || {};
@@ -216,13 +216,13 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
             // Let the handler know about this auto-subscriptions, then proceed to the existing method.
 
             // Default to Key_All if no @key parameter.
-            let specificKeyValue = defaultKeyValue;
+            let specificKeyValues = defaultKeyValues;
 
             // Try to find an @key parameter in the target's metadata.
             const metaForMethod = target.__metadata[methodName];
             assert.ok(metaForMethod, 'Internal failure: what happened to the metadata for this method?');
             if (metaForMethod.hasIndex) {
-                let keyArg = args[metaForMethod.index];
+                let keyArg: number | string = args[metaForMethod.index];
 
                 if (_.isNumber(keyArg)) {
                     keyArg = keyArg.toString();
@@ -232,7 +232,7 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
                     + ' was given ' + JSON.stringify(keyArg));
                 assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodName + '"@' + metaForMethod.index);
 
-                specificKeyValue = keyArg;
+                specificKeyValues = [keyArg];
             }
 
             let wasInAutoSubscribe: boolean;
@@ -244,7 +244,9 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
                 handlerWrapper.inAutoSubscribe = true;
 
                 // Let the handler know about this auto-subscription.
-                handlerWrapper.handler.handle.apply(handlerWrapper.instance, [handlerWrapper.instance, this, specificKeyValue]);
+                _.each(specificKeyValues, specificKeyValue => {
+                    handlerWrapper.handler.handle.apply(handlerWrapper.instance, [handlerWrapper.instance, this, specificKeyValue]);
+                });
 
                 return existingMethod.apply(this, args);
             }, () => {
@@ -260,8 +262,14 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
     };
 }
 
-export var autoSubscribe = makeAutoSubscribeDecorator(true, StoreBase.Key_All);
-export function autoSubscribeWithKey(key: string) { return makeAutoSubscribeDecorator(true, key); };
+export var autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
+export function autoSubscribeWithKey(keyOrKeys: string | string[]) {
+    if (_.isArray(keyOrKeys)) {
+        return makeAutoSubscribeDecorator(true, keyOrKeys);
+    } else {
+        return makeAutoSubscribeDecorator(true, [keyOrKeys]);
+    }
+};
 
 // Records which parameter of an @autoSubscribe method is the key used for the subscription.
 // Note: at most one @key can be applied to each method.
