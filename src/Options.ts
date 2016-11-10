@@ -13,6 +13,8 @@ export interface IOptions {
     setTimeout: (callback: () => void, timeoutMs?: number) => number;
     clearTimeout: (id: number) => void;
 
+    shouldComponentUpdateComparator: <T>(values: T, compareTo: T) => boolean;
+
     // Enables development mode -- more run-time checks.  By default, matches the NODE_ENV environment variable -- only set to true when
     // NODE_ENV is set and is set to something other than "production".
     development: boolean;
@@ -26,6 +28,8 @@ declare var process: IProcess;
 let OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
+
+    shouldComponentUpdateComparator: _.isEqual.bind(_),
 
     development: typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production'
 };
