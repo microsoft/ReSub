@@ -46,6 +46,8 @@ export abstract class StoreBase {
 
     private static _triggerBlockCount = 0;
     private static _triggerBlockedStoreList: StoreBase[] = [];
+    private static _pendingThrottledStores: StoreBase[] = [];
+    private static _bypassThrottle = false;
 
     static pushTriggerBlock() {
         this._triggerBlockCount++;
@@ -62,6 +64,19 @@ export abstract class StoreBase {
             _.each(awaitingList, store => {
                 store._resolveThrottledCallbacks();
             });
+        }
+    }
+
+    static setThrottleStatus(enabled: boolean) {
+        this._bypassThrottle = !enabled;
+
+        // If we're going to bypass the throttle, trigger all pending stores now
+        if (this._bypassThrottle) {
+            let pendingThrottledStore = this._pendingThrottledStores.shift();
+            while (!!pendingThrottledStore) {
+                pendingThrottledStore._resolveThrottledCallbacks();
+                pendingThrottledStore = this._pendingThrottledStores.shift();
+            }
         }
     }
 
@@ -151,7 +166,7 @@ export abstract class StoreBase {
             });
         }
 
-        if (this._throttleMs) {
+        if (this._throttleMs && !StoreBase._bypassThrottle) {
             // Needs to accumulate and trigger later -- start a timer if we don't have one running already
             if (!this._throttleTimerId) {
                 this._throttleTimerId = Options.setTimeout(this._resolveThrottledCallbacks, this._throttleMs);
@@ -167,6 +182,7 @@ export abstract class StoreBase {
         if (this._throttleTimerId) {
             Options.clearTimeout(this._throttleTimerId);
             this._throttleTimerId = undefined;
+            _.remove(StoreBase._pendingThrottledStores, this);
         }
 
         if (StoreBase._triggerBlockCount > 0 && !this._bypassTriggerBlocks) {
