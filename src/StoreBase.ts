@@ -212,10 +212,11 @@ export abstract class StoreBase {
     // Subscribe to triggered events from this store.  You can leave the default key, in which case you will be
     // notified of any triggered events, or you can use a key to filter it down to specific event keys you want.
     // Returns a token you can pass back to unsubscribe.
-    subscribe(callback: SubscriptionCallbackFunction, key = StoreBase.Key_All): number {
+    subscribe(callback: SubscriptionCallbackFunction, rawKey: string|number = StoreBase.Key_All): number {
+        const key = _.isNumber(rawKey) ? rawKey.toString() : rawKey;
+
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
-        assert.ok(key && _.isString(key),
-            'Trying to subscribe to invalid key: "' + key + '"');
+        assert.ok(key && _.isString(key), 'Trying to subscribe to invalid key: "' + key + '"');
 
         let callbacks = this._subscriptions[key];
         if (!callbacks) {
