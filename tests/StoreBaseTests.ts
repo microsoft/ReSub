@@ -131,7 +131,7 @@ describe('StoreBaseTests', function () {
         assert.ok(!store.foundAll);
     });
 
-    it('Timed/non-Bypass Store', (done) => {
+    it('Timed/non-Bypass Store', (done: Function) => {
         let store = new BraindeadStore(100, false);
         store.setupSubs();
 

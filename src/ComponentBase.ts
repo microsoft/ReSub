@@ -84,7 +84,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         super(props);
 
         this._storeSubscriptions = this._initStoreSubscriptions();
-        this.state = this._buildStateWithAutoSubscriptions(props, true) || ({} as S);
+        this.state = (this._buildStateWithAutoSubscriptions(props, true) as S) || ({} as S);
 
         const derivedClassRender = this.render || _.noop;
         // No one should use Store getters in render: do that in _buildState instead.
@@ -277,7 +277,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
             return;
         }
 
-        let newState: S|void = undefined;
+        let newState: Partial<S>|void = undefined;
 
         let nsubscription = subscription as StoreSubscriptionInternal<S>;
         if (nsubscription._callback) {
@@ -396,7 +396,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): S {
+    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> {
         _.each(this._handledAutoSubscriptions, sub => {
             sub.used = false;
         });
@@ -427,7 +427,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // In the majority of cases, this turns into a simple function that doesn't care about initialBuild, and simply
     // rebuilds the whole state of the component whenever called.  This should usually only be made more specific if
     // there are performance considerations with over-rebuilding.
-    protected _buildState(props: P, initialBuild: boolean): S {
+    protected _buildState(props: P, initialBuild: boolean): Partial<S> {
         return null;
     }
 
