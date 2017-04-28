@@ -47,7 +47,7 @@ import { ComponentBase } from 'resub';
 import TodosStore = require('./TodosStore');
 
 interface TodoListState {
-    todos?: string[];
+    todos?: String[];
 }
 
 class TodoList extends ComponentBase<{}, TodoListState> {
