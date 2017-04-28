@@ -168,7 +168,8 @@ export abstract class StoreBase {
 
         if (this._throttleMs && !StoreBase._bypassThrottle) {
             // Needs to accumulate and trigger later -- start a timer if we don't have one running already
-            if (!this._throttleTimerId) {
+            // If there are no callbacks, don't bother setting up the timer
+            if (!this._throttleTimerId && this._gatheredCallbacks.size !== 0) {
                 this._throttleTimerId = Options.setTimeout(this._resolveThrottledCallbacks, this._throttleMs);
             }
         } else {
