@@ -26,7 +26,8 @@ class TodosStore extends StoreBase {
     private _todos: String[] = [];
 
     addTodo(todo: String) {
-        this._todos.push(todo);
+        // Don't use .push here, we need a new array since the old _todos array was passed to the component by reference value
+        this._todos = this._todos.concat(todo);
         this.trigger();
     }
 
