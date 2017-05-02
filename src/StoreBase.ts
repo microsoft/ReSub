@@ -90,7 +90,7 @@ export abstract class StoreBase {
     protected trigger(keyOrKeys?: string|number|(string|number)[]) {
         let keys: string[];
         if (keyOrKeys) {
-            keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], (key, i) => _.isNumber(key) ? key.toString() : key);
+            keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
         }
 
         // Build a list of callbacks to call, trying to accumulate keys into a single callback set to avoid multiple callbacks
