@@ -264,7 +264,7 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
 
 export var autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
 export function autoSubscribeWithKey(keyOrKeys: string|number|(string|number)[]) {
-    assert.ok(keyOrKeys, 'Must specify a key when using autoSubscribeWithKey');
+    assert.ok(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
     return makeAutoSubscribeDecorator(true, keys);
 };
