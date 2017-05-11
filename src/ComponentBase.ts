@@ -83,9 +83,6 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     constructor(props: P) {
         super(props);
 
-        this._storeSubscriptions = this._initStoreSubscriptions();
-        this.state = (this._buildStateWithAutoSubscriptions(props, true) as S) || ({} as S);
-
         const derivedClassRender = this.render || _.noop;
         // No one should use Store getters in render: do that in _buildState instead.
         this.render = forbidAutoSubscribeWrapper(() => {
@@ -111,10 +108,13 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Subclasses may override, but _MUST_ call super.
     componentWillMount(): void {
-        this._storeSubscriptions.forEach(subscription => {
+        this._storeSubscriptions = this._initStoreSubscriptions();
+        _.each(this._storeSubscriptions, subscription => {
             this._addSubscription(subscription);
         });
 
+        // Initialize state
+        this.state = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
         this._isMounted = true;
     }
 
