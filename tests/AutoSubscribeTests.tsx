@@ -455,4 +455,17 @@ describe('AutoSubscribeTests', function () {
         assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
         assert.deepEqual(component.state.keyedDataSum, 13, "Expected Sum incorrect");
     });
+
+    it('Manual Subscription triggers', () => {
+        const subToken1 = SimpleStoreInstance.subscribe(keys => {
+            assert.equal(keys, TriggerKeys.First);
+            SimpleStoreInstance.unsubscribe(subToken1);
+        });
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1)
+        const subToken2 = SimpleStoreInstance.subscribe(keys => {
+            assert.equal(keys, TriggerKeys.Second);
+            SimpleStoreInstance.unsubscribe(subToken2);
+        });
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 1)
+    });
 });

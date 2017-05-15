@@ -89,7 +89,9 @@ export abstract class StoreBase {
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
     protected trigger(keyOrKeys?: string|number|(string|number)[]) {
         let keys: string[];
-        if (keyOrKeys) {
+
+        // trigger(0) is valid, ensure that we catch this case
+        if (keyOrKeys || _.isNumber(keyOrKeys)) {
             keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
         }
 
