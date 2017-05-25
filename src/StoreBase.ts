@@ -318,12 +318,4 @@ export abstract class StoreBase {
     protected _isTrackingKey(key: string) {
         return !!this._subscriptions[key] || !!this._autoSubscriptions[key];
     }
-
-    test_getSubscriptions() {
-        return this._subscriptions;
-    }
-
-    test_getAutoSubscriptions() {
-        return this._autoSubscriptions;
-    }
 }
