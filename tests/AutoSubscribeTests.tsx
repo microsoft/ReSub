@@ -124,6 +124,16 @@ class SimpleStore extends StoreBase {
     test_getSubscriptionKeys() {
         return this._getSubscriptionKeys();
     }
+
+    test_getSubscriptions() {
+        // Access private internal state of store
+        return (this as any)._subscriptions;
+    }
+
+    test_getAutoSubscriptions() {
+        // Access private internal state of store
+        return (this as any)._autoSubscriptions;
+    }
 }
 
 // Instance of the SimpleStore used throughout the test. Re-created for each test.
