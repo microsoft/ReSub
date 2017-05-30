@@ -6,7 +6,7 @@
 * Basic options for ReSub.
 */
 
-import _ = require('lodash');
+import _ = require('./lodashMini');
 
 export interface IOptions {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want
@@ -18,7 +18,7 @@ export interface IOptions {
     // Enables development mode -- more run-time checks.  By default, matches the NODE_ENV environment variable -- only set to true when
     // NODE_ENV is set and is set to something other than "production".
     development: boolean;
-};
+}
 
 interface IProcess {
     env: { NODE_ENV?: string };

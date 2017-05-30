@@ -7,8 +7,8 @@
 */
 
 import { StoreBase } from './StoreBase';
-export type SubscriptionCallbackFunction = { (keys?: string[]): void; }
-export type SubscriptionCallbackBuildStateFunction<S> = { (keys?: string[]): S | void; }
+export type SubscriptionCallbackFunction = { (keys?: string[]): void; };
+export type SubscriptionCallbackBuildStateFunction<S> = { (keys?: string[]): S | void; };
 
 export interface StoreSubscription<S> {
     store: StoreBase;

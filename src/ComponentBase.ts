@@ -9,7 +9,7 @@
 'use strict';
 
 import assert = require('assert');
-import _ = require('lodash');
+import _ = require('./lodashMini');
 import React = require('react');
 
 import Options from './Options';
@@ -109,7 +109,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // Subclasses may override, but _MUST_ call super.
     componentWillMount(): void {
         this._storeSubscriptions = this._initStoreSubscriptions();
-        _.each(this._storeSubscriptions, subscription => {
+        _.forEach(this._storeSubscriptions, subscription => {
             this._addSubscription(subscription);
         });
 
@@ -120,7 +120,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Subclasses may override, but _MUST_ call super.
     componentWillReceiveProps(nextProps: P): void {
-        _.each(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
+        _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
             if (subscription.keyPropertyName) {
                 let curVal = _.get<string>(this.props, subscription.keyPropertyName);
                 let nextVal = _.get<string>(nextProps, subscription.keyPropertyName);
@@ -146,14 +146,14 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Subclasses may override, but _MUST_ call super.
     componentWillUnmount(): void {
-        _.each(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
+        _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
             this._cleanupSubscription(subscription);
         });
         this._handledSubscriptions = {};
         this._handledSubscriptionsLookup = {};
 
         // Remove and cleanup all suscriptions
-        _.each(this._handledAutoSubscriptions, subscription => {
+        _.forEach(this._handledAutoSubscriptions, subscription => {
             subscription.used = false;
             subscription.store.removeAutoSubscription(subscription);
         });
@@ -397,7 +397,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
     private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> {
-        _.each(this._handledAutoSubscriptions, sub => {
+        _.forEach(this._handledAutoSubscriptions, sub => {
             sub.used = false;
         });
 
