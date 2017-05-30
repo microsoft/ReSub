@@ -11,7 +11,7 @@
 * Stores can mark themselves as opt-out of the trigger-block logic for critical stores that must flow under all conditions.
 */
 
-import _ = require('lodash');
+import _ = require('./lodashMini');
 import assert = require('assert');
 
 import MapShim from './MapShim';
@@ -61,7 +61,7 @@ export abstract class StoreBase {
             // Go through the list of stores awaiting resolution and resolve them all
             const awaitingList = this._triggerBlockedStoreList;
             this._triggerBlockedStoreList = [];
-            _.each(awaitingList, store => {
+            _.forEach(awaitingList, store => {
                 store._resolveThrottledCallbacks();
             });
         }
@@ -101,19 +101,19 @@ export abstract class StoreBase {
         if (!keys) {
             // Inspecific key, so generic callback call
             const allSubs = _.flatten(_.values(this._subscriptions));
-            _.each(allSubs, callback => {
+            _.forEach(allSubs, callback => {
                 // Clear the key list to null for the callback
                 this._gatheredCallbacks.set(callback, null);
             });
 
-            _.each(_.flatten(_.values(this._autoSubscriptions)),
+            _.forEach(_.flatten(_.values(this._autoSubscriptions)),
                 sub => {
                     this._gatheredCallbacks.set(sub.callback, null);
                 });
         } else {
             // Key list, so go through each key and queue up the callback
-            _.each(keys, key => {
-                _.each(this._subscriptions[key], callback => {
+            _.forEach(keys, key => {
+                _.forEach(this._subscriptions[key], callback => {
                     const existingKeys = this._gatheredCallbacks.get(callback);
                     if (existingKeys === undefined) {
                         this._gatheredCallbacks.set(callback, [key]);
@@ -125,7 +125,7 @@ export abstract class StoreBase {
                     }
                 });
 
-                _.each(this._autoSubscriptions[key], sub => {
+                _.forEach(this._autoSubscriptions[key], sub => {
                     const existingKeys = this._gatheredCallbacks.get(sub.callback);
                     if (existingKeys === undefined) {
                         this._gatheredCallbacks.set(sub.callback, [key]);
@@ -139,7 +139,7 @@ export abstract class StoreBase {
             });
 
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
-            _.each(this._subscriptions[StoreBase.Key_All], callback => {
+            _.forEach(this._subscriptions[StoreBase.Key_All], callback => {
                 const existingKeys = this._gatheredCallbacks.get(callback);
                 if (existingKeys === undefined) {
                     this._gatheredCallbacks.set(callback, _.clone(keys));
@@ -147,13 +147,13 @@ export abstract class StoreBase {
                     // Do nothing since it's already an all-key-trigger
                 } else {
                     // Add them all to the end of the list
-                    _.each(keys, key => {
+                    _.forEach(keys, key => {
                         existingKeys.push(key);
                     });
                 }
             });
 
-            _.each(this._autoSubscriptions[StoreBase.Key_All], sub => {
+            _.forEach(this._autoSubscriptions[StoreBase.Key_All], sub => {
                 const existingKeys = this._gatheredCallbacks.get(sub.callback);
                 if (existingKeys === undefined) {
                     this._gatheredCallbacks.set(sub.callback, _.clone(keys));
@@ -161,7 +161,7 @@ export abstract class StoreBase {
                     // Do nothing since it's already an all-key-trigger
                 } else {
                     // Add them all to the end of the list
-                    _.each(keys, key => {
+                    _.forEach(keys, key => {
                         existingKeys.push(key);
                     });
                 }
@@ -210,7 +210,7 @@ export abstract class StoreBase {
             const uniquedKeys = keys ? _.uniq(keys) : keys;
             callback(uniquedKeys);
         });
-    };
+    }
 
     // Subscribe to triggered events from this store.  You can leave the default key, in which case you will be
     // notified of any triggered events, or you can use a key to filter it down to specific event keys you want.

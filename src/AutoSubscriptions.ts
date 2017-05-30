@@ -61,7 +61,7 @@
 // super.render, the descriptor's logic only applies until the end of that method, not the end of yours. This is why that functionality is
 // exposes as a function instead of a decorator.
 
-import _ = require('lodash');
+import _ = require('./lodashMini');
 import assert = require('assert');
 
 import Decorator = require('./Decorator');
@@ -170,7 +170,7 @@ export var AutoSubscribeStore: ClassDecorator = (func: Function) => {
 
     if (Options.development) {
         // Add warning for non-decorated methods.
-        _.each(Object.getOwnPropertyNames(target), property => {
+        _.forEach(Object.getOwnPropertyNames(target), property => {
             if (_.isFunction(target[property]) && property !== 'constructor') {
                 const metaForMethod = target.__metadata[property];
                 if (!metaForMethod || !metaForMethod.hasAutoSubscribeDecorator) {
@@ -230,7 +230,8 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
 
                 assert.ok(keyArg, '@key parameter must be given a non-empty string or number: "' + methodName + '"@' + metaForMethod.index
                     + ' was given ' + JSON.stringify(keyArg));
-                assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodName + '"@' + metaForMethod.index);
+                assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodName + '"@'
+                    + metaForMethod.index);
 
                 specificKeyValues = [keyArg];
             }
@@ -244,7 +245,7 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
                 handlerWrapper.inAutoSubscribe = true;
 
                 // Let the handler know about this auto-subscription.
-                _.each(specificKeyValues, specificKeyValue => {
+                _.forEach(specificKeyValues, specificKeyValue => {
                     handlerWrapper.handler.handle.apply(handlerWrapper.instance, [handlerWrapper.instance, this, specificKeyValue]);
                 });
 
@@ -267,7 +268,7 @@ export function autoSubscribeWithKey(keyOrKeys: string|number|(string|number)[])
     assert.ok(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
     return makeAutoSubscribeDecorator(true, keys);
-};
+}
 
 // Records which parameter of an @autoSubscribe method is the key used for the subscription.
 // Note: at most one @key can be applied to each method.
@@ -337,7 +338,8 @@ export function disableWarnings<T extends Function>(target: InstanceTarget, meth
 
 // Warns if the method is used in components' @enableAutoSubscribe methods (relying on handler.enableWarnings). E.g.
 // _buildState.
-export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) {
+export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceTarget, methodName: string,
+                descriptor: TypedPropertyDescriptor<T>) {
     if (!Options.development) {
         // Disable warning for production.
         return descriptor;

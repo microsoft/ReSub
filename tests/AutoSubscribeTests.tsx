@@ -12,7 +12,8 @@ import React = require('react');
 import TestUtils = require('react-addons-test-utils');
 
 import ComponentBase from '../src/ComponentBase';
-import { AutoSubscribeStore, autoSubscribe, autoSubscribeWithKey, disableWarnings, key, warnIfAutoSubscribeEnabled } from '../src/AutoSubscriptions';
+import { AutoSubscribeStore, autoSubscribe, autoSubscribeWithKey, 
+        disableWarnings, key, warnIfAutoSubscribeEnabled } from '../src/AutoSubscriptions';
 import { StoreBase } from '../src/StoreBase';
 
 // ----------------------------------------------------------------------------
@@ -32,12 +33,12 @@ class SimpleStore extends StoreBase {
     private _subscribeWithKeyData = {
         A: 0,
         B: 0
-    }
+    };
 
     private _subscribeWithEnumKeyData = {
         [TriggerKeys.First]: 0,
         [TriggerKeys.Second]: 0
-    }
+    };
 
     // Auto-subscribes to Key_All (by default) since any change will affect the returned data.
     // Note: using the dangerous*Mutable convention since the returned data is not a copy.
@@ -53,12 +54,12 @@ class SimpleStore extends StoreBase {
         return this._get(id);
     }
 
-    @autoSubscribeWithKey("A")
+    @autoSubscribeWithKey('A')
     getDataSingleKeyed(): number {
         return this._subscribeWithKeyData.A;
     }
 
-    @autoSubscribeWithKey(["A", "B"])
+    @autoSubscribeWithKey(['A', 'B'])
     getDataMultiKeyed(): number {
         return this._subscribeWithKeyData.A + this._subscribeWithKeyData.B;
     }
@@ -73,7 +74,7 @@ class SimpleStore extends StoreBase {
         return this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
     }
 
-    setStoreDataForKeyedSubscription(key: "A"|"B", data: number): void {
+    setStoreDataForKeyedSubscription(key: 'A'|'B', data: number): void {
         this._subscribeWithKeyData[key] = data;
         this.trigger(key);
     }
@@ -199,7 +200,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     protected _buildState(props: SimpleProps, initialBuild: boolean): SimpleState {
         const newState: SimpleState = {
             keyedDataSum: 0
-        }
+        };
         if (props.test_useAll) {
             // Auto-subscribes to Key_All, even though we do not use the returned data.
             // Note: this line of code is an anit-pattern. Use explicit subscriptions (_initStoreSubscriptions()) instead.
@@ -210,13 +211,13 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
             SimpleStoreInstance.setStoreData(keys.warn_in_build_state, uniqStoreDataValue++);
         }
         if (props.test_keyedSub) {
-            newState.keyedDataSum = SimpleStoreInstance.getDataSingleKeyed() + SimpleStoreInstance.getDataMultiKeyed()
+            newState.keyedDataSum = SimpleStoreInstance.getDataSingleKeyed() + SimpleStoreInstance.getDataMultiKeyed();
         } else if (props.test_enumKeyedSub) {
-            newState.keyedDataSum = SimpleStoreInstance.getDataSingleEnumKeyed() + SimpleStoreInstance.getDataMultiEnumKeyed()
+            newState.keyedDataSum = SimpleStoreInstance.getDataSingleEnumKeyed() + SimpleStoreInstance.getDataMultiEnumKeyed();
         }
 
-        newState.storeDatas= _.map(props.ids, id => SimpleStoreInstance.getStoreData(id));
-        newState.stateChanges= initialBuild ? 1 : this.state.stateChanges + 1;
+        newState.storeDatas = _.map(props.ids, id => SimpleStoreInstance.getStoreData(id));
+        newState.stateChanges = initialBuild ? 1 : this.state.stateChanges + 1;
         return newState;
     }
 
@@ -430,40 +431,40 @@ describe('AutoSubscribeTests', function () {
 
     it('autoSubscribeWithKey triggers _buildState on change', () => {
         let expectedState = 1;
-        const component = makeComponent({ test_keyedSub: true, ids:[] });
-        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 1)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 2, "Expected Sum incorrect");
-        SimpleStoreInstance.setStoreDataForKeyedSubscription("B", 7)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 9, "Expected Sum incorrect");
-        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 3)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 13, "Expected Sum incorrect");
+        const component = makeComponent({ test_keyedSub: true, ids: [] });
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 2, 'Expected Sum incorrect');
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 9, 'Expected Sum incorrect');
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 13, 'Expected Sum incorrect');
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
         let expectedState = 1;
-        SimpleStoreInstance.setStoreDataForKeyedSubscription("A", 1)
-        SimpleStoreInstance.setStoreDataForKeyedSubscription("B", 7)
-        const component = makeComponent({ test_keyedSub: true, ids:[] });
-        SimpleStoreInstance.setStoreData("foo", 77);
-        assert.deepEqual(component.state.stateChanges, expectedState, "State change should not have changed");
-        assert.deepEqual(component.state.keyedDataSum, 9, "Expected Sum incorrect");
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
+        const component = makeComponent({ test_keyedSub: true, ids: [] });
+        SimpleStoreInstance.setStoreData('foo', 77);
+        assert.deepEqual(component.state.stateChanges, expectedState, 'State change should not have changed');
+        assert.deepEqual(component.state.keyedDataSum, 9, 'Expected Sum incorrect');
     });
 
     it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
         let expectedState = 1;
-        const component = makeComponent({ test_enumKeyedSub: true, ids:[] });
-        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 2, "Expected Sum incorrect");
-        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 7)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 9, "Expected Sum incorrect");
-        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 3)
-        assert.deepEqual(component.state.stateChanges, ++expectedState, "State change should have changed");
-        assert.deepEqual(component.state.keyedDataSum, 13, "Expected Sum incorrect");
+        const component = makeComponent({ test_enumKeyedSub: true, ids: [] });
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 2, 'Expected Sum incorrect');
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 7);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 9, 'Expected Sum incorrect');
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 3);
+        assert.deepEqual(component.state.stateChanges, ++expectedState, 'State change should have changed');
+        assert.deepEqual(component.state.keyedDataSum, 13, 'Expected Sum incorrect');
     });
 
     it('Manual Subscription triggers', () => {
@@ -471,11 +472,11 @@ describe('AutoSubscribeTests', function () {
             assert.equal(keys, TriggerKeys.First);
             SimpleStoreInstance.unsubscribe(subToken1);
         });
-        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1)
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
         const subToken2 = SimpleStoreInstance.subscribe(keys => {
             assert.equal(keys, TriggerKeys.Second);
             SimpleStoreInstance.unsubscribe(subToken2);
         });
-        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 1)
+        SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 1);
     });
 });

@@ -9,7 +9,7 @@
 * have no other choice.
 */
 
-import _ = require('lodash');
+import _ = require('./lodashMini');
 
 // Limiting the interface since IE11 doesn't support much of it
 export interface Map<K, V> {
@@ -56,7 +56,7 @@ class MapShim<K, V> implements Map<K, V> {
     }
 
     forEach(callbackfn: (value: V, index: K, map: Map<K, V>) => void): void {
-        _.each(this._mapShimItems, item => callbackfn(item.value, item.key, this));
+        _.forEach(this._mapShimItems, item => callbackfn(item.value, item.key, this));
     }
 
     get(key: K): V {

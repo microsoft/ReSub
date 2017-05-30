@@ -6,9 +6,11 @@
   "scripts": {
     "prepublish": "tsc",
     "webtestbuild": "webpack",
-    "build": "tsc"
+    "build": "npm run tslint && tsc",
+    "tslint": "tslint --project tsconfig.json -r tslint.json -r./node_modules/tslint-microsoft-contrib --fix || true"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.62",
     "assert": "^1.4.1",
     "lodash": "3.x || 4.x"
   },
@@ -20,8 +22,10 @@
     "react": "^15.0.0",
     "react-addons-test-utils": "^15.0.0",
     "react-dom": "^15.0.0",
+    "tslint": "^5.0.0",
+    "tslint-microsoft-contrib": "^4.0.1",
     "ts-loader": "^0.8.2",
-    "typescript": "2.1.4",
+    "typescript": "^2.2.0",
     "webpack": "^1.12.14"
   },
   "repository": {
