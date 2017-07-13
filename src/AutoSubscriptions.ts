@@ -106,6 +106,7 @@ let handlerWrapper: HandlerWraper = null;
 function createAutoSubscribeWrapper<T extends Function>(handler: AutoSubscribeHandler, useAutoSubscriptions: AutoOptions, existingMethod: T,
         thisArg: any): T {
     // Note: we need to be given 'this', so cannot use '=>' syntax.
+    // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast.
     return <T><any>function AutoSubscribeWrapper(this: any, ...args: any[]) {
 
         // Decorators are given 'this', but normal callers can supply it as a parameter.
@@ -147,6 +148,7 @@ export function forbidAutoSubscribeWrapper<T extends Function>(existingMethod: T
 // Hooks up the handler for @autoSubscribe methods called later down the call stack.
 export function enableAutoSubscribe(handler: AutoSubscribeHandler): MethodDecorator {
     return <T>(target: InstanceTarget, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
+        // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast/assert.
         const existingMethod = <Function><any>descriptor.value;
         assert.ok(_.isFunction(existingMethod), 'Can only use @enableAutoSubscribe on methods');
 
@@ -199,6 +201,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
         targetWithMetadata.__resubMetadata[methodName].hasAutoSubscribeDecorator = true;
 
         // Save the method being decorated. Note this might not be the original method if already decorated.
+        // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast/assert.
         const existingMethod = <Function><any>descriptor.value;
         assert.ok(_.isFunction(existingMethod), 'Can only use @autoSubscribe on methods');
 
@@ -310,6 +313,7 @@ export function disableWarnings<T extends Function>(target: InstanceTarget, meth
     const existingMethod = descriptor.value;
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
+    // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast.
     descriptor.value = <T><any>function DisableWarnings(this: any, ...args: any[]) {
         assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
@@ -360,6 +364,7 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
     const originalMethod = descriptor.value;
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
+    // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast.
     descriptor.value = <T><any>function WarnIfAutoSubscribeEnabled(this: any, ...args: any[]) {
         assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
