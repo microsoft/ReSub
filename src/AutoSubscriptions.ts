@@ -68,15 +68,17 @@ import Decorator = require('./Decorator');
 import Options from './Options';
 import { StoreBase } from './StoreBase';
 
-export type MetadataIndex = { [methodName: string]: { hasAutoSubscribeDecorator?: boolean; hasIndex?: boolean; index?: number } };
-export type MetadataProperties = { __decorated?: boolean; };
-export type Metadata = MetadataIndex & MetadataProperties;
+type MetadataIndex = { [methodName: string]: { hasAutoSubscribeDecorator?: boolean; hasIndex?: boolean; index?: number } };
+type MetadataProperties = { __decorated?: boolean; };
+type Metadata = MetadataIndex & MetadataProperties;
 
 // Class prototype for decorated methods/parameters.
-export type InstanceTarget = {
+type InstanceTargetWithMetadata = InstanceTarget & {
     // Extra property shoved onto targets to hold auto-subscribe metadata.
-    __metadata?: Metadata;
+    __resubMetadata?: Metadata;
 };
+
+export type InstanceTarget = {};
 
 // Callback and info for setting up auto-subscriptions.
 export interface AutoSubscribeHandler {
@@ -143,11 +145,12 @@ export function forbidAutoSubscribeWrapper<T extends Function>(existingMethod: T
 }
 
 // Hooks up the handler for @autoSubscribe methods called later down the call stack.
-export function enableAutoSubscribe<T extends Function>(handler: AutoSubscribeHandler): MethodDecorator {
-    return (target: InstanceTarget, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
-        const existingMethod = descriptor.value;
+export function enableAutoSubscribe(handler: AutoSubscribeHandler): MethodDecorator {
+    return <T>(target: InstanceTarget, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
+        const existingMethod = <Function><any>descriptor.value;
+        assert.ok(_.isFunction(existingMethod), 'Can only use @enableAutoSubscribe on methods');
 
-        descriptor.value = enableAutoSubscribeWrapper(handler, existingMethod, undefined);
+        descriptor.value = <T><any>enableAutoSubscribeWrapper(handler, existingMethod, undefined);
 
         return descriptor;
     };
@@ -162,17 +165,17 @@ function _tryFinally<TResult>(tryFunc: () => TResult, finallyFunc: Function): TR
     }
 }
 
-export var AutoSubscribeStore: ClassDecorator = (func: Function) => {
-    const target = <InstanceTarget> func.prototype;
-    target.__metadata = target.__metadata || {};
+export var AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(func: TFunction): TFunction => {
+    const target = <InstanceTargetWithMetadata> func.prototype;
+    target.__resubMetadata = target.__resubMetadata || {};
 
-    target.__metadata.__decorated = true;
+    target.__resubMetadata.__decorated = true;
 
     if (Options.development) {
         // Add warning for non-decorated methods.
         _.forEach(Object.getOwnPropertyNames(target), property => {
             if (_.isFunction(target[property]) && property !== 'constructor') {
-                const metaForMethod = target.__metadata[property];
+                const metaForMethod = target.__resubMetadata[property];
                 if (!metaForMethod || !metaForMethod.hasAutoSubscribeDecorator) {
                     Decorator.decorate([
                         warnIfAutoSubscribeEnabled
@@ -186,20 +189,22 @@ export var AutoSubscribeStore: ClassDecorator = (func: Function) => {
 };
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
-function makeAutoSubscribeDecorator<T extends Function>(shallow = false, defaultKeyValues: string[]): MethodDecorator {
-    return (target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) => {
-        target.__metadata = target.__metadata || {};
-        target.__metadata[methodName] = target.__metadata[methodName] || {};
+function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[]): MethodDecorator {
+    return <T>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) => {
+        const targetWithMetadata = <InstanceTargetWithMetadata> target;
+        targetWithMetadata.__resubMetadata = targetWithMetadata.__resubMetadata || {};
+        targetWithMetadata.__resubMetadata[methodName] = targetWithMetadata.__resubMetadata[methodName] || {};
 
         // Record that the target is decorated.
-        target.__metadata[methodName].hasAutoSubscribeDecorator = true;
+        targetWithMetadata.__resubMetadata[methodName].hasAutoSubscribeDecorator = true;
 
         // Save the method being decorated. Note this might not be the original method if already decorated.
-        const existingMethod = descriptor.value;
+        const existingMethod = <Function><any>descriptor.value;
+        assert.ok(_.isFunction(existingMethod), 'Can only use @autoSubscribe on methods');
 
         // Note: we need to be given 'this', so cannot use '=>' syntax.
         descriptor.value = <T><any>function AutoSubscribe(...args: any[]) {
-            assert.ok(target.__metadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
+            assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
             // Just call the method if no handler is setup.
             if (!handlerWrapper || handlerWrapper.useAutoSubscriptions === AutoOptions.None) {
@@ -219,7 +224,7 @@ function makeAutoSubscribeDecorator<T extends Function>(shallow = false, default
             let specificKeyValues = defaultKeyValues;
 
             // Try to find an @key parameter in the target's metadata.
-            const metaForMethod = target.__metadata[methodName];
+            const metaForMethod = targetWithMetadata.__resubMetadata[methodName];
             assert.ok(metaForMethod, 'Internal failure: what happened to the metadata for this method?');
             if (metaForMethod.hasIndex) {
                 let keyArg: number | string = args[metaForMethod.index];
@@ -273,11 +278,12 @@ export function autoSubscribeWithKey(keyOrKeys: string|number|(string|number)[])
 // Records which parameter of an @autoSubscribe method is the key used for the subscription.
 // Note: at most one @key can be applied to each method.
 export function key(target: InstanceTarget, methodName: string, index: number) {
-    target.__metadata = target.__metadata || {};
-    target.__metadata[methodName] = target.__metadata[methodName] || {};
+    const targetWithMetadata = <InstanceTargetWithMetadata> target;
+    targetWithMetadata.__resubMetadata = targetWithMetadata.__resubMetadata || {};
+    targetWithMetadata.__resubMetadata[methodName] = targetWithMetadata.__resubMetadata[methodName] || {};
 
     // Shorthand.
-    const metaForMethod = target.__metadata[methodName];
+    const metaForMethod = targetWithMetadata.__resubMetadata[methodName];
 
     assert.ok(!metaForMethod.hasIndex, 'Can only apply @key once per method: only the first will be used: "'
         + methodName + '"@' + index);
@@ -288,11 +294,12 @@ export function key(target: InstanceTarget, methodName: string, index: number) {
 }
 
 export function disableWarnings<T extends Function>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) {
-    target.__metadata = target.__metadata || {};
-    target.__metadata[methodName] = target.__metadata[methodName] || {};
+    const targetWithMetadata = <InstanceTargetWithMetadata> target;
+    targetWithMetadata.__resubMetadata = targetWithMetadata.__resubMetadata || {};
+    targetWithMetadata.__resubMetadata[methodName] = targetWithMetadata.__resubMetadata[methodName] || {};
 
     // Record that the target is decorated.
-    target.__metadata[methodName].hasAutoSubscribeDecorator = true;
+    targetWithMetadata.__resubMetadata[methodName].hasAutoSubscribeDecorator = true;
 
     if (!Options.development) {
         // Warnings are already disabled for production.
@@ -304,7 +311,7 @@ export function disableWarnings<T extends Function>(target: InstanceTarget, meth
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
     descriptor.value = <T><any>function DisableWarnings(...args: any[]) {
-        assert.ok(target.__metadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
+        assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
         // Just call the method if no handler is setup.
         if (!handlerWrapper || handlerWrapper.useAutoSubscriptions === AutoOptions.None) {
@@ -345,15 +352,16 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
         return descriptor;
     }
 
-    target.__metadata = target.__metadata || {};
-    target.__metadata[methodName] = target.__metadata[methodName] || {};
+    const targetWithMetadata = <InstanceTargetWithMetadata> target;
+    targetWithMetadata.__resubMetadata = targetWithMetadata.__resubMetadata || {};
+    targetWithMetadata.__resubMetadata[methodName] = targetWithMetadata.__resubMetadata[methodName] || {};
 
     // Save the method being decorated. Note this might be another decorator method.
     const originalMethod = descriptor.value;
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
     descriptor.value = <T><any>function WarnIfAutoSubscribeEnabled(...args: any[]) {
-        assert.ok(target.__metadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
+        assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
         assert.ok(!handlerWrapper || handlerWrapper.useAutoSubscriptions !== AutoOptions.Enabled || handlerWrapper.inAutoSubscribe,
             'Only Store methods with the @autoSubscribe decorator can be called right now (e.g. in _buildState): "' + methodName + '"');
