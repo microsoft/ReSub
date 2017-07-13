@@ -106,7 +106,7 @@ let handlerWrapper: HandlerWraper = null;
 function createAutoSubscribeWrapper<T extends Function>(handler: AutoSubscribeHandler, useAutoSubscriptions: AutoOptions, existingMethod: T,
         thisArg: any): T {
     // Note: we need to be given 'this', so cannot use '=>' syntax.
-    return <T><any>function AutoSubscribeWrapper(...args: any[]) {
+    return <T><any>function AutoSubscribeWrapper(this: any, ...args: any[]) {
 
         // Decorators are given 'this', but normal callers can supply it as a parameter.
         const instance = thisArg || this;
@@ -203,7 +203,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
         assert.ok(_.isFunction(existingMethod), 'Can only use @autoSubscribe on methods');
 
         // Note: we need to be given 'this', so cannot use '=>' syntax.
-        descriptor.value = <T><any>function AutoSubscribe(...args: any[]) {
+        descriptor.value = <T><any>function AutoSubscribe(this: any, ...args: any[]) {
             assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
             // Just call the method if no handler is setup.
@@ -310,7 +310,7 @@ export function disableWarnings<T extends Function>(target: InstanceTarget, meth
     const existingMethod = descriptor.value;
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
-    descriptor.value = <T><any>function DisableWarnings(...args: any[]) {
+    descriptor.value = <T><any>function DisableWarnings(this: any, ...args: any[]) {
         assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
         // Just call the method if no handler is setup.
@@ -360,7 +360,7 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
     const originalMethod = descriptor.value;
 
     // Note: we need to be given 'this', so cannot use '=>' syntax.
-    descriptor.value = <T><any>function WarnIfAutoSubscribeEnabled(...args: any[]) {
+    descriptor.value = <T><any>function WarnIfAutoSubscribeEnabled(this: any, ...args: any[]) {
         assert.ok(targetWithMetadata.__resubMetadata.__decorated, 'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
 
         assert.ok(!handlerWrapper || handlerWrapper.useAutoSubscriptions !== AutoOptions.Enabled || handlerWrapper.inAutoSubscribe,

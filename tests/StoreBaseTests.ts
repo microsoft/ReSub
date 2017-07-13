@@ -8,7 +8,6 @@
 
 import assert = require('assert');
 import _ = require('lodash');
-import React = require('react');
 
 import { StoreBase } from '../src/StoreBase';
 
