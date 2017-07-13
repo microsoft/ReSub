@@ -175,7 +175,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         return this._isMounted;
     }
 
-    protected _addSubscription(subscription: StoreSubscription<S>): StoreSubscription<S> {
+    protected _addSubscription(subscription: StoreSubscription<S>): StoreSubscription<S>|undefined {
         assert.ok(subscription.store instanceof StoreBase,
             'Subscription added with store that\'s not an StoreBase');
 
@@ -185,7 +185,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
                 // Do not process subscription
 
                 // TODO: save this subscription and try again when props change!
-                return;
+                return undefined;
             }
         }
 

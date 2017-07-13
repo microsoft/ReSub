@@ -6,9 +6,19 @@
         "module": "commonjs",
         "target": "es5",
         "experimentalDecorators": true,
-        "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors":  true,
-        "outDir": "dist/"
+        "outDir": "dist/",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "forceConsistentCasingInFileNames": true,
+        
+        "strictNullChecks": false
     },
     
     "filesGlob": [

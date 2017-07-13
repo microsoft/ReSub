@@ -109,7 +109,8 @@ declare namespace __React {
     // ----------------------------------------------------------------------
 
     // Base component for plain JS classes
-    class Component<P, S> implements ComponentLifecycle<P, S> {
+    interface Component<P = {}, S = {}> extends ComponentLifecycle<P, S> { }
+    class Component<P = {}, S = {}> implements ComponentLifecycle<P, S> {
         static propTypes: ValidationMap<any>;
         static contextTypes: ValidationMap<any>;
         static childContextTypes: ValidationMap<any>;
