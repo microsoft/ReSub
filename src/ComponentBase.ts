@@ -396,7 +396,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> {
+    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S>|undefined {
         _.forEach(this._handledAutoSubscriptions, sub => {
             sub.used = false;
         });
@@ -427,8 +427,8 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // In the majority of cases, this turns into a simple function that doesn't care about initialBuild, and simply
     // rebuilds the whole state of the component whenever called.  This should usually only be made more specific if
     // there are performance considerations with over-rebuilding.
-    protected _buildState(props: P, initialBuild: boolean): Partial<S> {
-        return null;
+    protected _buildState(props: P, initialBuild: boolean): Partial<S>|undefined {
+        return undefined;
     }
 
     // Wrap both didMount and didUpdate into componentDidRender
