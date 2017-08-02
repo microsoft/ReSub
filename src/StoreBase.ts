@@ -43,6 +43,8 @@ export abstract class StoreBase {
 
     private _bypassTriggerBlocks: boolean;
     private _triggerBlocked = false;
+    private _isTriggering = false;
+    private _triggerPending = false;
 
     private static _triggerBlockCount = 0;
     private static _triggerBlockedStoreList: StoreBase[] = [];
@@ -181,6 +183,12 @@ export abstract class StoreBase {
     }
 
     private _resolveThrottledCallbacks = () => {
+        // Prevent a store from trigginer while it's already in a trigger state
+        if (this._isTriggering) {
+            this._triggerPending = true;
+            return;
+        }
+
         // Clear a timer if one's still pending
         if (this._throttleTimerId) {
             Options.clearTimeout(this._throttleTimerId);
@@ -199,6 +207,8 @@ export abstract class StoreBase {
         }
 
         this._triggerBlocked = false;
+        this._isTriggering = true;
+        this._triggerPending = false;
 
         // Store the callbacks early, since calling callbacks may actually cause cascade changes to the subscription system and/or
         // pending callbacks.
@@ -210,6 +220,11 @@ export abstract class StoreBase {
             const uniquedKeys = keys ? _.uniq(keys) : keys;
             callback(uniquedKeys);
         });
+        this._isTriggering = false;
+
+        if (this._triggerPending) {
+            this._resolveThrottledCallbacks();
+        }
     }
 
     // Subscribe to triggered events from this store.  You can leave the default key, in which case you will be

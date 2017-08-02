@@ -1,4 +1,4 @@
-﻿/**
+/**
  * StoreBaseTests.ts
  * Author: David de Regt
  * Copyright: Microsoft 2016
@@ -148,5 +148,33 @@ describe('StoreBaseTests', function () {
 
             done();
         }, 200);
+    });
+
+    it('Double Trigger w/ Unsubscribe', (done: Function) => {
+        let store = new BraindeadStore();
+
+        let callCount1 = 0;
+        const token1 = store.subscribe(() => {
+            callCount1++;
+            store.unsubscribe(token1);
+            store.emitAll();
+        });
+
+        let callCount2 = 0;
+        const token2 = store.subscribe(() => {
+            callCount2++;
+            store.unsubscribe(token2);
+            store.emitAll();
+        });
+
+        // Try all emit - Each subscription should the called once and the store should trigger multiple times
+        store.emitAll();
+
+        _.delay(() => {
+            assert.equal(callCount1, 1);
+            assert.equal(callCount2, 1);
+
+            done();
+        }, 100);
     });
 });
