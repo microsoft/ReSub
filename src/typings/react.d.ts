@@ -117,10 +117,10 @@ declare namespace __React {
         static defaultProps: Props<any>;
 
         constructor(props?: P, context?: any);
-        setState(f: (prevState: S, props: P) => Partial<S>, callback?: () => any): void;
+        setState(f: (prevState: S, props: P) => Partial<S>|undefined, callback?: () => any): void;
         setState(state: Partial<S>, callback?: () => any): void;
         forceUpdate(callBack?: () => any): void;
-        render(): JSX.Element;
+        render(): JSX.Element|null;
         props: P;
         state: S;
         context: {};
@@ -600,6 +600,24 @@ declare namespace __React {
         values?: string;
     }
 
+    interface WebViewHTMLAttributes extends HTMLAttributes {
+        is?: any
+        src?: string
+        autosize?: boolean
+        disablewebsecurity?: boolean
+        httpreferrer?: string
+        nodeintegration?: boolean
+        plugins?: boolean
+        preload?: string
+        useragent?: string
+        partition?: string
+        allowpopups?: boolean
+        webpreferences?: string
+        blinkfeatures?: string
+        disableblinkfeatures?: string
+        guestinstance?: string
+    }
+
     //
     // React.DOM
     // ----------------------------------------------------------------------
@@ -823,7 +841,7 @@ declare namespace JSX {
 
     interface Element extends React.ReactElement<any> { }
     interface ElementClass extends React.Component<any, any> {
-        render(): JSX.Element;
+        render(): JSX.Element|null;
     }
     interface ElementAttributesProperty { props: {}; }
 
@@ -941,6 +959,7 @@ declare namespace JSX {
         "var": React.HTMLAttributes;
         video: React.VideoHTMLAttributes;
         wbr: React.HTMLAttributes;
+        webview: React.WebViewHTMLAttributes;
 
         // SVG
         svg: React.SVGElementAttributes;

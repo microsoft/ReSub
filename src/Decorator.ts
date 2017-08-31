@@ -21,3 +21,4 @@ class FakeClassWithDecorator {
 __decorate = __decorate || tslib_decorate;
 
 export const decorate = __decorate;
+export { FakeClassWithDecorator as __unused };
