@@ -9,19 +9,19 @@ var webpackConfig = {
     },
 
     resolve: {
-        root: [
+        modules: [
             path.resolve('./src'),
             path.resolve('./node_modules')
         ],
-        extensions: ['', '.ts', '.tsx', '.js']
+        extensions: ['.ts', '.tsx', '.js']
     },
     
     module: {
-        loaders: [{
+        rules: [{
             // Compile TS.
             test: /\.tsx?$/, 
             exclude: /node_modules/,
-            loader: 'ts-loader'
+            loader: 'awesome-typescript-loader'
         }]
     }  
 };

@@ -186,9 +186,9 @@ interface SimpleProps extends React.Props<any> {
 
 // State for component. Could use 'Stateless' if component has no state.
 interface SimpleState {
-    storeDatas?: StoreData[];
-    stateChanges?: number;
-    keyedDataSum?: number;
+    storeDatas: StoreData[];
+    stateChanges: number;
+    keyedDataSum: number;
 }
 
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
@@ -197,8 +197,8 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // for which this component is subscribed (e.g. SimpleStore).
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
-    protected _buildState(props: SimpleProps, initialBuild: boolean): SimpleState {
-        const newState: SimpleState = {
+    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
+        const newState: Partial<SimpleState> = {
             keyedDataSum: 0
         };
         if (props.test_useAll) {
@@ -217,7 +217,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
         }
 
         newState.storeDatas = _.map(props.ids, id => SimpleStoreInstance.getStoreData(id));
-        newState.stateChanges = initialBuild ? 1 : this.state.stateChanges + 1;
+        newState.stateChanges = initialBuild ? 1 : this.state.stateChanges!!! + 1;
         return newState;
     }
 

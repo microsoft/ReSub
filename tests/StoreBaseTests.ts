@@ -16,10 +16,10 @@ class BraindeadStore extends StoreBase {
     Key_Something2 = 'def';
 
     foundAll = false;
-    allKeys: string[] = undefined;
+    allKeys: string[]|undefined = undefined;
     allSub: number;
     foundKey = false;
-    keyKeys: string[] = undefined;
+    keyKeys: string[]|undefined = undefined;
     keySub: number;
 
     setupSubs() {
@@ -59,8 +59,8 @@ describe('StoreBaseTests', function () {
         // Try all emit
         store.emitAll();
         assert.ok(store.foundAll && store.foundKey);
-        assert.equal(store.allKeys, null);
-        assert.equal(store.keyKeys, null);
+        assert.equal(store.allKeys, undefined);
+        assert.equal(store.keyKeys, undefined);
         store.foundAll = store.foundKey = false;
         store.allKeys = store.keyKeys = undefined;
 
@@ -87,10 +87,10 @@ describe('StoreBaseTests', function () {
         store.emitSomethings();
         assert.ok(!store.foundAll && !store.foundKey);
 
-        // unblock and make sure the dedupe logic works (should just emit null, since we did an all emit, which overrides the keyed ones)
+        // unblock and make sure the dedupe logic works (should just emit undefined, since we did an all emit, which overrides the keyed ones)
         StoreBase.popTriggerBlock();
-        assert.ok(_.isEqual(store.allKeys, null));
-        assert.ok(_.isEqual(store.keyKeys, null));
+        assert.ok(_.isEqual(store.allKeys, undefined));
+        assert.ok(_.isEqual(store.keyKeys, undefined));
         assert.ok(store.foundAll && store.foundKey);
         store.foundAll = store.foundKey = false;
         store.allKeys = store.keyKeys = undefined;
@@ -113,7 +113,7 @@ describe('StoreBaseTests', function () {
         // Try all emit
         store.emitAll();
         assert.ok(store.foundAll);
-        assert.equal(store.allKeys, null);
+        assert.equal(store.allKeys, undefined);
         store.foundAll = false;
         store.allKeys = undefined;
 
@@ -121,7 +121,7 @@ describe('StoreBaseTests', function () {
         StoreBase.pushTriggerBlock();
         store.emitAll();
         assert.ok(store.foundAll);
-        assert.equal(store.allKeys, null);
+        assert.equal(store.allKeys, undefined);
         store.foundAll = false;
         store.allKeys = undefined;
 

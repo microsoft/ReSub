@@ -15,10 +15,10 @@ import _ = require('./lodashMini');
 export interface Map<K, V> {
     clear(): void;
     delete(key: K): boolean;
-    forEach(callbackfn: (value: V, index: K, map: Map<K, V>) => void): void;
-    get(key: K): V;
+    forEach(callbackfn: (value: V|undefined|null, index: K, map: Map<K, V>) => void): void;
+    get(key: K): V|undefined|null;
     has(key: K): boolean;
-    set(key: K, value?: V): Map<K, V>;
+    set(key: K, value: V|undefined|null): Map<K, V>;
     size: number;
 }
 
@@ -31,7 +31,7 @@ declare var Map: MapConstructor;
 
 interface IMapShimItem<K, V> {
     key: K;
-    value: V;
+    value: V|undefined|null;
 }
 
 class MapShim<K, V> implements Map<K, V> {
@@ -55,11 +55,11 @@ class MapShim<K, V> implements Map<K, V> {
         return true;
     }
 
-    forEach(callbackfn: (value: V, index: K, map: Map<K, V>) => void): void {
+    forEach(callbackfn: (value: V|undefined|null, index: K, map: Map<K, V>) => void): void {
         _.forEach(this._mapShimItems, item => callbackfn(item.value, item.key, this));
     }
 
-    get(key: K): V {
+    get(key: K): V|undefined|null {
         const index = _.findIndex(this._mapShimItems, item => item.key === key);
         if (index === -1) {
             return undefined;

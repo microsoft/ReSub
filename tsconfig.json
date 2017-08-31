@@ -18,12 +18,8 @@
         "noUnusedLocals": true,
         "forceConsistentCasingInFileNames": true,
         
-        "strictNullChecks": false
+        "strictNullChecks": true
     },
-    
-    "filesGlob": [
-        "src/**/*{ts,tsx}"
-    ],
     
     "exclude": [
         "dist",

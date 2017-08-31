@@ -9,6 +9,7 @@
 
  import bind = require('lodash/bind');
  import forEach = require('lodash/forEach');
+ import extend = require('lodash/extend');
  import isArray = require('lodash/isArray');
  import isFunction = require('lodash/isFunction');
  import isNumber = require('lodash/isNumber');
@@ -45,6 +46,7 @@
     isString,
     map,
     noop,
+    extend,
     get,
     isEqual,
     isEmpty,
