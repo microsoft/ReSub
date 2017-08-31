@@ -217,7 +217,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
         }
 
         newState.storeDatas = _.map(props.ids, id => SimpleStoreInstance.getStoreData(id));
-        newState.stateChanges = initialBuild ? 1 : this.state.stateChanges!!! + 1;
+        newState.stateChanges = initialBuild ? 1 : this.state.stateChanges + 1;
         return newState;
     }
 
