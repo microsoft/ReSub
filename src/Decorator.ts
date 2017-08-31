@@ -17,12 +17,8 @@ class FakeClassWithDecorator {
     foo() { return FakeClassWithDecorator; }
 }
 
-// suppress 'FakeClassWithDecorator is declared but never used' error
-if (undefined as FakeClassWithDecorator) {
-    // noop
-}
-
 // Fallback to the tslib version if this doesn't work.
 __decorate = __decorate || tslib_decorate;
 
 export const decorate = __decorate;
+export { FakeClassWithDecorator as __unused };
