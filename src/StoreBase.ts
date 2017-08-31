@@ -36,7 +36,7 @@ export abstract class StoreBase {
 
     storeId = _.uniqueId('store');
 
-    private _gatheredCallbacks = new MapShim<SubscriptionCallbackFunction, string[]>();
+    private _gatheredCallbacks = new MapShim<SubscriptionCallbackFunction, string[]|null>();
 
     private _throttleMs: number;
     private _throttleTimerId: number|undefined;
@@ -144,7 +144,7 @@ export abstract class StoreBase {
             _.forEach(this._subscriptions[StoreBase.Key_All], callback => {
                 const existingKeys = this._gatheredCallbacks.get(callback);
                 if (existingKeys === undefined) {
-                    this._gatheredCallbacks.set(callback, _.clone(keys));
+                    this._gatheredCallbacks.set(callback, _.clone(keys!!!));
                 } else if (existingKeys === null) {
                     // Do nothing since it's already an all-key-trigger
                 } else {
@@ -158,7 +158,7 @@ export abstract class StoreBase {
             _.forEach(this._autoSubscriptions[StoreBase.Key_All], sub => {
                 const existingKeys = this._gatheredCallbacks.get(sub.callback);
                 if (existingKeys === undefined) {
-                    this._gatheredCallbacks.set(sub.callback, _.clone(keys));
+                    this._gatheredCallbacks.set(sub.callback, _.clone(keys!!!));
                 } else if (existingKeys === null) {
                     // Do nothing since it's already an all-key-trigger
                 } else {

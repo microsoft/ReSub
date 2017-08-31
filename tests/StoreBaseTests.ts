@@ -87,7 +87,8 @@ describe('StoreBaseTests', function () {
         store.emitSomethings();
         assert.ok(!store.foundAll && !store.foundKey);
 
-        // unblock and make sure the dedupe logic works (should just emit undefined, since we did an all emit, which overrides the keyed ones)
+        // unblock and make sure the dedupe logic works (should just emit undefined, since we did an all emit,
+        // which overrides the keyed ones)
         StoreBase.popTriggerBlock();
         assert.ok(_.isEqual(store.allKeys, undefined));
         assert.ok(_.isEqual(store.keyKeys, undefined));
