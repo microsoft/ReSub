@@ -17,6 +17,9 @@ import { AutoSubscription, StoreBase } from './StoreBase';
 import { enableAutoSubscribe, enableAutoSubscribeWrapper, forbidAutoSubscribeWrapper } from './AutoSubscriptions';
 import { SubscriptionCallbackFunction, SubscriptionCallbackBuildStateFunction, StoreSubscription } from './Types';
 
+// Subscriptions without a key need some way to be identified in the SubscriptionLookup.
+const SubKeyNoKey = '%$^NONE';
+
 type SubscriptionLookup<S> = { [storeId: string]: { [key: string]: { [id: number]: StoreSubscriptionInternal<S> } } };
 
 interface StoreSubscriptionInternal<S> extends StoreSubscription<S> {
@@ -24,18 +27,18 @@ interface StoreSubscriptionInternal<S> extends StoreSubscription<S> {
     store: StoreBase;
 
     // Globally unique for each subscription being handled in the components.
-    _id?: number;
+    _id: number;
 
     // Internal value used for tracking the local callback for this subscription
-    _lambda?: any;
+    _lambda: any;
 
     // The callback to be used in the _lambda, if any.
     _callback?: SubscriptionCallbackFunction | SubscriptionCallbackBuildStateFunction<S>;
 
-    // Subscription token for unsubscribing
-    _subscriptionToken: number;
+    // Subscription token for unsubscribing (undefined before registering)
+    _subscriptionToken?: number;
 
-    // Key's value used in above subscription (null if not subscribed)
+    // Key's value used in above subscription (undefined if not subscribed)
     _subscriptionKey?: string;
 }
 
@@ -188,25 +191,24 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
                 return undefined;
             }
         }
-
-        let nsubscription = subscription as StoreSubscriptionInternal<S>;
-
-        // Wrap the given callback (if any) to provide extra functionality.
-        nsubscription._callback = subscription.callbackBuildState
-            // The caller wants auto-subscriptions, so enable them for the duration of the given callback.
-            ? enableAutoSubscribeWrapper(ComponentBase._autoSubscribeHandler, subscription.callbackBuildState, this)
-            : subscription.callback
-                // The caller wants to take care of everything.
-                // Note: eating the return value so we do not later confuse it for a state update.
-                ? (keys?: string[]) => { subscription.callback(keys); }
-                // Callback was not given.
-                : null;
-
-        nsubscription._lambda = _.bind(this._onSubscriptionChanged, this, subscription);
-        nsubscription._id = ComponentBase._nextSubscriptionId++;
+            
+        let nsubscription: StoreSubscriptionInternal<S> = _.extend(subscription, {
+            // Wrap the given callback (if any) to provide extra functionality.
+            _callback: subscription.callbackBuildState
+                // The caller wants auto-subscriptions, so enable them for the duration of the given callback.
+                ? enableAutoSubscribeWrapper(ComponentBase._autoSubscribeHandler, subscription.callbackBuildState, this)
+                : subscription.callback
+                    // The caller wants to take care of everything.
+                    // Note: eating the return value so we do not later confuse it for a state update.
+                    ? (keys?: string[]) => { subscription.callback!!!(keys); }
+                    // Callback was not given.
+                    : undefined,
+            _lambda: _.bind(this._onSubscriptionChanged, this, subscription),
+            _id: ComponentBase._nextSubscriptionId++
+        });
 
         if (nsubscription.keyPropertyName) {
-            let keyVal = _.get<string>(this.props, nsubscription.keyPropertyName);
+            const keyVal = _.get<string>(this.props, nsubscription.keyPropertyName);
             assert.ok(typeof keyVal !== 'undefined',
                 'Subscription can\'t resolve key property: ' + nsubscription.keyPropertyName);
 
@@ -254,14 +256,14 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
             subscription._subscriptionToken = subscription.store.subscribe(subscription._lambda, key);
             subscription._subscriptionKey = key;
         } else {
-            subscription._subscriptionKey = null;
+            subscription._subscriptionKey = undefined;
         }
     }
 
     private _cleanupSubscription(subscription: StoreSubscriptionInternal<S>) {
         if (subscription._subscriptionToken) {
             subscription.store.unsubscribe(subscription._subscriptionToken);
-            subscription._subscriptionToken = null;
+            subscription._subscriptionToken = undefined;
         }
     }
 
@@ -302,9 +304,9 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     }
 
     private _addSubscriptionToLookup(subscription: StoreSubscriptionInternal<S>) {
-        const lookup = this._handledSubscriptionsLookup;
+        let lookup = this._handledSubscriptionsLookup;
         const storeId = subscription.store.storeId;
-        const key = subscription._subscriptionKey || null;
+        const key = subscription._subscriptionKey || SubKeyNoKey;
 
         if (!lookup[storeId]) {
             lookup[storeId] = {};
@@ -316,9 +318,9 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     }
 
     private _removeSubscriptionFromLookup(subscription: StoreSubscriptionInternal<S>) {
-        const lookup = this._handledSubscriptionsLookup;
+        let lookup = this._handledSubscriptionsLookup;
         const storeId = subscription.store.storeId;
-        const key = subscription._subscriptionKey || null;
+        const key = subscription._subscriptionKey || SubKeyNoKey;
 
         if (lookup[storeId] && lookup[storeId][key] && lookup[storeId][key][subscription._id]) {
             delete lookup[storeId][key][subscription._id];
@@ -359,7 +361,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
                 return true;
             }
 
-            const subscriptionsWithStoreAndPropName = subscriptionsWithStore[null as string];
+            const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
             const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<S>) => {
                 if (sub.keyPropertyName && (!sub.enablePropertyName || _.get<boolean>(this.props, sub.enablePropertyName))) {
                     const curVal = _.get<string>(this.props, sub.keyPropertyName);
