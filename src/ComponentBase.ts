@@ -139,7 +139,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
             }
         });
 
-        if (!_.isEqual(this.props, nextProps)) {
+        if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             let newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && !_.isEmpty(newState)) {
                 this.setState(newState);
