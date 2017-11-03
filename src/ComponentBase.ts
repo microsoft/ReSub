@@ -85,6 +85,10 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     constructor(props: P) {
         super(props);
+        this._setStoreSubscriptions();
+
+        // Initialize state
+        this.state = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
 
         const derivedClassRender = this.render || _.noop;
         // No one should use Store getters in render: do that in _buildState instead.
@@ -111,13 +115,6 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Subclasses may override, but _MUST_ call super.
     componentWillMount(): void {
-        this._storeSubscriptions = this._initStoreSubscriptions();
-        _.forEach(this._storeSubscriptions, subscription => {
-            this._addSubscription(subscription);
-        });
-
-        // Initialize state
-        this.state = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
         this._isMounted = true;
     }
 
@@ -191,7 +188,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
                 return undefined;
             }
         }
-            
+
         let nsubscription: StoreSubscriptionInternal<S> = _.extend(subscription, {
             // Wrap the given callback (if any) to provide extra functionality.
             _callback: subscription.callbackBuildState
@@ -301,6 +298,14 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         if (newState && !_.isEmpty(newState)) {
             this.setState(newState);
         }
+    }
+
+    private _setStoreSubscriptions() {
+      this._storeSubscriptions = this._initStoreSubscriptions();
+
+      _.forEach(this._storeSubscriptions, subscription => {
+        this._addSubscription(subscription);
+      });
     }
 
     private _addSubscriptionToLookup(subscription: StoreSubscriptionInternal<S>) {
