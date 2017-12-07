@@ -165,7 +165,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         this._isMounted = false;
     }
 
-    componentWillUpdate(nextProps: Readonly<P>, nextState: S, nextContext: any): void {
+    componentWillUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void {
         // Do nothing, included so that there is no ambiguity on when a subclass must call super
     }
 
