@@ -122,7 +122,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     }
 
     // Subclasses may override, but _MUST_ call super.
-    componentWillReceiveProps(nextProps: P): void {
+    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
             if (subscription.keyPropertyName) {
                 let curVal = _.get<string>(this.props, subscription.keyPropertyName);
@@ -165,11 +165,11 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         this._isMounted = false;
     }
 
-    componentWillUpdate(nextProps: P, nextState: S): void {
+    componentWillUpdate(nextProps: Readonly<P>, nextState: S, nextContext: any): void {
         // Do nothing, included so that there is no ambiguity on when a subclass must call super
     }
 
-    shouldComponentUpdate(nextProps: P, nextState: S): boolean {
+    shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
         return !Options.shouldComponentUpdateComparator(this.state, nextState) ||
                 !Options.shouldComponentUpdateComparator(this.props, nextProps);
     }
@@ -438,7 +438,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         this._componentDidRender();
     }
 
-    componentDidUpdate(prevProps: P, prevState: S) {
+    componentDidUpdate(prevProps: Readonly<P>, prevState: S, prevContext: any) {
         this._componentDidRender();
     }
 

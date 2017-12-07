@@ -12,7 +12,7 @@ declare namespace __React {
 
     interface ReactElement<P> {
         type: string | ComponentClass<P>;
-        props: P;
+        props: Readonly<P>;
         key: string | number;
         ref: string | ((component: Component<P, any>) => any);
     }
@@ -121,8 +121,8 @@ declare namespace __React {
         setState(state: Partial<S>, callback?: () => any): void;
         forceUpdate(callBack?: () => any): void;
         render(): JSX.Element|null;
-        props: P;
-        state: S;
+        props: Readonly<P>;
+        state: Readonly<S>;
         context: {};
         refs: {
             [key: string]: Component<any, any>
@@ -171,10 +171,10 @@ declare namespace __React {
     interface ComponentLifecycle<P, S> {
         componentWillMount?(): void;
         componentDidMount?(): void;
-        componentWillReceiveProps?(nextProps: P, nextContext: any): void;
-        shouldComponentUpdate?(nextProps: P, nextState: S, nextContext: any): boolean;
-        componentWillUpdate?(nextProps: P, nextState: S, nextContext: any): void;
-        componentDidUpdate?(prevProps: P, prevState: S, prevContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<P>, nextContext: any): void;
+        shouldComponentUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean;
+        componentWillUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void;
+        componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void;
         componentWillUnmount?(): void;
     }
 
@@ -214,7 +214,7 @@ declare namespace __React {
         preventDefault(): void;
         stopPropagation(): void;
         target: EventTarget;
-        timeStamp: Date;
+        timeStamp: number;
         type: string;
     }
 
