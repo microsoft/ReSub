@@ -1,6 +1,6 @@
 {
   "name": "resub",
-  "version": "0.1.0",
+  "version": "0.0.21",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
@@ -10,24 +10,24 @@
     "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.68",
+    "@types/lodash": "^4.14.91",
     "assert": "^1.4.1",
     "lodash": "^4.17.0",
-    "tslib": "^1.7.1"
+    "tslib": "^1.8.1"
   },
   "peerDependencies": {
     "react": "^15.0.0"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^3.2.1",
-    "mocha": "^2.3.4",
-    "react": "^15.0.0",
+    "awesome-typescript-loader": "^3.4.1",
+    "mocha": "^4.0.1",
+    "react": "^16.2.0",
     "react-addons-test-utils": "^15.0.0",
-    "react-dom": "^15.0.0",
+    "react-dom": "^16.2.0",
     "tslint": "^5.0.0",
-    "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "2.6.0-dev.20170826",
-    "webpack": "^3.3.0"
+    "tslint-microsoft-contrib": "^5.0.1",
+    "typescript": "2.6.2",
+    "webpack": "^3.10.0"
   },
   "repository": {
     "type": "git",

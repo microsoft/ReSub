@@ -1,4 +1,4 @@
-﻿/**
+/**
 * AutoSubscriptions.ts
 * Author: Mark Davis
 * Copyright: Microsoft 2016
