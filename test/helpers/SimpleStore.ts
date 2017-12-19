@@ -13,9 +13,9 @@ import {
 export const enum TriggerKeys {
     First,
     Second
-};
+}
 
-type StoreData = number;
+export type StoreData = number;
 
 // Needs class decorator to support auto-subscriptions.
 @AutoSubscribeStore

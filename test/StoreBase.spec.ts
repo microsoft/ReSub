@@ -49,7 +49,7 @@ class BraindeadStore extends StoreBase {
 // Note: if an 'internal check' fails then the problem might be in the unit test itself,
 //       or in some other file.
 
-describe('StoreBaseTests', function () {
+describe('StoreBase', function () {
     test('Non-timed/Non-bypass Store', () => {
         let store = new BraindeadStore(0, false);
         store.setupSubs();

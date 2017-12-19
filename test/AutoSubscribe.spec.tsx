@@ -9,7 +9,7 @@
 import * as React from 'react';
 import assert from 'assert';
 import ComponentBase from '../src/ComponentBase';
-import { SimpleStore, TriggerKeys } from './helpers/SimpleStore';
+import { SimpleStore, TriggerKeys, StoreData } from './helpers/SimpleStore';
 import { StoreBase } from '../src/StoreBase';
 import { mount } from 'enzyme';
 
@@ -164,13 +164,13 @@ function testSubscriptions(Component: SimpleComponent): void {
      * Auto-subscriptions should check for an existing subscription before adding a new one,
      * thus there should never be more than one auto-subscription for a key (per component).
      */
-     each(SimpleStoreInstance.test_getAutoSubscriptions(), (subs, key) => (
-         expect(subs.length).toEqual(1);
-     ));
+    each(SimpleStoreInstance.test_getAutoSubscriptions(), (subs, key) => (
+        expect(subs.length).toEqual(1)
+    ));
 
-     expect(
-         isEmpty(SimpleStoreInstance.test_getSubscriptions())
-     ).toBeTruthy();
+    expect(
+        isEmpty(SimpleStoreInstance.test_getSubscriptions())
+    ).toBeTruthy();
 }
 
 // Tests if a change in the store causes the component to re-build its state, or not re-build if
