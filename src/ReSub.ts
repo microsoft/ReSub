@@ -12,7 +12,7 @@ import StoreBaseI = require('./StoreBase');
 import TypesI = require('./Types');
 import OptionsI = require('./Options');
 
-export const ComponentBase = ComponentBaseI.default;
+export const ComponentBase = ComponentBaseI.ComponentBase;
 
 export const StoreBase = StoreBaseI.StoreBase;
 

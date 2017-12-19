@@ -337,3 +337,28 @@ It is fine to use ReSub without TypeScript, but without access to TypeScript’s
 
 At the very least, developers can still leverage the organizational patterns of `ComponentBase` and `StoreBase`, and any virtual functions that subclasses implement will still be called.
 
+## TSLint rules
+
+We have couple of tslint rules to automate search of common problems in ReSub usage.
+They are located at the ./dist/tslint folder of the package.
+add following rules to your tslint.json in order to use them.
+
+incorrect-state-access rule doesn't check abstract methods called from componentWillMount, but you could enforce check of your methods by passing them to the rule as an argument.
+
+```
+    "incorrect-state-access": [
+        true
+    ],
+
+ "override-calls-super": [
+        true,
+        "_buildInitialState",
+        "componentWillMount",
+        "componentDidMount",
+        "componentWillReceiveProps",
+        "componentWillUpdate",
+        "componentDidUpdate",
+        "componentWillUnmount"
+    ],
+
+```
