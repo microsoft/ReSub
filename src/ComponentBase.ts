@@ -112,12 +112,11 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // Subclasses may override, but _MUST_ call super.
     componentWillMount(): void {
         this._storeSubscriptions = this._initStoreSubscriptions();
-        _.forEach(this._storeSubscriptions, subscription => {
-            this._addSubscription(subscription);
-        });
+        _.forEach(this._storeSubscriptions, subscription => this._addSubscription(subscription));
 
-        // Initialize state
-        this.state = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
+        const initialState: S = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
+
+        this.setState(initialState);
         this._isMounted = true;
     }
 
