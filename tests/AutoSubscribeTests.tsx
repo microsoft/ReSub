@@ -9,7 +9,7 @@
 import assert = require('assert');
 import _ = require('lodash');
 import React = require('react');
-import TestUtils = require('react-addons-test-utils');
+import TestUtils = require('react-dom/test-utils');
 
 import ComponentBase from '../src/ComponentBase';
 import { AutoSubscribeStore, autoSubscribe, autoSubscribeWithKey, 

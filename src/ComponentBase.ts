@@ -42,7 +42,7 @@ interface StoreSubscriptionInternal<S> extends StoreSubscription<S> {
     _subscriptionKey?: string;
 }
 
-abstract class ComponentBase<P extends React.Props<any>, S extends Object> extends React.Component<P, S> {
+export abstract class ComponentBase<P extends React.Props<any>, S extends Object> extends React.Component<P, S> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
@@ -111,13 +111,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
 
     // Subclasses may override, but _MUST_ call super.
     componentWillMount(): void {
-        this._storeSubscriptions = this._initStoreSubscriptions();
-        _.forEach(this._storeSubscriptions, subscription => {
-            this._addSubscription(subscription);
-        });
-
-        // Initialize state
-        this.state = (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
+        this.setState(this._buildInitialState());
         this._isMounted = true;
     }
 
@@ -142,7 +136,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             let newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && !_.isEmpty(newState)) {
-                this.setState(newState);
+                this.setState(newState as Pick<S, any>);
             }
         }
     }
@@ -279,13 +273,13 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
             return;
         }
 
-        let newState: Partial<S>|void = undefined;
+        let newState: Pick<S, any>|void = undefined;
 
         let nsubscription = subscription as StoreSubscriptionInternal<S>;
         if (nsubscription._callback) {
-            newState = nsubscription._callback(changedItem);
+            newState = nsubscription._callback(changedItem) as Pick<S, any> | void;
         } else {
-            newState = this._buildStateWithAutoSubscriptions(this.props, false);
+            newState = this._buildStateWithAutoSubscriptions(this.props, false) as Pick<S, any> | void;
         }
 
         if (newState && !_.isEmpty(newState)) {
@@ -299,7 +293,7 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
         }
         const newState = this._buildStateWithAutoSubscriptions(this.props, false);
         if (newState && !_.isEmpty(newState)) {
-            this.setState(newState);
+            this.setState(newState as Pick<S, any>);
         }
     }
 
@@ -431,6 +425,18 @@ abstract class ComponentBase<P extends React.Props<any>, S extends Object> exten
     // there are performance considerations with over-rebuilding.
     protected _buildState(props: P, initialBuild: boolean): Partial<S>|undefined {
         return undefined;
+    }
+
+    // The initial state is unavailable in componentWillMount. Override this method to get access to it.
+    // Subclasses may override, but _MUST_ call super.
+    protected _buildInitialState(): Readonly<S> {
+        this._storeSubscriptions = this._initStoreSubscriptions();
+        _.forEach(this._storeSubscriptions, subscription => {
+            this._addSubscription(subscription);
+        });
+
+        // Initialize state
+        return (this._buildStateWithAutoSubscriptions(this.props, true) as S) || ({} as S);
     }
 
     // Wrap both didMount and didUpdate into componentDidRender
