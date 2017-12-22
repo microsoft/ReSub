@@ -11,17 +11,17 @@ describe('AutoSubscribeWarnings', () => {
     test('Auto-subscribe warns if setter is called in _buildState', () => {
         const store = new SimpleStore();
         class Component extends ComponentBase<{}, {}> {
-          protected _buildState() {
-            // Test implementation detail: makes sure to use a method that will cause a warning (e.g. a setter).
-            expect(() => store.setStoreData(WARN_IN_BUILD_STATE, 1)).toThrowError(WARNING_MESSAGE);
-            return {};
-          }
+            protected _buildState() {
+                // Test implementation detail: makes sure to use a method that will cause a warning (e.g. a setter).
+                expect(() => store.setStoreData(WARN_IN_BUILD_STATE, 1)).toThrowError(WARNING_MESSAGE);
+                return {};
+            }
 
-          public render() {
-            return (
-              <div>...</div>
-            );
-          }
+            public render() {
+                return (
+                    <div>...</div>
+                );
+            }
         }
 
         shallow(<Component />);
