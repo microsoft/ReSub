@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "assert": "^1.4.1",
-    "install": "^0.10.2",
     "lodash": "^4.17.0",
     "tslib": "^1.8.1"
   },
