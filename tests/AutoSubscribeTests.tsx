@@ -207,8 +207,15 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
             SimpleStoreInstance.dangerousGetAllStoreDataMutable();
         }
         if (props.test_causeWarning) {
-            // Should cause a warning since setters are not allowed when auto-subscriptions are enabled.
-            SimpleStoreInstance.setStoreData(keys.warn_in_build_state, uniqStoreDataValue++);
+            try {
+                SimpleStoreInstance.setStoreData(keys.warn_in_build_state, uniqStoreDataValue++);
+                assert.ok(false, 'Auto-subscription should have warned');
+            } catch (e) {
+                assert.ok(e.message, 'No exception message');
+                assert.notDeepEqual(e.message.indexOf('@'), -1, 'Exception should be for auto-subscription, not something else');
+                // Success: it warned.
+            }
+            
         }
         if (props.test_keyedSub) {
             newState.keyedDataSum = SimpleStoreInstance.getDataSingleKeyed() + SimpleStoreInstance.getDataMultiKeyed();
@@ -352,14 +359,7 @@ describe('AutoSubscribeTests', function () {
     });
 
     it('Auto-subscribe warns if setter is called in _buildState', () => {
-        try {
-            makeComponent({ ids: ['a'], test_causeWarning: true });
-            assert.ok(false, 'Auto-subscription should have warned');
-        } catch (e) {
-            assert.ok(e.message, 'No exception message');
-            assert.notDeepEqual(e.message.indexOf('@'), -1, 'Exception should be for auto-subscription, not something else');
-            // Success: it warned.
-        }
+        makeComponent({ ids: ['a'], test_causeWarning: true });
     });
 
     it('Auto-subscribe triggers _buildState on change', () => {
