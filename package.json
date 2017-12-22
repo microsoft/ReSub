@@ -1,37 +1,39 @@
 {
   "name": "resub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
-    "prepublish": "tsc",
-    "webtestbuild": "webpack",
-    "build": "npm run tslint && tsc",
+    "prepare": "npm run test && npm run build",
+    "build": "npm run tslint && ./node_modules/.bin/tsc",
+    "test": "./node_modules/.bin/jest",
     "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true"
   },
   "dependencies": {
     "assert": "^1.4.1",
     "lodash": "^4.17.0",
-    "tslib": "^1.7.1"
+    "tslib": "^1.8.1"
   },
   "peerDependencies": {
     "react": "^16.0.0"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.74",
-    "@types/node": "^8.5.1",
-    "@types/react": "16.0.29",
+    "@types/enzyme": "^3.1.6",
+    "@types/jest": "^21.1.8",
+    "@types/lodash": "^4.14.91",
+    "@types/react": "^16.0.31",
     "@types/react-dom": "^16.0.3",
-    "awesome-typescript-loader": "^3.2.1",
-    "mocha": "^2.3.4",
-    "react": "^16.0.0",
-    "react-addons-test-utils": "^15.0.0",
-    "react-dom": "^16.0.0",
-    "tslib": "^1.7.1",
+    "enzyme": "^3.2.0",
+    "enzyme-adapter-react-16": "^1.1.1",
+    "jest": "^22.0.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-test-renderer": "^16.2.0",
+    "ts-jest": "^22.0.0",
+    "ts-node": "^4.0.2",
     "tslint": "^5.0.0",
-    "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "2.6.2",
-    "webpack": "^3.3.0"
+    "tslint-microsoft-contrib": "^5.0.1",
+    "typescript": "2.6.2"
   },
   "repository": {
     "type": "git",
