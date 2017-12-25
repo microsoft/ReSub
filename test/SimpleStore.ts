@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { StoreBase } from '../../src/StoreBase';
+import { StoreBase } from '../src/StoreBase';
 import { isEqual, uniq } from 'lodash';
 import {
     warnIfAutoSubscribeEnabled,
@@ -8,7 +8,7 @@ import {
     disableWarnings,
     autoSubscribe,
     key,
-} from '../../src/AutoSubscriptions';
+} from '../src/AutoSubscriptions';
 
 export const enum TriggerKeys {
     First,

@@ -13,19 +13,19 @@ class BraindeadStore extends StoreBase {
     Key_Something2 = 'def';
 
     foundAll = false;
-    allKeys: string[]|undefined = undefined;
+    allKeys: Array<string> = [];
     allSub: number;
     foundKey = false;
-    keyKeys: string[]|undefined = undefined;
+    keyKeys: Array<string> = [];
     keySub: number;
 
     setupSubs() {
-        this.allSub = this.subscribe(keys => {
+        this.allSub = this.subscribe((keys: Array<string> = []) => {
             this.foundAll = true;
             this.allKeys = keys;
         });
 
-        this.keySub = this.subscribe(keys => {
+        this.keySub = this.subscribe((keys: Array<string> = []) => {
             this.foundKey = true;
             this.keyKeys = keys;
         }, this.Key_Something);
@@ -50,19 +50,19 @@ class BraindeadStore extends StoreBase {
 //       or in some other file.
 
 describe('StoreBase', function () {
-    test('Non-timed/Non-bypass Store', () => {
+    it('Non-timed/Non-bypass Store', () => {
         let store = new BraindeadStore(0, false);
         store.setupSubs();
 
         // Try all emit
         store.emitAll();
         expect(store.foundAll && store.foundKey).toBeTruthy();
-        expect(store.allKeys).toBeUndefined();
-        expect(store.keyKeys).toBeUndefined();
+        expect(store.allKeys).toEqual([]);
+        expect(store.keyKeys).toEqual([]);
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = undefined;
-
+        store.allKeys = store.keyKeys = [];
+        
         // Try keyed emit
         store.emitSomething();
         expect(store.allKeys).toEqual([store.Key_Something]);
@@ -70,7 +70,7 @@ describe('StoreBase', function () {
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = undefined;
+        store.allKeys = store.keyKeys = [];
 
         // Try keyed emits
         store.emitSomethings();
@@ -80,7 +80,7 @@ describe('StoreBase', function () {
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = undefined;
+        store.allKeys = store.keyKeys = [];
 
         // block triggers
         StoreBase.pushTriggerBlock();
@@ -92,12 +92,12 @@ describe('StoreBase', function () {
         // unblock and make sure the dedupe logic works (should just emit undefined, since we did an all emit,
         // which overrides the keyed ones)
         StoreBase.popTriggerBlock();
-        expect(store.allKeys).toBeUndefined();
-        expect(store.keyKeys).toBeUndefined();
+        expect(store.allKeys).toEqual([]);
+        expect(store.keyKeys).toEqual([]);
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = undefined;
+        store.allKeys = store.keyKeys = [];
 
         // Make sure unsubscribe works
         store.unsubscribe(store.allSub);
@@ -105,39 +105,39 @@ describe('StoreBase', function () {
         expect(!store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = undefined;
+        store.allKeys = store.keyKeys = [];
         store.unsubscribe(store.keySub);
         store.emitSomething();
         expect(!store.foundAll && !store.foundKey).toBeTruthy();
     });
 
-    test('Non-timed/Bypass Store', () => {
+    it('Non-timed/Bypass Store', () => {
         let store = new BraindeadStore(0, true);
         store.setupSubs();
 
         // Try all emit
         store.emitAll();
         expect(store.foundAll).toBeTruthy();
-        expect(store.allKeys).toBeUndefined();
+        expect(store.allKeys).toEqual([]);
 
         store.foundAll = false;
-        store.allKeys = undefined;
+        store.allKeys = [];
 
         // block triggers, should do nothing (triggers should still flow)
         StoreBase.pushTriggerBlock();
         store.emitAll();
         expect(store.foundAll).toBeTruthy();
-        expect(store.allKeys).toBeUndefined();
+        expect(store.allKeys).toEqual([]);
 
         store.foundAll = false;
-        store.allKeys = undefined;
+        store.allKeys = [];
 
         // unblock and make sure nothing pops out
         StoreBase.popTriggerBlock();
         expect(store.foundAll).toBeFalsy();
     });
 
-    test('Timed/non-Bypass Store', (done: Function) => {
+    it('Timed/non-Bypass Store', (done: Function) => {
         let store = new BraindeadStore(100, false);
         store.setupSubs();
 
@@ -157,7 +157,7 @@ describe('StoreBase', function () {
         }, 200);
     });
 
-    test('Double Trigger w/ Unsubscribe', (done: Function) => {
+    it('Double Trigger w/ Unsubscribe', (done: Function) => {
         let store = new BraindeadStore();
 
         let callCount1 = 0;

@@ -7,11 +7,10 @@
  */
 
 import * as React from 'react';
-import assert from 'assert';
 import ComponentBase from '../src/ComponentBase';
-import { SimpleStore, TriggerKeys, StoreData } from './helpers/SimpleStore';
+import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
 import { StoreBase } from '../src/StoreBase';
-import { mount } from 'enzyme';
+import { mount, ReactWrapper } from 'enzyme';
 
 import {
     includes,
@@ -112,9 +111,9 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
  */
 
 // Makes a new SimpleComponent and performs some internal checks.
-function makeComponent(props: SimpleProps): SimpleComponent {
+function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
     // Make the component, calling _buildState in the constructor.
-    const Component = mount(<SimpleComponent { ...props } />) as SimpleComponent;
+    const Component: ReactWrapper<any, any> = mount(<SimpleComponent { ...props } />);
     const {
       stateChanges,
       storeDatas,
@@ -136,11 +135,11 @@ function makeComponent(props: SimpleProps): SimpleComponent {
 }
 
 // The main tests for a component/store using auto-subscriptions.
-function testSubscriptions(Component: SimpleComponent): void {
+function testSubscriptions(Component: ReactWrapper<any, any>): void {
     // Store should now have subscriptions. There were none at the start of the test, so they all came from this
     // component. If subscribed to Key_All, there should be one subscription. Otherwise, one per id in props.ids.
     const subscriptionKeys = SimpleStoreInstance.test_getSubscriptionKeys();
-
+    
     if (Component.prop('test_useAll')) {
         // The one and only subscription is to Key_All.
         expect(subscriptionKeys.length).toEqual(1);
@@ -150,8 +149,8 @@ function testSubscriptions(Component: SimpleComponent): void {
          * Should be subscribed to each id in props.id, even if id is not in store._storeDataById currently
          * (e.g. keys.missing).
          */
-        expect(subscriptionKeys.sort()).toEqual(uniq(Component.prop('ids')).sort());
-
+        expect(subscriptionKeys.sort()).toEqual(uniq<string>(Component.prop('ids')).sort());
+        
         /**
          * Should not be subscribed to Key_All if subscribed to other keys.
          * Note: this might not be true in general, especially if there are explicit subscriptions.
@@ -175,7 +174,7 @@ function testSubscriptions(Component: SimpleComponent): void {
 
 // Tests if a change in the store causes the component to re-build its state, or not re-build if
 // doesNotAffectComponent is true.
-function testSubscriptionChange(Component: SimpleComponent, idToChange: string, newValue: StoreData,
+function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: string, newValue: StoreData,
         doesNotAffectComponent = false): void {
 
     // Hold onto the current state before the store changes.
@@ -200,7 +199,8 @@ function testSubscriptionChange(Component: SimpleComponent, idToChange: string, 
      * Note: even if doesNotAffectComponent is true, this assert.on is still valid.
      */
     expect(Component.state('storeDatas').sort()).toEqual(
-      Component.prop('ids').map(id => SimpleStoreInstance.getStoreData(id)).sort()
+      Component.prop('ids')
+        .map((id: string) => SimpleStoreInstance.getStoreData(id)).sort()
     );
 
     // Re-run the subscription tests.
@@ -219,32 +219,32 @@ describe('AutoSubscribe', function () {
         expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
     });
 
-    test('Auto-subscribe on id', () => {
+    it('Auto-subscribe on id', () => {
         const Component = makeComponent({ ids: ['a'] });
         testSubscriptions(Component);
     });
 
-    test('Auto-subscribe on multiple ids', () => {
+    it('Auto-subscribe on multiple ids', () => {
         const Component = makeComponent({ ids: ['a', 'b', 'c', 'd', 'e'] });
         testSubscriptions(Component);
     });
 
-    test('Auto-subscribe subscribes once per unique id', () => {
+    it('Auto-subscribe subscribes once per unique id', () => {
         const Component = makeComponent({ ids: ['a', 'a', 'b', 'b'], test_useAll: true });
         testSubscriptions(Component);
     });
 
-    test('Auto-subscribe on id not already in store', () => {
+    it('Auto-subscribe on id not already in store', () => {
         const Component = makeComponent({ ids: [keys.missing] });
         testSubscriptions(Component);
     });
 
-    test('Auto-subscribe on Key_All', () => {
+    it('Auto-subscribe on Key_All', () => {
         const Component = makeComponent({ ids: ['a', 'b'], test_useAll: true });
         testSubscriptions(Component);
     });
 
-    test('Auto-subscribe triggers _buildState on change', () => {
+    it('Auto-subscribe triggers _buildState on change', () => {
         const id = 'a';
         const Component = makeComponent({ ids: [id] });
 
@@ -252,7 +252,7 @@ describe('AutoSubscribe', function () {
         testSubscriptionChange(Component, id, uniqStoreDataValue++);
     });
 
-    test('Auto-subscribe triggers _buildState on change multiple times', () => {
+    it('Auto-subscribe triggers _buildState on change multiple times', () => {
         const id1 = 'a';
         const id2 = 'b';
         const Component = makeComponent({ ids: [id1, id2] });
@@ -267,19 +267,19 @@ describe('AutoSubscribe', function () {
         testSubscriptionChange(Component, id2, uniqStoreDataValue++);
     });
 
-    test('Auto-subscribe does NOT trigger _buildState on change to other id', () => {
+    it('Auto-subscribe does NOT trigger _buildState on change to other id', () => {
         const Component = makeComponent({ ids: ['a'] });
         testSubscriptions(Component);
         testSubscriptionChange(Component, keys.not_in_ids, uniqStoreDataValue++, /* doesNotAffectComponent */ true);
     });
 
-    test('Auto-subscribe triggers _buildState on change to any id when subscribed to Key_All', () => {
+    it('Auto-subscribe triggers _buildState on change to any id when subscribed to Key_All', () => {
         const Component = makeComponent({ ids: ['a'], test_useAll: true });
         testSubscriptions(Component);
         testSubscriptionChange(Component, keys.not_in_ids, uniqStoreDataValue++);
     });
 
-    test('Auto-subscribe triggers _buildState on change to id not initially in store', () => {
+    it('Auto-subscribe triggers _buildState on change to id not initially in store', () => {
         /**
          * Tests a common case where some component is waiting for data the store does not already have, then the store
          * leter gets it and the component should update.
@@ -296,7 +296,7 @@ describe('AutoSubscribe', function () {
     });
 
 
-    test('Auto-subscribe reuses subscription object', () => {
+    it('Auto-subscribe reuses subscription object', () => {
         /**
          * Tests a common case where some component is waiting for data the store does not already have, then the store
          * leter gets it and the component should update.
@@ -322,7 +322,7 @@ describe('AutoSubscribe', function () {
     });
 
 
-    test('autoSubscribeWithKey triggers _buildState on change', () => {
+    it('autoSubscribeWithKey triggers _buildState on change', () => {
         let expectedState = 1;
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
 
@@ -343,7 +343,7 @@ describe('AutoSubscribe', function () {
         expect(Component.state('keyedDataSum')).toEqual(13);
     });
 
-    test('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
+    it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
         let expectedState = 1;
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
@@ -354,7 +354,7 @@ describe('AutoSubscribe', function () {
         expect(Component.state('keyedDataSum')).toEqual(9);
     });
 
-    test('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
+    it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
         let expectedState = 1;
         const Component = makeComponent({ test_enumKeyedSub: true, ids: [] });
 
@@ -371,7 +371,7 @@ describe('AutoSubscribe', function () {
         expect(Component.state('keyedDataSum')).toEqual(13);
     });
 
-    test('Manual Subscription triggers', () => {
+    it('Manual Subscription triggers', () => {
         const subToken1 = SimpleStoreInstance.subscribe(keys => {
           expect(keys).toEqual([TriggerKeys.First.toString()])
           SimpleStoreInstance.unsubscribe(subToken1);

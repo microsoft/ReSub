@@ -1,14 +1,14 @@
 import * as React from 'react';
 import ComponentBase from '../src/ComponentBase';
 import { shallow } from 'enzyme';
-import { SimpleStore } from './helpers/SimpleStore';
+import { SimpleStore } from './SimpleStore';
 
 const WARN_IN_BUILD_STATE = 'build';
 const WARNING_MESSAGE = `Only Store methods with the @autoSubscribe decorator \
 can be called right now (e.g. in _buildState): "setStoreData"`;
 
 describe('AutoSubscribeWarnings', () => {
-    test('Auto-subscribe warns if setter is called in _buildState', () => {
+    it('Auto-subscribe warns if setter is called in _buildState', () => {
         const store = new SimpleStore();
         class Component extends ComponentBase<{}, {}> {
             protected _buildState() {

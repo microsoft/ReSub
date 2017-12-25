@@ -17,6 +17,10 @@
     "target": "es5",
     "jsx": "react",
   },
+  
+  "awesomeTypescriptLoaderOptions": {
+    "useWebpackText": true,
+  },
 
   "include": [
     "src/**/*"
