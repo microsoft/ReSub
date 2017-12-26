@@ -1,9 +1,11 @@
+const webpack = require('./webpack.test');
+
 module.exports = config => (
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
     reporters: ['spec'],
-    
+
     plugins: [
       'karma-phantomjs-launcher',
       'karma-sourcemap-loader',
@@ -27,28 +29,7 @@ module.exports = config => (
       'text/x-typescript': ['ts', 'tsx'],
     },
 
-    webpack: {
-      devtool: 'inline-source-map',
-
-      resolve: {
-        extensions: ['.js', '.ts', 'tsx']
-      },
-
-      module: {
-        rules: [{ 
-          test: /\.tsx?$/, 
-          loader: 'awesome-typescript-loader',
-          query: {
-            inlineSourceMap: true,
-            sourceMap: false,
-            compilerOptions: {
-              removeComments: true
-            }
-          },
-          exclude: [/node_modules/] 
-        }]
-      },
-    },
+    webpack,
 
     webpackMiddleware: {
       quiet: true,
