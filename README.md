@@ -1,4 +1,5 @@
-# ReSub
+# ReSub &nbsp; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Microsoft/ReSub/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![npm downloads](https://img.shields.io/npm/dm/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![Build Status](https://img.shields.io/travis/a-tarasyuk/ReSub/feature/jasmine.svg?style=flat-square)](https://travis-ci.org/a-tarasyuk/ReSub)
+
 
 A library for writing better React components and data stores. Uses automatic subscriptions to reduce code and avoid common data flow pitfalls. Scales for projects of all sizes and works great with TypeScript.
 
@@ -346,19 +347,19 @@ add following rules to your tslint.json in order to use them.
 incorrect-state-access rule doesn't check abstract methods called from componentWillMount, but you could enforce check of your methods by passing them to the rule as an argument.
 
 ```
-    "incorrect-state-access": [
-        true
-    ],
+"incorrect-state-access": [
+    true
+],
 
- "override-calls-super": [
-        true,
-        "_buildInitialState",
-        "componentWillMount",
-        "componentDidMount",
-        "componentWillReceiveProps",
-        "componentWillUpdate",
-        "componentDidUpdate",
-        "componentWillUnmount"
-    ],
+"override-calls-super": [
+    true,
+    "_buildInitialState",
+    "componentWillMount",
+    "componentDidMount",
+    "componentWillReceiveProps",
+    "componentWillUpdate",
+    "componentDidUpdate",
+    "componentWillUnmount"
+],
 
 ```

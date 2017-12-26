@@ -1,7 +1,7 @@
 language: node_js
-
+  - 9
+  - 8
 dist: trusty
-
 sudo: false
 
 addons:
