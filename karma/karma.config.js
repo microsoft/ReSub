@@ -7,7 +7,6 @@ module.exports = config => (
     reporters: ['spec'],
 
     plugins: [
-      'karma-phantomjs-launcher',
       'karma-sourcemap-loader',
       'karma-chrome-launcher',
       'karma-spec-reporter',
@@ -32,10 +31,7 @@ module.exports = config => (
     webpack,
 
     webpackMiddleware: {
-      quiet: true,
-      stats: {
-        colors: true
-      }
+      stats: 'errors-only',
     }
   })
 );

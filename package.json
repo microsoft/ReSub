@@ -4,11 +4,11 @@
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
-    "prepare": "npm run build",
-    "test": "./node_modules/.bin/karma start --singleRun --browsers PhantomJS",
-    "test:watch": "./node_modules/.bin/karma start --browsers Chrome",
-    "build": "npm run tslint && ./node_modules/.bin/tsc",
-    "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true"
+    "clean": "rimraf dist/",
+    "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
+    "test": "npm run clean && karma start --singleRun --browsers ChromeHeadless",
+    "test:watch": "npm run clean && karma start --browsers Chrome",
+    "build": "npm run clean && npm run tslint && tsc"
   },
   "dependencies": {
     "assert": "^1.4.1",
@@ -36,7 +36,6 @@
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.1",
-    "karma-phantomjs-launcher": "^1.0.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "^2.0.9",

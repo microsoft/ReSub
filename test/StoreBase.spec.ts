@@ -8,24 +8,26 @@
 import { delay } from 'lodash';
 import { StoreBase } from '../src/StoreBase';
 
+type TKeys = Array<string>|undefined;
+
 class BraindeadStore extends StoreBase {
     Key_Something = 'abc';
     Key_Something2 = 'def';
 
     foundAll = false;
-    allKeys: Array<string> = [];
+    allKeys: TKeys;
     allSub: number;
     foundKey = false;
-    keyKeys: Array<string> = [];
+    keyKeys: TKeys;
     keySub: number;
 
     setupSubs() {
-        this.allSub = this.subscribe((keys: Array<string> = []) => {
+        this.allSub = this.subscribe((keys: TKeys) => {
             this.foundAll = true;
             this.allKeys = keys;
         });
 
-        this.keySub = this.subscribe((keys: Array<string> = []) => {
+        this.keySub = this.subscribe((keys: TKeys) => {
             this.foundKey = true;
             this.keyKeys = keys;
         }, this.Key_Something);
@@ -57,25 +59,25 @@ describe('StoreBase', function () {
         // Try all emit
         store.emitAll();
         expect(store.foundAll && store.foundKey).toBeTruthy();
-        expect(store.allKeys).toEqual([]);
-        expect(store.keyKeys).toEqual([]);
+        expect<TKeys>(store.allKeys).toBeUndefined();
+        expect<TKeys>(store.keyKeys).toBeUndefined();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = [];
+        store.allKeys = store.keyKeys = undefined;
         
         // Try keyed emit
         store.emitSomething();
-        expect(store.allKeys).toEqual([store.Key_Something]);
-        expect(store.keyKeys).toEqual([store.Key_Something]);
+        expect<TKeys>(store.allKeys).toEqual([store.Key_Something]);
+        expect<TKeys>(store.keyKeys).toEqual([store.Key_Something]);
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = [];
+        store.allKeys = store.keyKeys = undefined;
 
         // Try keyed emits
         store.emitSomethings();
-        expect(store.allKeys).toEqual([store.Key_Something, store.Key_Something2]);
-        expect(store.keyKeys).toEqual([store.Key_Something]);
+        expect<TKeys>(store.allKeys).toEqual([store.Key_Something, store.Key_Something2]);
+        expect<TKeys>(store.keyKeys).toEqual([store.Key_Something]);
         expect(store.foundAll && store.foundKey).toBeTruthy();
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
@@ -92,8 +94,8 @@ describe('StoreBase', function () {
         // unblock and make sure the dedupe logic works (should just emit undefined, since we did an all emit,
         // which overrides the keyed ones)
         StoreBase.popTriggerBlock();
-        expect(store.allKeys).toEqual([]);
-        expect(store.keyKeys).toEqual([]);
+        expect<TKeys>(store.allKeys).toBeUndefined();
+        expect<TKeys>(store.keyKeys).toBeUndefined();
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
@@ -105,7 +107,7 @@ describe('StoreBase', function () {
         expect(!store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = [];
+        store.allKeys = store.keyKeys = undefined;
         store.unsubscribe(store.keySub);
         store.emitSomething();
         expect(!store.foundAll && !store.foundKey).toBeTruthy();
@@ -118,7 +120,7 @@ describe('StoreBase', function () {
         // Try all emit
         store.emitAll();
         expect(store.foundAll).toBeTruthy();
-        expect(store.allKeys).toEqual([]);
+        expect<TKeys>(store.allKeys).toBeUndefined();
 
         store.foundAll = false;
         store.allKeys = [];
@@ -127,7 +129,7 @@ describe('StoreBase', function () {
         StoreBase.pushTriggerBlock();
         store.emitAll();
         expect(store.foundAll).toBeTruthy();
-        expect(store.allKeys).toEqual([]);
+        expect<TKeys>(store.allKeys).toBeUndefined();
 
         store.foundAll = false;
         store.allKeys = [];
@@ -174,7 +176,10 @@ describe('StoreBase', function () {
             store.emitAll();
         });
 
-        // Try all emit - Each subscription should the called once and the store should trigger multiple times
+        /**
+         * Try all emit 
+         *  Each subscription should the called once and the store should trigger multiple times
+         */
         store.emitAll();
 
         delay(() => {
