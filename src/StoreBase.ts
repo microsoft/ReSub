@@ -14,6 +14,7 @@
 import _ = require('./lodashMini');
 import assert = require('assert');
 
+import Instrumentation from './Instrumentation';
 import MapShim from './MapShim';
 import Options from './Options';
 import { SubscriptionCallbackFunction } from './Types';
@@ -219,7 +220,9 @@ export abstract class StoreBase {
             // Do a quick dedupe on keys
             const uniquedKeys = keys ? _.uniq(keys) : keys;
             // Convert null key (meaning "all") to undefined for the callback.
+            Instrumentation.beginStoreCallback();
             callback(uniquedKeys || undefined);
+            Instrumentation.endStoreCallback(this.constructor);
         });
         this._isTriggering = false;
 
