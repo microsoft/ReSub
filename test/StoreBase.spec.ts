@@ -82,7 +82,7 @@ describe('StoreBase', function () {
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = [];
+        store.allKeys = store.keyKeys = undefined;
 
         // block triggers
         StoreBase.pushTriggerBlock();
@@ -99,7 +99,7 @@ describe('StoreBase', function () {
         expect(store.foundAll && store.foundKey).toBeTruthy();
 
         store.foundAll = store.foundKey = false;
-        store.allKeys = store.keyKeys = [];
+        store.allKeys = store.keyKeys = undefined;
 
         // Make sure unsubscribe works
         store.unsubscribe(store.allSub);
@@ -123,7 +123,7 @@ describe('StoreBase', function () {
         expect<TKeys>(store.allKeys).toBeUndefined();
 
         store.foundAll = false;
-        store.allKeys = [];
+        store.allKeys = undefined;
 
         // block triggers, should do nothing (triggers should still flow)
         StoreBase.pushTriggerBlock();
@@ -132,7 +132,7 @@ describe('StoreBase', function () {
         expect<TKeys>(store.allKeys).toBeUndefined();
 
         store.foundAll = false;
-        store.allKeys = [];
+        store.allKeys = undefined;
 
         // unblock and make sure nothing pops out
         StoreBase.popTriggerBlock();
