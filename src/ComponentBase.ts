@@ -12,6 +12,7 @@ import assert = require('assert');
 import _ = require('./lodashMini');
 import React = require('react');
 
+import Instrumentation from './Instrumentation';
 import Options from './Options';
 import { AutoSubscription, StoreBase } from './StoreBase';
 import { enableAutoSubscribe, enableAutoSubscribeWrapper, forbidAutoSubscribeWrapper } from './AutoSubscriptions';
@@ -185,7 +186,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
                 return undefined;
             }
         }
-            
+
         let nsubscription: StoreSubscriptionInternal<S> = _.extend(subscription, {
             // Wrap the given callback (if any) to provide extra functionality.
             _callback: subscription.callbackBuildState
@@ -397,7 +398,10 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             sub.used = false;
         });
 
+        Instrumentation.beginBuildState();
         const state = this._buildState(props, initialBuild);
+        Instrumentation.endBuildState(this.constructor);
+
         _.remove(this._handledAutoSubscriptions, subscription => {
             if (this._shouldRemoveAndCleanupAutoSubscription(subscription)) {
                 subscription.store.removeAutoSubscription(subscription);

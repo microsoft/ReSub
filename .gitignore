@@ -5,3 +5,4 @@
 /src/obj
 *.user
 /ReSubTestsPack.js
+npm-debug.log
