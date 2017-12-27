@@ -100,7 +100,7 @@ All of this can still be accomplished using method decorators and autosubscripti
 ```javascript
 class TodosStore extends StoreBase {
     ...
-    
+
     static Key_HighPriorityTodoAdded = "Key_HighPriorityTodoAdded";
 
     @autoSubscribeWithKey(TodosStore.Key_HighPriorityTodoAdded)
@@ -149,7 +149,7 @@ Key-based subscriptions are very powerful, but they can be even more powerful an
 ```javascript
 class TodosStore extends StoreBase {
     ...
-    
+
     @autoSubscribe
     getTodosForUser(@key username: string) {
         return this._todosByUser[username];
@@ -162,7 +162,7 @@ Now, we can establish the autosubscription for this user in `_buildState`:
 ```javascript
 class TodoList extends ComponentBase<TodoListProps, TodoListState> {
     ...
-    
+
     protected _buildState(props: {}, initialBuild: boolean): TodoListState {
         return {
             todos: TodosStore.getTodosForUser(this.props.username)
@@ -276,7 +276,7 @@ Manually subscribe to this store. By default, the `callback` method will be call
 
 ##### `unsubscribe(subToken: number)`
 
-Removes a subscription from the store. 
+Removes a subscription from the store.
 
 ##### `trigger(keyOrKeys?: string|string[])`
 
