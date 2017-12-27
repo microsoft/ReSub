@@ -360,5 +360,4 @@ incorrect-state-access rule doesn't check abstract methods called from component
     "componentDidUpdate",
     "componentWillUnmount"
 ],
-
 ```
