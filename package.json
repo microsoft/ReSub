@@ -67,5 +67,5 @@
     "stores"
   ],
   "license": "MIT",
-  "types": "dist/src/ReSub.d.ts"
+  "types": "dist/ReSub.d.ts"
 }
