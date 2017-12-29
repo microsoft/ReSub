@@ -5,5 +5,5 @@
 * Points at typescript source for using with webpack/TSC.
 */
 
-var resub = require('./dist/src/ReSub');
+var resub = require('./dist/ReSub');
 module.exports = resub;
