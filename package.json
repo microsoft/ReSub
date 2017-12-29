@@ -24,7 +24,7 @@
     "@types/enzyme-adapter-react-16": "^1.0.1",
     "@types/jasmine": "^2.8.2",
     "@types/karma": "^1.7.2",
-    "@types/lodash": "^4.14.91",
+    "@types/lodash": "4.14.74",
     "@types/node": "^8.5.2",
     "@types/react": "^16.0.31",
     "@types/react-dom": "^16.0.3",
