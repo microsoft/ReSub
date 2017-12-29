@@ -122,6 +122,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             if (subscription.keyPropertyName) {
                 let curVal = _.get<string>(this.props, subscription.keyPropertyName);
                 let nextVal = _.get<string>(nextProps, subscription.keyPropertyName);
+
                 if (curVal !== nextVal) {
                     // The property we care about changed, so unsubscribe and re-subscribe under the new value
 
@@ -178,7 +179,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             'Subscription added with store that\'s not an StoreBase');
 
         if (subscription.enablePropertyName) {
-            let enabled = _.get<boolean>(this.props, subscription.enablePropertyName);
+            let enabled = _.get<string>(this.props, subscription.enablePropertyName);
             if (!enabled) {
                 // Do not process subscription
 
@@ -358,7 +359,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
             const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
             const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<S>) => {
-                if (sub.keyPropertyName && (!sub.enablePropertyName || _.get<boolean>(this.props, sub.enablePropertyName))) {
+                if (sub.keyPropertyName && (!sub.enablePropertyName || _.get<string>(this.props, sub.enablePropertyName))) {
                     const curVal = _.get<string>(this.props, sub.keyPropertyName);
                     return curVal === key;
                 }

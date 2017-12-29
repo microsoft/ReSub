@@ -1,4 +1,4 @@
-# ReSub &nbsp; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Microsoft/ReSub/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![npm downloads](https://img.shields.io/npm/dm/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub)
+# ReSub &nbsp; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Microsoft/ReSub/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![npm downloads](https://img.shields.io/npm/dm/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![Build Status](https://img.shields.io/travis/Microsoft/ReSub/master.svg?style=flat-square)](https://travis-ci.org/Microsoft/ReSub)
 
 A library for writing better React components and data stores. Uses automatic subscriptions to reduce code and avoid common data flow pitfalls. Scales for projects of all sizes and works great with TypeScript.
 
@@ -100,7 +100,7 @@ All of this can still be accomplished using method decorators and autosubscripti
 ```javascript
 class TodosStore extends StoreBase {
     ...
-    
+
     static Key_HighPriorityTodoAdded = "Key_HighPriorityTodoAdded";
 
     @autoSubscribeWithKey(TodosStore.Key_HighPriorityTodoAdded)
@@ -149,7 +149,7 @@ Key-based subscriptions are very powerful, but they can be even more powerful an
 ```javascript
 class TodosStore extends StoreBase {
     ...
-    
+
     @autoSubscribe
     getTodosForUser(@key username: string) {
         return this._todosByUser[username];
@@ -162,7 +162,7 @@ Now, we can establish the autosubscription for this user in `_buildState`:
 ```javascript
 class TodoList extends ComponentBase<TodoListProps, TodoListState> {
     ...
-    
+
     protected _buildState(props: {}, initialBuild: boolean): TodoListState {
         return {
             todos: TodosStore.getTodosForUser(this.props.username)
@@ -276,7 +276,7 @@ Manually subscribe to this store. By default, the `callback` method will be call
 
 ##### `unsubscribe(subToken: number)`
 
-Removes a subscription from the store. 
+Removes a subscription from the store.
 
 ##### `trigger(keyOrKeys?: string|string[])`
 
@@ -360,5 +360,4 @@ incorrect-state-access rule doesn't check abstract methods called from component
     "componentDidUpdate",
     "componentWillUnmount"
 ],
-
 ```

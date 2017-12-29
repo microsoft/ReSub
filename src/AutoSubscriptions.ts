@@ -1,4 +1,4 @@
-﻿/**
+/**
 * AutoSubscriptions.ts
 * Author: Mark Davis
 * Copyright: Microsoft 2016
@@ -138,7 +138,7 @@ export function enableAutoSubscribeWrapper<T extends Function>(handler: AutoSubs
 }
 
 // Returns a new function that warns if any auto-subscriptions would have been encountered.
-export function forbidAutoSubscribeWrapper<T extends Function>(existingMethod: T, thisArg?: any): T {
+export function forbidAutoSubscribeWrapper<T extends () => any>(existingMethod: T, thisArg?: any): T {
     if (!Options.development) {
         return <T><any>_.bind(existingMethod, thisArg);
     }
