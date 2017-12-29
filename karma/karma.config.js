@@ -4,9 +4,10 @@ module.exports = config => (
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
-    reporters: ['spec'],
+    reporters: ['spec', 'kjhtml'],
 
     plugins: [
+      'karma-jasmine-html-reporter',
       'karma-sourcemap-loader',
       'karma-chrome-launcher',
       'karma-spec-reporter',
