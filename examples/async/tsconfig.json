@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "noImplicitReturns": false,
+    "noImplicitAny": true,
+    "declaration": false,
+    "noResolve": false,
+    "sourceMap": true,
+    "typeRoots": ["node_modules/@types"],
+    "module": "commonjs",
+    "target": "es5",
+    "outDir": "./dist/",
+    "jsx": "react"
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "reportFiles": [
+      "./src/**/*"
+    ],
+    "useCache": false
+  }
+}

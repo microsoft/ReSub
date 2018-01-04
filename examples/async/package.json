@@ -1,0 +1,33 @@
+{
+  "name": "async",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.tsx",
+  "scripts": {
+    "clean": "rimraf dist/",
+    "build": "npm run clean && NODE_ENV=production webpack --progress --colors --optimize-minimize",
+    "start": "NODE_ENV=development webpack-dev-server --progress",
+    "start:prod": "npm run build && http-server dist/ -p 9999 -o"
+  },
+  "devDependencies": {
+    "@types/html-webpack-plugin": "2.30.1",
+    "@types/node": "8.5.5",
+    "@types/webpack": "3.8.2",
+    "awesome-typescript-loader": "3.4.1",
+    "html-webpack-plugin": "2.30.1",
+    "http-server": "0.10.0",
+    "rimraf": "2.6.2",
+    "source-map-loader": "0.2.3",
+    "ts-node": "4.1.0",
+    "typescript": "2.6.2",
+    "webpack": "3.10.0",
+    "webpack-dev-server": "2.9.7"
+  },
+  "dependencies": {
+    "@types/react": "16.0.34",
+    "@types/react-dom": "16.0.3",
+    "react": "16.2.0",
+    "react-dom": "16.2.0",
+    "resub": "1.0.2"
+  }
+}
