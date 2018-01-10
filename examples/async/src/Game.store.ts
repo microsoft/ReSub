@@ -4,7 +4,7 @@ import {
   StoreBase,
 } from 'resub';
 
-export interface IAnswer {
+interface IAnswer {
   answer: string;
   image: string;
 }
@@ -45,6 +45,15 @@ class GameStore extends StoreBase {
   @autoSubscribe
   public getImage(): string {
     return this._image;
+  }
+
+  /**
+   * getError
+   * @return string
+   */
+  @autoSubscribe
+  public getError(): string {
+    return this._error;
   }
 
   /**
