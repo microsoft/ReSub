@@ -165,11 +165,6 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         // Do nothing, included so that there is no ambiguity on when a subclass must call super
     }
 
-    shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
-        return !Options.shouldComponentUpdateComparator(this.state, nextState) ||
-                !Options.shouldComponentUpdateComparator(this.props, nextProps);
-    }
-
     isComponentMounted(): boolean {
         return this._isMounted;
     }
