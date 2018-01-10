@@ -167,7 +167,8 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
     shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
         return !Options.shouldComponentUpdateComparator(this.state, nextState) ||
-                !Options.shouldComponentUpdateComparator(this.props, nextProps);
+            !Options.shouldComponentUpdateComparator(this.props, nextProps) ||
+            !Options.shouldComponentUpdateComparator(this.context, nextContext);
     }
 
     isComponentMounted(): boolean {
