@@ -88,22 +88,27 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         super(props);
 
         const derivedClassRender = this.render || _.noop;
-        // No one should use Store getters in render: do that in _buildState instead.
-        this.render = forbidAutoSubscribeWrapper(() => {
-            // Handle exceptions because otherwise React would break and the app would become unusable until refresh.
-            try {
-                return derivedClassRender.call(this);
-            } catch (e) {
-                // Annoy devs so this gets fixed.
-                if (Options.development) {
-                    // tslint:disable-next-line
-                    throw e;
+        let render = derivedClassRender;
+        if (!Options.preventTryCatchInRender) {
+            render = () => {
+                // Handle exceptions because otherwise React would break and the app would become unusable until refresh.
+                // Note: React error boundaries will make this redundant.
+                try {
+                    return derivedClassRender.call(this);
+                } catch (e) {
+                    // Annoy devs so this gets fixed.
+                    if (Options.development) {
+                        // tslint:disable-next-line
+                        throw e;
+                    }
+    
+                    // Try to move on.
+                    return null;
                 }
-
-                // Try to move on.
-                return null;
-            }
-        });
+            };
+        }
+        // No one should use Store getters in render: do that in _buildState instead.
+        this.render = forbidAutoSubscribeWrapper(render);
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<S>[] {
