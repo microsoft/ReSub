@@ -15,7 +15,9 @@ export interface Performance {
 }
 
 function getPerformanceImpl(): Performance {
-    const { performance } = (global || window || {}) as any;
+    const g = typeof global !== 'undefined' ? global : undefined;
+    const w = typeof window !== 'undefined' ? window : undefined;
+    const { performance } = (g || w || {}) as any;
 
     if (performance && performance.mark && performance.measure) {
         return performance;
