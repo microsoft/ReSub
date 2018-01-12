@@ -101,7 +101,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
                         // tslint:disable-next-line
                         throw e;
                     }
-    
+
                     // Try to move on.
                     return null;
                 }
@@ -125,24 +125,24 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<S>) => {
             if (subscription.keyPropertyName) {
-                let curVal = _.get<string>(this.props, subscription.keyPropertyName);
-                let nextVal = _.get<string>(nextProps, subscription.keyPropertyName);
+                const currKeyPropertyName = this._findKeyPropertyName(this.props, subscription.keyPropertyName);
+                const nextKeyPropertyName = this._findKeyPropertyName(nextProps, subscription.keyPropertyName);
 
-                if (curVal !== nextVal) {
+                if (currKeyPropertyName !== nextKeyPropertyName) {
                     // The property we care about changed, so unsubscribe and re-subscribe under the new value
 
                     this._removeSubscriptionFromLookup(subscription);
                     this._cleanupSubscription(subscription);
 
-                    this._registerSubscription(subscription, nextVal);
+                    this._registerSubscription(subscription, nextKeyPropertyName);
                     this._addSubscriptionToLookup(subscription);
                 }
             }
         });
 
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
-            let newState = this._buildStateWithAutoSubscriptions(nextProps, false);
-            if (newState && !_.isEmpty(newState)) {
+            const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
+            if (!_.isEmpty(newState)) {
                 this.setState(newState as Pick<S, any>);
             }
         }
@@ -184,14 +184,12 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         assert.ok(subscription.store instanceof StoreBase,
             'Subscription added with store that\'s not an StoreBase');
 
-        if (subscription.enablePropertyName) {
-            let enabled = _.get<string>(this.props, subscription.enablePropertyName);
-            if (!enabled) {
-                // Do not process subscription
+        const { enablePropertyName } = subscription;
 
-                // TODO: save this subscription and try again when props change!
-                return undefined;
-            }
+        if (enablePropertyName && !this._isEnablePropertyNamePresent(this.props, enablePropertyName)) {
+            // Do not process subscription
+            // TODO: save this subscription and try again when props change!
+            return undefined;
         }
 
         let nsubscription: StoreSubscriptionInternal<S> = _.extend(subscription, {
@@ -210,11 +208,8 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         });
 
         if (nsubscription.keyPropertyName) {
-            const keyVal = _.get<string>(this.props, nsubscription.keyPropertyName);
-            assert.ok(typeof keyVal !== 'undefined',
-                'Subscription can\'t resolve key property: ' + nsubscription.keyPropertyName);
-
-            this._registerSubscription(nsubscription, keyVal);
+            const keyPropertyName = this._findKeyPropertyName(this.props, nsubscription.keyPropertyName);
+            this._registerSubscription(nsubscription, keyPropertyName);
         } else if (nsubscription.specificKeyValue) {
             this._registerSubscription(nsubscription, nsubscription.specificKeyValue);
         } else {
@@ -355,9 +350,11 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     // Check if we already handle a subscription (explicit) for storeId with key.
     private _hasMatchingSubscription(storeId: string, key: string) {
         const subscriptionsWithStore = this._handledSubscriptionsLookup[storeId];
+
         if (subscriptionsWithStore) {
             const subscriptionsWithStoreAndKey = subscriptionsWithStore[key];
             const subscriptionsWithStoreAndKeyAll = subscriptionsWithStore[StoreBase.Key_All];
+
             if (!_.isEmpty(subscriptionsWithStoreAndKey) || !_.isEmpty(subscriptionsWithStoreAndKeyAll)) {
                 // Already explicitly subscribed.
                 return true;
@@ -365,13 +362,24 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
             const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
             const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<S>) => {
-                if (sub.keyPropertyName && (!sub.enablePropertyName || _.get<string>(this.props, sub.enablePropertyName))) {
-                    const curVal = _.get<string>(this.props, sub.keyPropertyName);
-                    return curVal === key;
+                const {
+                    enablePropertyName,
+                    keyPropertyName,
+                } = sub;
+
+                // @see - https://github.com/Microsoft/ReSub/issues/44
+                if (
+                    keyPropertyName
+                    && (!enablePropertyName || this._isEnablePropertyNamePresent(this.props, enablePropertyName))
+                ) {
+                    const currKeyPropertyName = this._findKeyPropertyName(this.props, keyPropertyName);
+                    return currKeyPropertyName === key;
                 }
+
                 // Subscribed to Key_All.
                 return true;
             });
+
             if (matchingSubscription) {
                 // Already explicitly subscribed.
                 return true;
@@ -381,7 +389,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     }
 
     // Check if we already handle a subscription (auto) for store with key.
-    private _hasMatchingAutoSubscription(store: StoreBase, key: string) {
+    private _hasMatchingAutoSubscription(store: StoreBase, key: string): boolean {
         return _.some(this._handledAutoSubscriptions, sub => {
             if (sub.store.storeId === store.storeId && (sub.key === key || sub.key === StoreBase.Key_All)) {
                 sub.used = true;
@@ -389,6 +397,40 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             }
             return false;
         });
+    }
+
+    /**
+     * search Subscription "keyPropertyName" in Component props(this.props)
+     *
+     * @private
+     * @param {Readonly<P>} props
+     * @param {string} keyPropertyName
+     *
+     * @return {string}
+     */
+    private _findKeyPropertyName(props: Readonly<P>, keyPropertyName: string): string {
+        const key: string | undefined = _.get(this.props, keyPropertyName);
+
+        assert.ok(
+          !_.isUndefined(key),
+          'Subscription can\'t resolve key property: ' + keyPropertyName
+        );
+
+        return key as string;
+    }
+
+    /**
+     * check if enablePropertyName is present
+     *
+     * @private
+     * @param {Readonly<P>} props
+     * @param {string} enablePropertyName
+     *
+     * @return {boolean}
+     */
+    private _isEnablePropertyNamePresent(props: Readonly<P>, enablePropertyName: string): boolean {
+        const key: string | undefined = _.get(props, enablePropertyName);
+        return !_.isUndefined(key) && key !== '';
     }
 
     // Hander for enableAutoSubscribe that does the actual auto-subscription work.
