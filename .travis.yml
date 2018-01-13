@@ -2,7 +2,9 @@ language: node_js
   - 9
   - 8
 dist: trusty
-sudo: false
+
+# Work-around for https://github.com/travis-ci/travis-ci/issues/8836#issuecomment-356362524
+sudo: required
 
 addons:
   chrome: stable
