@@ -4,7 +4,7 @@
     "suppressImplicitAnyIndexErrors":  true,
     "experimentalDecorators": true,
     "noImplicitReturns": true,
-    "strictNullChecks": true,
+    "strict": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
@@ -17,7 +17,7 @@
     "target": "es5",
     "jsx": "react",
   },
-  
+
   "awesomeTypescriptLoaderOptions": {
     "useWebpackText": true,
     "useCache": true,
