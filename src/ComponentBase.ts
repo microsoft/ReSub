@@ -409,7 +409,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
      * @return {string}
      */
     private _findKeyPropertyName(props: Readonly<P>, keyPropertyName: string): string {
-        const key: string | undefined = _.get(this.props, keyPropertyName);
+        const key: string | undefined = _.get(props, keyPropertyName);
 
         assert.ok(
           !_.isUndefined(key),
