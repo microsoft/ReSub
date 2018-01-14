@@ -19,9 +19,8 @@ export class Counter extends ComponentBase<ICounterProps, ICounterState> {
   public render(): ReactElement<any> {
     return (
       <>
-        <div>
-          <h1>{ this.state.counter }</h1>
-        </div>
+        <h1>{ this.state.counter }</h1>
+        <p>(using Counter)</p>
 
         <div>
           <button onClick={() => CounterStore.increment()}>+</button>

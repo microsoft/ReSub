@@ -7,12 +7,14 @@
 */
 
 import ComponentBaseI = require('./ComponentBase');
+import withStoreSubscriptionI = require('./withStoreSubscription');
 import AutoSubscriptionsI = require('./AutoSubscriptions');
 import StoreBaseI = require('./StoreBase');
 import TypesI = require('./Types');
 import OptionsI = require('./Options');
 
 export const ComponentBase = ComponentBaseI.ComponentBase;
+export const withStoreSubscription = withStoreSubscriptionI.withStoreSubscription;
 
 export const StoreBase = StoreBaseI.StoreBase;
 
