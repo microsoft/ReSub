@@ -3,7 +3,7 @@ import { ReactElement } from 'react';
 import { ComponentBase, withStoreSubscription } from 'resub';
 import CounterStore from './Counter.store';
 
-type ICounterSFCProps = React.Props<any> & {
+interface ICounterSFCProps {
   counter: number;
 };
 
@@ -20,6 +20,6 @@ const CounterSFC = ({ counter }: ICounterSFCProps) => (
   </>
 );
 
-export default withStoreSubscription<{}, {}>(() => ({
-    counter: CounterStore.getCounter(),
+export default withStoreSubscription<{}, ICounterSFCProps>(() => ({
+    counter: CounterStore.getCounter()
 }))(CounterSFC);
