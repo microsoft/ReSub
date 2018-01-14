@@ -153,6 +153,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<P, S>) => {
             this._cleanupSubscription(subscription);
         });
+
         this._handledSubscriptions = {};
         this._handledSubscriptionsLookup = {};
 
@@ -361,7 +362,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             }
 
             const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
-            const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<S, P>) => {
+            const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<P, S>) => {
                 const {
                     enablePropertyName,
                     keyPropertyName,
@@ -408,7 +409,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
      *
      * @return {string}
      */
-    private _findKeyPropertyName(props: Readonly<P>, keyPropertyName: string): string {
+    private _findKeyPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
         const key: string | undefined = _.get(props, keyPropertyName);
 
         assert.ok(
@@ -428,7 +429,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
      *
      * @return {boolean}
      */
-    private _isEnablePropertyNamePresent(props: Readonly<P>, enablePropertyName: string): boolean {
+    private _isEnablePropertyNamePresent(props: Readonly<P>, enablePropertyName: keyof P): boolean {
         const key: string | undefined = _.get(props, enablePropertyName);
         return !_.isUndefined(key) && key !== '';
     }
