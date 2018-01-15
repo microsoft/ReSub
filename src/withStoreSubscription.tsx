@@ -1,7 +1,7 @@
 /**
 * withStoreSubscription.ts
 * Author: Brent Traut
-* Copyright: Microsoft 2017
+* Copyright: Microsoft 2018
 *
 * withStoreSubscription is a HOC that tries to reduce the store subscription boilerplate
 * code. It moves autosubscription values out of state and into props by inserting an extra
@@ -11,8 +11,6 @@
 * Then pass dumb components into the wrapper factory to wrap them with autosubscribed
 * container components that leverage the given buildState method.
 */
-
-'use strict';
 
 import * as React from 'react';
 import ComponentBase from './ComponentBase';
@@ -30,7 +28,7 @@ export function withStoreSubscription<
             public displayName = `WithSubscription(${Subject.displayName || 'Component'}`;
 
             public render() {
-                return <Subject {...(this.props || {}) as any} {...(this.state || {}) as any} />;
+                return <Subject {...(this.props || {})} {...(this.state || {})} />;
             }
         } as React.ComponentClass<WrapperProps>;
     };
