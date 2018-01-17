@@ -125,16 +125,16 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<P, S>) => {
             if (subscription.keyPropertyName) {
-                const currKeyPropertyName = this._findKeyPropertyName(this.props, subscription.keyPropertyName);
-                const nextKeyPropertyName = this._findKeyPropertyName(nextProps, subscription.keyPropertyName);
+                const currKey = this._findKeyFromPropertyName(this.props, subscription.keyPropertyName);
+                const nextKey = this._findKeyFromPropertyName(nextProps, subscription.keyPropertyName);
 
-                if (currKeyPropertyName !== nextKeyPropertyName) {
+                if (currKey !== nextKey) {
                     // The property we care about changed, so unsubscribe and re-subscribe under the new value
 
                     this._removeSubscriptionFromLookup(subscription);
                     this._cleanupSubscription(subscription);
 
-                    this._registerSubscription(subscription, nextKeyPropertyName);
+                    this._registerSubscription(subscription, nextKey);
                     this._addSubscriptionToLookup(subscription);
                 }
             }
@@ -209,8 +209,8 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         });
 
         if (nsubscription.keyPropertyName) {
-            const keyPropertyName = this._findKeyPropertyName(this.props, nsubscription.keyPropertyName);
-            this._registerSubscription(nsubscription, keyPropertyName);
+            const key = this._findKeyFromPropertyName(this.props, nsubscription.keyPropertyName);
+            this._registerSubscription(nsubscription, key);
         } else if (nsubscription.specificKeyValue) {
             this._registerSubscription(nsubscription, nsubscription.specificKeyValue);
         } else {
@@ -373,8 +373,8 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
                     keyPropertyName
                     && (!enablePropertyName || this._isEnabledByPropertyName(this.props, enablePropertyName))
                 ) {
-                    const currKeyPropertyName = this._findKeyPropertyName(this.props, keyPropertyName);
-                    return currKeyPropertyName === key;
+                    const currKey = this._findKeyFromPropertyName(this.props, keyPropertyName);
+                    return currKey === key;
                 }
 
                 // Subscribed to Key_All.
@@ -400,17 +400,9 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         });
     }
 
-    /**
-     * search Subscription "keyPropertyName" in Component props(this.props)
-     *
-     * @private
-     * @param {Readonly<P>} props
-     * @param {string} keyPropertyName
-     *
-     * @return {string}
-     */
-    private _findKeyPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
-        const key: string | undefined = _.get(props, keyPropertyName);
+    // Search Subscription "keyPropertyName" in Component props(this.props)
+    private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
+        const key = _.get(props, keyPropertyName) as string|undefined;
 
         assert.ok(
           !_.isUndefined(key),
@@ -420,15 +412,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         return key as string;
     }
 
-    /**
-     * check if enablePropertyName is enabled
-     *
-     * @private
-     * @param {Readonly<P>} props
-     * @param {string} enablePropertyName
-     *
-     * @return {boolean}
-     */
+    // Check if enablePropertyName is enabled
     private _isEnabledByPropertyName(props: Readonly<P>, enablePropertyName: keyof P): boolean {
         const isEnabled = _.get(props, enablePropertyName);
         return !!isEnabled;
