@@ -187,7 +187,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
         const { enablePropertyName } = subscription;
 
-        if (enablePropertyName && !this._isEnablePropertyNamePresent(this.props, enablePropertyName)) {
+        if (enablePropertyName && !this._isEnabledByPropertyName(this.props, enablePropertyName)) {
             // Do not process subscription
             // TODO: save this subscription and try again when props change!
             return undefined;
@@ -371,7 +371,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
                 // @see - https://github.com/Microsoft/ReSub/issues/44
                 if (
                     keyPropertyName
-                    && (!enablePropertyName || this._isEnablePropertyNamePresent(this.props, enablePropertyName))
+                    && (!enablePropertyName || this._isEnabledByPropertyName(this.props, enablePropertyName))
                 ) {
                     const currKeyPropertyName = this._findKeyPropertyName(this.props, keyPropertyName);
                     return currKeyPropertyName === key;
@@ -421,7 +421,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     }
 
     /**
-     * check if enablePropertyName is present
+     * check if enablePropertyName is enabled
      *
      * @private
      * @param {Readonly<P>} props
@@ -429,9 +429,9 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
      *
      * @return {boolean}
      */
-    private _isEnablePropertyNamePresent(props: Readonly<P>, enablePropertyName: keyof P): boolean {
-        const key: string | undefined = _.get(props, enablePropertyName);
-        return !_.isUndefined(key) && key !== '';
+    private _isEnabledByPropertyName(props: Readonly<P>, enablePropertyName: keyof P): boolean {
+        const isEnabled = _.get(props, enablePropertyName);
+        return !!isEnabled;
     }
 
     // Hander for enableAutoSubscribe that does the actual auto-subscription work.
