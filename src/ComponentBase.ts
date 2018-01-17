@@ -108,7 +108,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
             };
         }
         // No one should use Store getters in render: do that in _buildState instead.
-        this.render = forbidAutoSubscribeWrapper(render);
+        this.render = forbidAutoSubscribeWrapper(render, this);
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
