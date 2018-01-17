@@ -1,6 +1,6 @@
 {
   "name": "resub",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
@@ -22,15 +22,14 @@
   "devDependencies": {
     "@types/enzyme": "^3.1.6",
     "@types/enzyme-adapter-react-16": "^1.0.1",
-    "@types/jasmine": "^2.8.2",
-    "@types/karma": "^1.7.2",
-    "@types/lodash": "4.14.74",
-    "@types/node": "^8.5.2",
-    "@types/react": "^16.0.31",
+    "@types/jasmine": "^2.8.3",
+    "@types/karma": "^1.7.3",
+    "@types/lodash": "4.14.92",
+    "@types/node": "^9.3.0",
+    "@types/react": "^16.0.34",
     "@types/react-dom": "^16.0.3",
-    "@types/webpack": "^3.8.1",
     "awesome-typescript-loader": "^3.4.1",
-    "enzyme": "^3.2.0",
+    "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
     "jasmine": "^2.8.0",
     "jasmine-core": "^2.8.0",
@@ -46,7 +45,7 @@
     "react-test-renderer": "^16.2.0",
     "rimraf": "^2.6.2",
     "ts-node": "^4.1.0",
-    "tslint": "^5.0.0",
+    "tslint": "^5.9.1",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.6.2",
     "webpack": "^3.10.0"
