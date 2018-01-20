@@ -325,10 +325,11 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         }
     }
 
-    private _handleAutoSubscribe(store: StoreBase, key: string) {
+    private _handleAutoSubscribe(store: StoreBase, key: string): void {
         // Check for an existing auto-subscription.
-        if (this._hasMatchingAutoSubscription(store, key)) {
-            return;
+        const autoSubscription = this._findHandledAutoSubscription(store, key);
+        if (autoSubscription) {
+            return this._markAutoSubscriptionAsUsed(autoSubscription);
         }
 
         // Check for an existing explicit subscription.
@@ -389,15 +390,17 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         return false;
     }
 
-    // Check if we already handle a subscription (auto) for store with key.
-    private _hasMatchingAutoSubscription(store: StoreBase, key: string): boolean {
-        return _.some(this._handledAutoSubscriptions, sub => {
-            if (sub.store.storeId === store.storeId && (sub.key === key || sub.key === StoreBase.Key_All)) {
-                sub.used = true;
-                return true;
-            }
-            return false;
-        });
+    // Set a subscription (auto) as used
+    private _markAutoSubscriptionAsUsed(autoSubscription: AutoSubscription): void {
+        autoSubscription.used = true;
+    }
+
+    // Search already handled a subscription (auto)
+    private _findHandledAutoSubscription(store: StoreBase, key: string): AutoSubscription | undefined {
+        return _.find(this._handledAutoSubscriptions, subscription => (
+            (subscription.store.storeId === store.storeId)
+            && (subscription.key === key || subscription.key === StoreBase.Key_All)
+        ));
     }
 
     // Search Subscription "keyPropertyName" in Component props(this.props)
@@ -414,8 +417,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
     // Check if enablePropertyName is enabled
     private _isEnabledByPropertyName(props: Readonly<P>, enablePropertyName: keyof P): boolean {
-        const isEnabled = _.get(props, enablePropertyName);
-        return !!isEnabled;
+        return !!_.get(props, enablePropertyName);
     }
 
     // Hander for enableAutoSubscribe that does the actual auto-subscription work.
