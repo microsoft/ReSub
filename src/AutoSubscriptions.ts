@@ -140,14 +140,14 @@ export function enableAutoSubscribeWrapper<T extends Function>(handler: AutoSubs
 // Returns a new function that warns if any auto-subscriptions would have been encountered.
 export function forbidAutoSubscribeWrapper<T extends () => any>(existingMethod: T, thisArg?: any): T {
     if (!Options.development) {
-        return <T><any>_.bind(existingMethod, thisArg);
+        return thisArg ? <T><any>_.bind(existingMethod, thisArg) : existingMethod;
     }
     return createAutoSubscribeWrapper(undefined, AutoOptions.Forbid, existingMethod, thisArg);
 }
 
 // Hooks up the handler for @autoSubscribe methods called later down the call stack.
 export function enableAutoSubscribe(handler: AutoSubscribeHandler): MethodDecorator {
-    return <T>(target: InstanceTarget, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
+    return <T>(target: InstanceTarget, propertyKey: string|symbol, descriptor: TypedPropertyDescriptor<T>) => {
         // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast/assert.
         const existingMethod = <Function><any>descriptor.value;
         assert.ok(_.isFunction(existingMethod), 'Can only use @enableAutoSubscribe on methods');
@@ -192,7 +192,8 @@ export var AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(fun
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
 function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[]): MethodDecorator {
-    return <T>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) => {
+    return <T>(target: InstanceTarget, methodName: string|symbol, descriptor: TypedPropertyDescriptor<T>) => {
+        const methodNameString = methodName.toString();
         const targetWithMetadata = <InstanceTargetWithMetadata> target;
         targetWithMetadata.__resubMetadata = targetWithMetadata.__resubMetadata || {};
         targetWithMetadata.__resubMetadata[methodName] = targetWithMetadata.__resubMetadata[methodName] || {};
@@ -208,7 +209,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
         // Note: we need to be given 'this', so cannot use '=>' syntax.
         descriptor.value = <T><any>function AutoSubscribe(this: any, ...args: any[]) {
             assert.ok(targetWithMetadata.__resubMetadata!!!.__decorated,
-                'Missing @AutoSubscribeStore class decorator: "' + methodName + '"');
+                'Missing @AutoSubscribeStore class decorator: "' + methodNameString + '"');
 
             // Just call the method if no handler is setup.
             if (!handlerWrapper || handlerWrapper.useAutoSubscriptions === AutoOptions.None) {
@@ -218,7 +219,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
             // If this is forbidding auto-subscribe then do not go through the auto-subscribe path below.
             if (handlerWrapper.useAutoSubscriptions === AutoOptions.Forbid) {
                 assert.ok(false, 'Only Store methods WITHOUT the @autoSubscribe decorator can be called right now (e.g. in render): "'
-                        + methodName + '"');
+                        + methodNameString + '"');
                 return existingMethod.apply(this, args);
             }
 
@@ -237,9 +238,9 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
                     keyArg = keyArg.toString();
                 }
 
-                assert.ok(keyArg, '@key parameter must be given a non-empty string or number: "' + methodName + '"@' + metaForMethod.index
-                    + ' was given ' + JSON.stringify(keyArg));
-                assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodName + '"@'
+                assert.ok(keyArg, '@key parameter must be given a non-empty string or number: "' + methodNameString + '"@'
+                    + metaForMethod.index + ' was given ' + JSON.stringify(keyArg));
+                assert.ok(_.isString(keyArg), '@key parameter must be given a string or number: "' + methodNameString + '"@'
                     + metaForMethod.index);
 
                 specificKeyValues = [keyArg];

@@ -115,8 +115,8 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
     // Make the component, calling _buildState in the constructor.
     const Component: ReactWrapper<any, any> = mount(<SimpleComponent { ...props } />);
     const {
-      stateChanges,
-      storeDatas,
+        stateChanges,
+        storeDatas,
     } = Component.state();
 
     // Internal check: state should have one change.
@@ -128,7 +128,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
     // Internal check: state should have up-to-date StoreDatas held in the store.
     // Note: this might not be true in general, but only using auto-subscriptions should have that behavior.
     expect(storeDatas.sort()).toEqual(
-      props.ids.map(id => SimpleStoreInstance.getStoreData(id))
+        props.ids.map(id => SimpleStoreInstance.getStoreData(id))
     );
 
     return Component;
@@ -139,7 +139,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
     // Store should now have subscriptions. There were none at the start of the test, so they all came from this
     // component. If subscribed to Key_All, there should be one subscription. Otherwise, one per id in props.ids.
     const subscriptionKeys = SimpleStoreInstance.test_getSubscriptionKeys();
-    
+
     if (Component.prop('test_useAll')) {
         // The one and only subscription is to Key_All.
         expect(subscriptionKeys.length).toEqual(1);
@@ -150,7 +150,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
          * (e.g. keys.missing).
          */
         expect(subscriptionKeys.sort()).toEqual(uniq<string>(Component.prop('ids')).sort());
-        
+
         /**
          * Should not be subscribed to Key_All if subscribed to other keys.
          * Note: this might not be true in general, especially if there are explicit subscriptions.
@@ -199,8 +199,8 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
      * Note: even if doesNotAffectComponent is true, this assert.on is still valid.
      */
     expect(Component.state('storeDatas').sort()).toEqual(
-      Component.prop('ids')
-        .map((id: string) => SimpleStoreInstance.getStoreData(id)).sort()
+        Component.prop('ids')
+            .map((id: string) => SimpleStoreInstance.getStoreData(id)).sort()
     );
 
     // Re-run the subscription tests.
@@ -373,8 +373,8 @@ describe('AutoSubscribe', function () {
 
     it('Manual Subscription triggers', () => {
         const subToken1 = SimpleStoreInstance.subscribe(keys => {
-          expect(keys).toEqual([TriggerKeys.First.toString()])
-          SimpleStoreInstance.unsubscribe(subToken1);
+            expect(keys).toEqual([TriggerKeys.First.toString()])
+            SimpleStoreInstance.unsubscribe(subToken1);
         });
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
 

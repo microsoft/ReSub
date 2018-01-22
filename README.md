@@ -1,4 +1,6 @@
-# ReSub &nbsp; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Microsoft/ReSub/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![npm downloads](https://img.shields.io/npm/dm/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![Build Status](https://img.shields.io/travis/Microsoft/ReSub/master.svg?style=flat-square)](https://travis-ci.org/Microsoft/ReSub)
+# ReSub
+
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Microsoft/ReSub/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![npm downloads](https://img.shields.io/npm/dm/resub.svg?style=flat-square)](https://www.npmjs.com/package/resub) [![Build Status](https://img.shields.io/travis/Microsoft/ReSub/master.svg?style=flat-square)](https://travis-ci.org/Microsoft/ReSub) [![David](https://img.shields.io/david/Microsoft/ReSub.svg?style=flat-square)](https://github.com/Microsoft/ReSub) [![David](https://img.shields.io/david/dev/Microsoft/ReSub.svg?style=flat-square)](https://github.com/Microsoft/ReSub)
 
 A library for writing better React components and data stores. Uses automatic subscriptions to reduce code and avoid common data flow pitfalls. Scales for projects of all sizes and works great with TypeScript.
 
@@ -340,7 +342,7 @@ At the very least, developers can still leverage the organizational patterns of 
 ## TSLint rules
 
 We have couple of tslint rules to automate search of common problems in ReSub usage.
-They are located at the ./dist/tslint folder of the package.
+They are located at the `./dist/tslint` folder of the package.
 add following rules to your tslint.json in order to use them.
 
 incorrect-state-access rule doesn't check abstract methods called from componentWillMount, but you could enforce check of your methods by passing them to the rule as an argument.

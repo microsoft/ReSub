@@ -11,6 +11,7 @@
  import forEach = require('lodash/forEach');
  import extend = require('lodash/extend');
  import isArray = require('lodash/isArray');
+ import isUndefined = require('lodash/isUndefined');
  import isFunction = require('lodash/isFunction');
  import isNumber = require('lodash/isNumber');
  import isString = require('lodash/isString');
@@ -42,6 +43,7 @@
     forEach,
     isArray,
     isFunction,
+    isUndefined,
     isNumber,
     isString,
     map,
