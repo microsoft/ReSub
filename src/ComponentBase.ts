@@ -327,9 +327,11 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
     private _handleAutoSubscribe(store: StoreBase, key: string): void {
         // Check for an existing auto-subscription.
-        const autoSubscription = this._findHandledAutoSubscription(store, key);
+        const autoSubscription = this._findMatchingAutoSubscription(store, key);
         if (autoSubscription) {
-            return this._markAutoSubscriptionAsUsed(autoSubscription);
+            // Set auto-subscription as used
+            autoSubscription.used = true;
+            return;
         }
 
         // Check for an existing explicit subscription.
@@ -390,13 +392,8 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         return false;
     }
 
-    // Set a subscription (auto) as used
-    private _markAutoSubscriptionAsUsed(autoSubscription: AutoSubscription): void {
-        autoSubscription.used = true;
-    }
-
-    // Search already handled a subscription (auto)
-    private _findHandledAutoSubscription(store: StoreBase, key: string): AutoSubscription | undefined {
+    // Search already handled auto-subscription
+    private _findMatchingAutoSubscription(store: StoreBase, key: string): AutoSubscription | undefined {
         return _.find(this._handledAutoSubscriptions, subscription => (
             (subscription.store.storeId === store.storeId)
             && (subscription.key === key || subscription.key === StoreBase.Key_All)
