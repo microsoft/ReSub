@@ -5,7 +5,11 @@ module.exports = config => (
         basePath: '',
         frameworks: ['jasmine'],
         reporters: ['spec', 'kjhtml'],
-
+        browsers: [
+            process.env.TRAVIS
+                ? 'ChromeHeadlessNoSandbox'
+                : 'Chrome',
+        ],
         plugins: [
             'karma-jasmine-html-reporter',
             'karma-sourcemap-loader',
@@ -14,6 +18,13 @@ module.exports = config => (
             'karma-jasmine',
             'karma-webpack',
         ],
+
+        customLaunchers: {
+            ChromeHeadlessNoSandbox: {
+                base: 'ChromeHeadless',
+                flags: ['--no-sandbox'],
+            }
+        },
 
         preprocessors: {
             './karma/karma.entry.js': ['webpack', 'sourcemap'],
