@@ -73,8 +73,6 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     //    subscription is triggered. If the subscription is granular to a specific key (not Key_All), then the callback will be invoked
     //    with the specific key that was triggered as the only parameter to the function.
 
-    private _storeSubscriptions: StoreSubscription<P, S>[];
-
     private static _nextSubscriptionId = 1;
 
     private _handledSubscriptions: { [id: number]: StoreSubscriptionInternal<P, S> } = {};
@@ -402,14 +400,14 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
 
     // Search Subscription "keyPropertyName" in Component props(this.props)
     private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
-        const key = _.get(props, keyPropertyName) as string|undefined;
+        const key = _.get(props, keyPropertyName);
+        if (!_.isString(key)) {
+            assert.ok(false, 'Subscription key property value ' + keyPropertyName + ' must be a string');
+            // Fallback to subscribing to all values
+            return StoreBase.Key_All;
+        }
 
-        assert.ok(
-          !_.isUndefined(key),
-          'Subscription can\'t resolve key property: ' + keyPropertyName
-        );
-
-        return key as string;
+        return key;
     }
 
     // Check if enablePropertyName is enabled
@@ -467,8 +465,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     // The initial state is unavailable in componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
-        this._storeSubscriptions = this._initStoreSubscriptions();
-        _.forEach(this._storeSubscriptions, subscription => {
+        _.forEach(this._initStoreSubscriptions(), subscription => {
             this._addSubscription(subscription);
         });
 
