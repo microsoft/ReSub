@@ -216,14 +216,19 @@ export abstract class StoreBase {
         const storedCallbacks = this._gatheredCallbacks;
         this._gatheredCallbacks = new MapShim<SubscriptionCallbackFunction, string[]>();
 
+        Instrumentation.beginInvokeStoreCallbacks();
+
+        let callbacksCount = 0;
         storedCallbacks.forEach((keys, callback) => {
             // Do a quick dedupe on keys
             const uniquedKeys = keys ? _.uniq(keys) : keys;
             // Convert null key (meaning "all") to undefined for the callback.
-            Instrumentation.beginStoreCallback();
             callback(uniquedKeys || undefined);
-            Instrumentation.endStoreCallback(this.constructor);
+            callbacksCount++;
         });
+
+        Instrumentation.endInvokeStoreCallbacks(this.constructor, callbacksCount);
+
         this._isTriggering = false;
 
         if (this._triggerPending) {
