@@ -45,6 +45,20 @@ export class Instrumentation {
     constructor(private performance = getPerformanceImpl()) {
     }
 
+    private _measure(measureName: string, beginMark: string, endMark: string) {
+        this.performance.mark(endMark);
+
+        try {
+            this.performance.measure(measureName, beginMark, endMark);
+        } catch (e) {
+            // We might be missing some marks if something would go south
+            // at call site and in next attempt measure() will throw
+            // an exception which may be misleading and could cover real
+            // source of problems so it's better to swallow it as this
+            // tool should be as much transparent as possible.
+        }
+    }
+
     @devOnly
     beginBuildState() {
         this.performance.mark(BuildStateBeginMark);
@@ -52,19 +66,19 @@ export class Instrumentation {
 
     @devOnly
     endBuildState(target: any) {
-        this.performance.mark(BuildStateEndMark);
-        this.performance.measure(`🌀 ${target.name || 'ComponentBase'} callback`, BuildStateBeginMark, BuildStateEndMark);
+        const measureName = `🌀 ${target.name || 'ComponentBase'} build state`;
+        this._measure(measureName, BuildStateBeginMark, BuildStateEndMark);
     }
 
     @devOnly
-    beginStoreCallback() {
+    beginInvokeStoreCallbacks() {
         this.performance.mark(CallbackBeginMark);
     }
 
     @devOnly
-    endStoreCallback(target: any) {
-        this.performance.mark(CallbackEndMark);
-        this.performance.measure(`📦 ${target.name || 'StoreBase'} callback`, CallbackBeginMark, CallbackEndMark);
+    endInvokeStoreCallbacks(target: any, count: number) {
+        const measureName = `📦 ${target.name || 'StoreBase'} callbacks(${count})`;
+        this._measure(measureName, CallbackBeginMark, CallbackEndMark);
     }
 }
 
