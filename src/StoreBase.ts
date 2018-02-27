@@ -15,7 +15,6 @@ import _ = require('./lodashMini');
 import assert = require('assert');
 
 import Instrumentation from './Instrumentation';
-import MapShim from './MapShim';
 import Options from './Options';
 import { SubscriptionCallbackFunction } from './Types';
 
@@ -37,7 +36,7 @@ export abstract class StoreBase {
 
     storeId = _.uniqueId('store');
 
-    private _gatheredCallbacks = new MapShim<SubscriptionCallbackFunction, string[]|null>();
+    private _gatheredCallbacks = new Map<SubscriptionCallbackFunction, string[]|null>();
 
     private _throttleMs: number;
     private _throttleTimerId: number|undefined;
@@ -214,7 +213,7 @@ export abstract class StoreBase {
         // Store the callbacks early, since calling callbacks may actually cause cascade changes to the subscription system and/or
         // pending callbacks.
         const storedCallbacks = this._gatheredCallbacks;
-        this._gatheredCallbacks = new MapShim<SubscriptionCallbackFunction, string[]>();
+        this._gatheredCallbacks = new Map<SubscriptionCallbackFunction, string[]>();
 
         Instrumentation.beginInvokeStoreCallbacks();
 

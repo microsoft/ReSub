@@ -16,6 +16,7 @@
     "outDir": "dist/",
     "target": "es5",
     "jsx": "react",
+    "lib": ["es2015", "es2016", "dom"]
   },
 
   "awesomeTypescriptLoaderOptions": {
