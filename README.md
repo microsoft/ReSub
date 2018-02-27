@@ -20,14 +20,14 @@ The heavy lifting in ReSub is done mostly within two classes, `ComponentBase` an
 
 First, we create a store to hold todos:
 
-```javascript
+```typescript
 import { StoreBase, AutoSubscribeStore, autoSubscribe } from 'resub';
 
 @AutoSubscribeStore
 class TodosStore extends StoreBase {
-    private _todos: String[] = [];
+    private _todos: string[] = [];
 
-    addTodo(todo: String) {
+    addTodo(todo: string) {
         // Don't use .push here, we need a new array since the old _todos array was passed to the component by reference value
         this._todos = this._todos.concat(todo);
         this.trigger();
@@ -44,7 +44,8 @@ export = new TodosStore();
 
 Next, we create a component to display the todos:
 
-```javascript
+```typescript
+import * as React from 'react';
 import { ComponentBase } from 'resub';
 
 import TodosStore = require('./TodosStore');
@@ -63,7 +64,7 @@ class TodoList extends ComponentBase<{}, TodoListState> {
     render() {
         return (
             <ul className="todos">
-                { this.state.todos.map(x => <li>{x}</li> ) }
+                { this.state.todos.map(todo => <li>{ todo }</li> ) }
             </ul>
         );
     }

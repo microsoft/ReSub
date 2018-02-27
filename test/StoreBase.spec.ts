@@ -16,10 +16,10 @@ class BraindeadStore extends StoreBase {
 
     foundAll = false;
     allKeys: TKeys;
-    allSub: number;
+    allSub!: number;
     foundKey = false;
     keyKeys: TKeys;
-    keySub: number;
+    keySub!: number;
 
     setupSubs() {
         this.allSub = this.subscribe((keys: TKeys) => {
@@ -64,7 +64,7 @@ describe('StoreBase', function () {
 
         store.foundAll = store.foundKey = false;
         store.allKeys = store.keyKeys = undefined;
-        
+
         // Try keyed emit
         store.emitSomething();
         expect<TKeys>(store.allKeys).toEqual([store.Key_Something]);
@@ -177,7 +177,7 @@ describe('StoreBase', function () {
         });
 
         /**
-         * Try all emit 
+         * Try all emit
          *  Each subscription should the called once and the store should trigger multiple times
          */
         store.emitAll();
