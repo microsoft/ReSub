@@ -3,11 +3,11 @@ import { ReactElement } from 'react';
 import { ComponentBase } from 'resub';
 import CounterStore from './Counter.store';
 
-export interface CounterProps {};
+export interface CounterProps {}
 
 interface CounterState {
     counter: number;
-};
+}
 
 export class Counter extends ComponentBase<CounterProps, CounterState> {
     protected _buildState() {

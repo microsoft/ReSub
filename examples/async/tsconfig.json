@@ -18,11 +18,5 @@
   "exclude": [
     "node_modules",
     "dist"
-  ],
-  "awesomeTypescriptLoaderOptions": {
-    "reportFiles": [
-      "./src/**/*"
-    ],
-    "useCache": false
-  }
+  ]
 }

@@ -12,15 +12,13 @@ const config: webpack.Configuration = {
         path: DIST_PATH,
     },
 
-    devtool: 'cheap-source-map',
-
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
     },
 
     module: {
-        loaders: [
-            { test: /\.tsx?$/, loader: 'awesome-typescript-loader' }
+        rules: [
+            { test: /\.tsx?$/, loader: 'ts-loader' }
         ]
     },
 
@@ -30,11 +28,6 @@ const config: webpack.Configuration = {
             inject: true,
             template:  path.join(APP_PATH, 'template.html'),
         }),
-        new webpack.DefinePlugin({
-            'process.env': {
-                'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            },
-        })
     ],
 
     devServer: {
