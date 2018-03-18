@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf dist/",
     "build": "npm run clean && webpack --progress --colors --mode=production",
-    "start": "NODE_ENV=development webpack-dev-server --progress --mode=development",
+    "start": "webpack-dev-server --progress --mode=development",
     "start:prod": "npm run build && http-server dist/ -p 9999 -o"
   },
   "devDependencies": {
