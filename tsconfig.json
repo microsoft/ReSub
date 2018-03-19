@@ -4,7 +4,6 @@
     "suppressImplicitAnyIndexErrors":  true,
     "experimentalDecorators": true,
     "noImplicitReturns": true,
-    "strict": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
@@ -13,15 +12,11 @@
     "noResolve": false,
     "typeRoots": ["node_modules/@types"],
     "module": "commonjs",
-    "outDir": "dist/",
+    "outDir": "dist",
     "target": "es5",
+    "strict": true,
     "jsx": "react",
     "lib": ["es2015", "es2016", "dom"]
-  },
-
-  "awesomeTypescriptLoaderOptions": {
-    "useWebpackText": true,
-    "useCache": true,
   },
 
   "include": [
