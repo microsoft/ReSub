@@ -6,8 +6,6 @@
 * Base class for React components, adding in support for automatic store registration and unregistration.
 */
 
-'use strict';
-
 import assert = require('assert');
 import _ = require('./lodashMini');
 import React = require('react');
