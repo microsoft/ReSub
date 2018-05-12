@@ -7,7 +7,6 @@
 * Imports a subset of lodash library needed for ReSub
 */
 
-import bind = require('lodash/bind');
 import forEach = require('lodash/forEach');
 import extend = require('lodash/extend');
 import isArray = require('lodash/isArray');
@@ -39,7 +38,6 @@ export interface Dictionary<T> {
 }
 
 export {
-    bind,
     forEach,
     isArray,
     isFunction,
