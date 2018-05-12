@@ -140,7 +140,7 @@ export function enableAutoSubscribeWrapper<T extends Function>(handler: AutoSubs
 // Returns a new function that warns if any auto-subscriptions would have been encountered.
 export function forbidAutoSubscribeWrapper<T extends () => any>(existingMethod: T, thisArg?: any): T {
     if (!Options.development) {
-        return thisArg ? <T><any>_.bind(existingMethod, thisArg) : existingMethod;
+        return thisArg ? existingMethod.bind(thisArg) : existingMethod;
     }
     return createAutoSubscribeWrapper(undefined, AutoOptions.Forbid, existingMethod, thisArg);
 }
