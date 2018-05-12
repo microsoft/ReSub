@@ -200,7 +200,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
                     ? (keys?: string[]) => { subscription.callback!!!(keys); }
                     // Callback was not given.
                     : undefined,
-            _lambda: _.bind(this._onSubscriptionChanged, this, subscription),
+            _lambda: this._onSubscriptionChanged.bind(this, subscription),
             _id: ComponentBase._nextSubscriptionId++
         });
 
