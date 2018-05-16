@@ -6,9 +6,9 @@
 * Custom tslint rule used to enforce certain overrided method calls their `super` version.
 */
 
-import * as _ from 'lodash';
-import * as ts from 'typescript';
-import { Rules, RuleFailure, RuleWalker } from 'tslint';
+import _ from 'lodash';
+import ts from 'typescript';
+import { RuleFailure, Rules, RuleWalker } from 'tslint';
 
 const MISSING_SUPER_CALL = 'Method override must call super.%';
 const MISSING_TOP_LEVEL_SUPER_CALL = 'Method override must call super.% in the top-level statements of the method body';

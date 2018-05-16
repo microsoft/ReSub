@@ -1,4 +1,4 @@
-﻿/**
+/**
 * StoreBase.ts
 * Author: David de Regt
 * Copyright: Microsoft 2015
@@ -11,11 +11,11 @@
 * Stores can mark themselves as opt-out of the trigger-block logic for critical stores that must flow under all conditions.
 */
 
-import _ = require('./lodashMini');
-import assert = require('assert');
+import * as assert from 'assert';
 
-import Instrumentation from './Instrumentation';
+import * as _ from './lodashMini';
 import Options from './Options';
+import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {

@@ -61,10 +61,10 @@
 // super.render, the descriptor's logic only applies until the end of that method, not the end of yours. This is why that functionality is
 // exposes as a function instead of a decorator.
 
-import _ = require('./lodashMini');
-import assert = require('assert');
+import * as assert from 'assert';
 
-import Decorator = require('./Decorator');
+import * as _ from './lodashMini';
+import * as Decorator from './Decorator';
 import Options from './Options';
 import { StoreBase } from './StoreBase';
 
@@ -167,7 +167,7 @@ function _tryFinally<TResult>(tryFunc: () => TResult, finallyFunc: Function): TR
     }
 }
 
-export var AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(func: TFunction): TFunction => {
+export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(func: TFunction): TFunction => {
     const target = <InstanceTargetWithMetadata> func.prototype;
     target.__resubMetadata = target.__resubMetadata || {};
 
@@ -274,7 +274,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
     };
 }
 
-export var autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
+export const autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
 export function autoSubscribeWithKey(keyOrKeys: string|number|(string|number)[]) {
     assert.ok(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);

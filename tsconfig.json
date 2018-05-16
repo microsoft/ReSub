@@ -2,29 +2,24 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "suppressImplicitAnyIndexErrors":  true,
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitReturns": true,
+    "moduleResolution": "node",
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "declaration": true,
     "noResolve": false,
-    "typeRoots": ["node_modules/@types"],
-    "module": "commonjs",
-    "outDir": "dist",
-    "target": "es5",
     "strict": true,
+    "module": "es2015",
+    "target": "es5",
+    "outDir": "dist-es2015",
     "jsx": "react",
     "lib": ["es2015", "es2016", "dom"]
   },
 
   "include": [
     "src/**/*"
-  ],
-
-  "exclude": [
-    "dist",
-    "node_modules"
   ]
 }

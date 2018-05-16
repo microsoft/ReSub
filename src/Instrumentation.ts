@@ -5,8 +5,7 @@
 *
 */
 
-import _ = require('./lodashMini');
-
+import * as _ from './lodashMini';
 import Options from './Options';
 
 export interface Performance {

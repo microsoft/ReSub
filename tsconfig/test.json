@@ -1,10 +1,10 @@
 {
-  "extends": "./tsconfig",
+  "extends": "../tsconfig",
   "compilerOptions": {
     "sourceMap": true
   },
   "include": [
-    "src/**/*",
-    "test/**/*"
+    "../src/**/*",
+    "../test/**/*"
   ]
 }

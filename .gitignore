@@ -1,8 +1,9 @@
 /node_modules
-/dist
+/dist-cjs
+/dist-es2015
+/dist-types
 /src/.vs
 /src/bin
 /src/obj
 *.user
-.awcache
 npm-debug.log

@@ -5,26 +5,31 @@
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
     "prepare": "npm run build",
-    "clean": "rimraf dist",
-    "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
-    "test": "npm run clean && karma start --singleRun",
-    "test:watch": "npm run clean && karma start",
-    "build": "npm run clean && npm run tslint && tsc"
+    "tslint": "tslint -p tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
+    "clean:dist": "rimraf dist-*",
+    "build:types": "tsc -p tsconfig/types.json",
+    "build:es2015": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig/cjs.json",
+    "build": "run-s clean:* tslint build:*",
+    "karma:single-run": "karma start --singleRun",
+    "karma:watch": "karma start",
+    "test": "run-s clean:* karma:single-run",
+    "test:watch": "run-s clean:* karma:watch"
   },
   "dependencies": {
     "assert": "^1.4.1",
     "lodash": "^4.17.0",
-    "tslib": "^1.8.1"
+    "tslib": "^1.9.1"
   },
   "peerDependencies": {
     "react": "^16.0.0"
   },
   "devDependencies": {
-    "@types/enzyme": "3.1.9",
+    "@types/enzyme": "3.1.10",
     "@types/enzyme-adapter-react-16": "1.0.2",
-    "@types/jasmine": "2.8.6",
-    "@types/lodash": "4.14.105",
-    "@types/node": "9.4.7",
+    "@types/jasmine": "2.8.7",
+    "@types/lodash": "4.14.108",
+    "@types/node": "10.1.0",
     "@types/react": "16.0.40",
     "@types/react-dom": "16.0.4",
     "enzyme": "3.3.0",
@@ -32,31 +37,33 @@
     "fork-ts-checker-webpack-plugin": "0.4.1",
     "jasmine": "3.1.0",
     "jasmine-core": "3.1.0",
-    "karma": "2.0.0",
+    "karma": "2.0.2",
     "karma-chrome-launcher": "2.2.0",
-    "karma-jasmine": "1.1.1",
-    "karma-jasmine-html-reporter": "1.0.0",
+    "karma-jasmine": "1.1.2",
+    "karma-jasmine-html-reporter": "1.1.0",
     "karma-sourcemap-loader": "0.3.7",
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "4.0.0-beta.0",
+    "npm-run-all": "4.1.3",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "rimraf": "2.6.2",
-    "ts-loader": "4.1.0",
-    "ts-node": "5.0.1",
-    "tslint": "5.9.1",
+    "ts-loader": "4.3.0",
+    "tslint": "5.10.0",
     "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "2.7.2",
-    "webpack": "4.1.1"
+    "typescript": "2.8.3",
+    "webpack": "4.8.3"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Microsoft/ReSub"
   },
-  "main": "index.js",
   "bugs": {
     "url": "https://github.com/Microsoft/ReSub/issues"
   },
+  "types": "dist-types/ReSub.d.ts",
+  "module": "dist-es2015/ReSub.js",
+  "main": "dist-cjs/ReSub.js",
   "keywords": [
     "react",
     "flux",
@@ -64,6 +71,5 @@
     "subscriptions",
     "stores"
   ],
-  "license": "MIT",
-  "types": "dist/ReSub.d.ts"
+  "license": "MIT"
 }

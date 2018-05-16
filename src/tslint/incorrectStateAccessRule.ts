@@ -8,9 +8,9 @@
 */
 
 import * as Lint from 'tslint';
-import { isCallExpression, isPropertyAccessExpression } from 'tsutils';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { isMethodDeclaration } from 'typescript';
+import { isCallExpression, isPropertyAccessExpression } from 'tsutils';
 
 const DEBUG = false;
 const ERROR_MESSAGE = 'this.state is undefined in componentWillMount callback.';
@@ -22,9 +22,7 @@ export class Rule extends Lint.Rules.AbstractRule {
         description: 'Bans state access for ReSub components',
         rationale: 'In ReSub Component this.state is undefined during componentWillMount. We need to warn users about it.',
         optionsDescription: '',
-        options: {
-        },
-
+        options: {},
         type: 'functionality',
         typescriptOnly: true,
     };
@@ -65,7 +63,7 @@ function analyzeMethodBody(node: ts.Node): void {
             method.stateNodes.push(node);
             analyzeNodeChildren(node, 'ErrorProperyExpression', true);
         } else {
-            analyzeNodeChildren(node, 'PropertyExpression', true);            
+            analyzeNodeChildren(node, 'PropertyExpression', true);
         }
     } else {
        analyzeNodeChildren(node, 'Node');
@@ -76,7 +74,7 @@ function analyzeNodeChildren(node: ts.Node, context: string, skip?: boolean) {
     if (DEBUG) {
         console.log(context, node.kind, node.getText());
     }
-    
+
     if (!skip) {
         node.forEachChild(analyzeMethodBody);
     }
@@ -96,15 +94,15 @@ function walk(ctx: Lint.WalkContext<string[]>) {
             let visitedMethods: {[key: string]: boolean} = {};
             let queue: MethodInfo[] = [];
 
-            const methodsList = ctx.options.concat(['componentWillMount']);            
-            
+            const methodsList = ctx.options.concat(['componentWillMount']);
+
             methodsList.forEach((methodName: string) => {
                 const method =  methods[methodName];
                 if (method) {
                     queue.push(method);
                 }
             });
-            
+
             while (queue.length > 0) {
                 const method = queue.pop()!!!;
 

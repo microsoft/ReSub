@@ -1,14 +1,14 @@
 /**
-* Options.ts
-* Author: David de Regt
-* Copyright: Microsoft 2015
-*
-* Basic options for ReSub.
-*/
+ * Options.ts
+ * Author: David de Regt
+ * Copyright: Microsoft 2015
+ *
+ * Basic options for ReSub.
+ */
 
-import _ = require('./lodashMini');
+import * as _ from './lodashMini';
 
-export interface IOptions {
+export interface Options {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want
     setTimeout: (callback: () => void, timeoutMs?: number) => number;
     clearTimeout: (id: number) => void;
@@ -24,12 +24,12 @@ export interface IOptions {
     development: boolean;
 }
 
-interface IProcess {
+interface Process {
     env: { NODE_ENV?: string };
 }
-declare var process: IProcess;
+declare var process: Process;
 
-let OptionsVals: IOptions = {
+let OptionsVals: Options = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
 

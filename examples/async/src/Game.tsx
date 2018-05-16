@@ -4,14 +4,14 @@ import { ComponentBase } from 'resub';
 import { Answer } from './Answer';
 import GameStore from './Game.store';
 
-export interface GameProps {};
+export interface GameProps {}
 
 interface GameState {
     isLoading: boolean;
     answer: string;
     error: string;
     image: string;
-};
+}
 
 export class Game extends ComponentBase<GameProps, GameState> {
     /**
