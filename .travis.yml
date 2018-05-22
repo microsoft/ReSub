@@ -1,6 +1,7 @@
 language: node_js
-  - 9
-  - 8
+node_js:
+  - "node"
+
 dist: trusty
 
 sudo: false
