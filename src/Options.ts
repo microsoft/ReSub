@@ -8,7 +8,7 @@
 
 import _ = require('./lodashMini');
 
-export interface IOptions {
+export interface Options {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want
     setTimeout: (callback: () => void, timeoutMs?: number) => number;
     clearTimeout: (id: number) => void;
@@ -24,12 +24,12 @@ export interface IOptions {
     development: boolean;
 }
 
-interface IProcess {
+interface Process {
     env: { NODE_ENV?: string };
 }
-declare var process: IProcess;
+declare var process: Process;
 
-let OptionsVals: IOptions = {
+let OptionsVals: Options = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
 
