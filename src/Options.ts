@@ -30,8 +30,8 @@ interface IProcess {
 declare var process: IProcess;
 
 let OptionsVals: IOptions = {
-    setTimeout: setTimeout.bind(null),
-    clearTimeout: clearTimeout.bind(null),
+    setTimeout: (...args) => setTimeout(...args),
+    clearTimeout: (...args) => clearTimeout(...args),
 
     shouldComponentUpdateComparator: (a, b) => _.isEqual(a, b),
 
