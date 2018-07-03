@@ -30,10 +30,10 @@ interface IProcess {
 declare var process: IProcess;
 
 let OptionsVals: IOptions = {
-    setTimeout: (...args) => setTimeout(...args),
-    clearTimeout: (...args) => clearTimeout(...args),
+    setTimeout: (...args: any[]) => setTimeout(...args),
+    clearTimeout: (...args: any[]) => clearTimeout(...args),
 
-    shouldComponentUpdateComparator: (a, b) => _.isEqual(a, b),
+    shouldComponentUpdateComparator: (a: any, b: any) => _.isEqual(a, b),
 
     preventTryCatchInRender: false,
 
