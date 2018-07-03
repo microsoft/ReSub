@@ -33,7 +33,7 @@ let OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
 
-    shouldComponentUpdateComparator: _.isEqual.bind(_),
+    shouldComponentUpdateComparator: (a, b) => _.isEqual(a, b),
 
     preventTryCatchInRender: false,
 
