@@ -384,6 +384,11 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
 
     const targetWithMetadata = instanceTargetToInstanceTargetWithMetadata(target);
 
+    if (Options.development) {
+        // Ensure the metadata is created for dev warnings
+        getMethodMetadata(targetWithMetadata, methodName);
+    }
+
     // Save the method being decorated. Note this might be another decorator method.
     const originalMethod = descriptor.value!!!;
 
