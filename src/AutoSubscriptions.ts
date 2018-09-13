@@ -254,8 +254,6 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
             let specificKeyValues = defaultKeyValues;
 
             // Try to find an @key parameter in the target's metadata.
-            const metaForMethod = getMethodMetadata(targetWithMetadata, methodNameString);
-            assert.ok(metaForMethod, 'Internal failure: what happened to the metadata for this method?');
             if (metaForMethod.hasIndex) {
                 let keyArg: number | string = args[metaForMethod.index];
 
