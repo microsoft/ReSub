@@ -28,6 +28,6 @@
   "dependencies": {
     "react": "16.2.0",
     "react-dom": "16.2.0",
-    "resub": "1.0.7"
+    "resub": "1.0.8"
   }
 }

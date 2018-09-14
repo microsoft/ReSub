@@ -5,16 +5,21 @@
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
     "prepare": "npm run build",
-    "clean": "rimraf dist",
-    "tslint": "tslint --project tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
-    "test": "npm run clean && karma start --singleRun",
-    "test:watch": "npm run clean && karma start",
-    "build": "npm run clean && npm run tslint && tsc"
+    "tslint": "tslint -p tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
+    "clean:dist": "rimraf dist-*",
+    "build:types": "tsc -p tsconfig/types.json",
+    "build:es2015": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig/cjs.json",
+    "build": "run-s clean:* tslint build:*",
+    "karma:single-run": "karma start --singleRun",
+    "karma:watch": "karma start",
+    "test": "run-s clean:* karma:single-run",
+    "test:watch": "run-s clean:* karma:watch"
   },
   "dependencies": {
     "assert": "^1.4.1",
     "lodash": "^4.17.0",
-    "tslib": "^1.8.1"
+    "tslib": "^1.9.1"
   },
   "peerDependencies": {
     "react": "^16.0.0"
@@ -25,7 +30,7 @@
     "@types/jasmine": "2.8.8",
     "@types/lodash": "4.14.116",
     "@types/node": "10.9.4",
-    "@types/react": "16.4.13",
+    "@types/react": "16.4.14",
     "@types/react-dom": "16.0.7",
     "enzyme": "3.6.0",
     "enzyme-adapter-react-16": "1.5.0",
@@ -39,24 +44,27 @@
     "karma-sourcemap-loader": "0.3.7",
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "4.0.0-beta.0",
+    "npm-run-all": "4.1.3",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "rimraf": "2.6.2",
-    "ts-loader": "5.0.0",
-    "ts-node": "7.0.1",
+    "ts-loader": "5.1.0",
     "tslint": "5.11.0",
     "tslint-microsoft-contrib": "5.2.1",
     "typescript": "3.0.3",
-    "webpack": "4.17.2"
+    "webpack": "4.18.0",
+    "ts-node": "7.0.1"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Microsoft/ReSub"
   },
-  "main": "index.js",
   "bugs": {
     "url": "https://github.com/Microsoft/ReSub/issues"
   },
+  "types": "dist-types/ReSub.d.ts",
+  "module": "dist-es2015/ReSub.js",
+  "main": "dist-cjs/ReSub.js",
   "keywords": [
     "react",
     "flux",
@@ -64,6 +72,5 @@
     "subscriptions",
     "stores"
   ],
-  "license": "MIT",
-  "types": "dist/ReSub.d.ts"
+  "license": "MIT"
 }

@@ -295,7 +295,6 @@ describe('AutoSubscribe', function () {
         testSubscriptionChange(Component, id, uniqStoreDataValue++);
     });
 
-
     it('Auto-subscribe reuses subscription object', () => {
         /**
          * Tests a common case where some component is waiting for data the store does not already have, then the store
@@ -320,7 +319,6 @@ describe('AutoSubscribe', function () {
             expect(initialSubscriptions[key]).toEqual(subs)
         ));
     });
-
 
     it('autoSubscribeWithKey triggers _buildState on change', () => {
         let expectedState = 1;
@@ -373,13 +371,13 @@ describe('AutoSubscribe', function () {
 
     it('Manual Subscription triggers', () => {
         const subToken1 = SimpleStoreInstance.subscribe(keys => {
-            expect(keys).toEqual([TriggerKeys.First.toString()])
+            expect(keys).toEqual([TriggerKeys.First.toString()]);
             SimpleStoreInstance.unsubscribe(subToken1);
         });
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
 
         const subToken2 = SimpleStoreInstance.subscribe(keys => {
-            expect(keys).toEqual([TriggerKeys.Second.toString()])
+            expect(keys).toEqual([TriggerKeys.Second.toString()]);
             SimpleStoreInstance.unsubscribe(subToken2);
         });
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 1);

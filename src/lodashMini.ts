@@ -7,60 +7,61 @@
 * Imports a subset of lodash library needed for ReSub
 */
 
-import forEach = require('lodash/forEach');
-import extend = require('lodash/extend');
-import isArray = require('lodash/isArray');
-import isUndefined = require('lodash/isUndefined');
-import isFunction = require('lodash/isFunction');
-import isNumber = require('lodash/isNumber');
-import isString = require('lodash/isString');
-import map = require('lodash/map');
-import noop = require('lodash/noop');
-import get = require('lodash/get');
-import isEqual = require('lodash/isEqual');
-import isEmpty = require('lodash/isEmpty');
-import find = require('lodash/find');
-import some = require('lodash/some');
-import remove = require('lodash/remove');
-import findIndex = require('lodash/findIndex');
-import flatten = require('lodash/flatten');
-import values = require('lodash/values');
-import clone = require('lodash/clone');
-import uniq = require('lodash/uniq');
-import indexOf = require('lodash/indexOf');
-import pull = require('lodash/pull');
-import union = require('lodash/union');
-import keys = require('lodash/keys');
-import uniqueId = require('lodash/uniqueId');
+import isUndefined from 'lodash/isUndefined';
+import isFunction from 'lodash/isFunction';
+import findIndex from 'lodash/findIndex';
+import isString from 'lodash/isString';
+import uniqueId from 'lodash/uniqueId';
+import isNumber from 'lodash/isNumber';
+import flatten from 'lodash/flatten';
+import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
+import isArray from 'lodash/isArray';
+import forEach from 'lodash/forEach';
+import indexOf from 'lodash/indexOf';
+import extend from 'lodash/extend';
+import remove from 'lodash/remove';
+import values from 'lodash/values';
+import clone from 'lodash/clone';
+import union from 'lodash/union';
+import some from 'lodash/some';
+import uniq from 'lodash/uniq';
+import pull from 'lodash/pull';
+import find from 'lodash/find';
+import keys from 'lodash/keys';
+import noop from 'lodash/noop';
+import map from 'lodash/map';
+import get from 'lodash/get';
 
-export interface Dictionary<T> {
+interface Dictionary<T> {
     [index: string]: T;
 }
 
 export {
-    forEach,
-    isArray,
-    isFunction,
+    Dictionary,
     isUndefined,
-    isNumber,
-    isString,
-    map,
-    noop,
-    extend,
-    get,
-    isEqual,
-    isEmpty,
-    find,
-    some,
-    remove,
+    isFunction,
     findIndex,
+    isString,
+    uniqueId,
+    isNumber,
     flatten,
+    isEmpty,
+    isEqual,
+    isArray,
+    forEach,
+    indexOf,
+    extend,
+    remove,
     values,
     clone,
-    uniq,
-    indexOf,
-    pull,
     union,
+    some,
+    uniq,
+    pull,
+    find,
     keys,
-    uniqueId
+    noop,
+    map,
+    get,
 };

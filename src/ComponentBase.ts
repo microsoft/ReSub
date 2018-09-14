@@ -6,15 +6,15 @@
 * Base class for React components, adding in support for automatic store registration and unregistration.
 */
 
-import assert = require('assert');
-import _ = require('./lodashMini');
-import React = require('react');
+import * as React from 'react';
+import * as assert from 'assert';
 
-import Instrumentation from './Instrumentation';
+import * as _ from './lodashMini';
 import Options from './Options';
+import Instrumentation from './Instrumentation';
+import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
+import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
 import { AutoSubscription, StoreBase } from './StoreBase';
-import { enableAutoSubscribe, enableAutoSubscribeWrapper, forbidAutoSubscribeWrapper } from './AutoSubscriptions';
-import { SubscriptionCallbackFunction, SubscriptionCallbackBuildStateFunction, StoreSubscription } from './Types';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
 const SubKeyNoKey = '%$^NONE';

@@ -6,7 +6,7 @@
 * Basic options for ReSub.
 */
 
-import _ = require('./lodashMini');
+import * as _ from './lodashMini';
 
 export interface IOptions {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want

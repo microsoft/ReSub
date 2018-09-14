@@ -5,7 +5,7 @@ interface AnswerProps {
     disabled: boolean;
     answer: string;
     image: string;
-    error: string
+    error: string;
 }
 
 export const Answer: SFC<AnswerProps> = ({
@@ -30,4 +30,4 @@ export const Answer: SFC<AnswerProps> = ({
             <img src={image} />
         </div>
     );
-}
+};

@@ -7,6 +7,7 @@
 */
 
 import { StoreBase } from './StoreBase';
+
 export type SubscriptionCallbackFunction = { (keys?: string[]): void; };
 export type SubscriptionCallbackBuildStateFunction<S> = { (keys?: string[]): Partial<S> | void; };
 
