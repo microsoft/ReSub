@@ -28,7 +28,6 @@ var Options_1 = __importDefault(require("./Options"));
 var Instrumentation_1 = __importDefault(require("./Instrumentation"));
 var StoreBase = /** @class */ (function () {
     function StoreBase(_throttleMs, _bypassTriggerBlocks) {
-        if (_throttleMs === void 0) { _throttleMs = Options_1.default.defaultThrottleMs; }
         if (_bypassTriggerBlocks === void 0) { _bypassTriggerBlocks = false; }
         var _this = this;
         this._throttleMs = _throttleMs;
@@ -78,13 +77,21 @@ var StoreBase = /** @class */ (function () {
         var _this = this;
         // If we're throttling, save execution time
         var throttledUntil;
-        if (this._throttleMs) {
+        var throttleMs;
+        if (this._throttleMs !== undefined) {
+            throttleMs = this._throttleMs;
+        }
+        else {
+            // If the store doens't define any throttling, pick up the default
+            throttleMs = Options_1.default.defaultThrottleMs;
+        }
+        if (throttleMs) {
             if (!this._throttleData) {
                 // Needs to accumulate and trigger later -- start a timer if we don't have one running already
                 // If there are no callbacks, don't bother setting up the timer
                 this._throttleData = {
                     timerId: Options_1.default.setTimeout(this._resolveThrottledCallbacks, this._throttleMs),
-                    callbackTime: Date.now() + this._throttleMs
+                    callbackTime: Date.now() + throttleMs
                 };
             }
             throttledUntil = this._throttleData.callbackTime;

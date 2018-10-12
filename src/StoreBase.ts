@@ -66,7 +66,7 @@ export abstract class StoreBase {
         StoreBase._resolveCallbacks();
     }
 
-    constructor(private _throttleMs: number = Options.defaultThrottleMs, private _bypassTriggerBlocks = false) {
+    constructor(private _throttleMs?: number, private _bypassTriggerBlocks = false) {
     }
 
     private static _updateExistingMeta(meta: CallbackMetadata | undefined, throttledUntil: number|undefined, bypassBlock: boolean) {
@@ -92,13 +92,20 @@ export abstract class StoreBase {
     protected trigger(keyOrKeys?: string|number|(string|number)[]) {
         // If we're throttling, save execution time
         let throttledUntil: number | undefined;
-        if (this._throttleMs) {
+        let throttleMs: number | undefined;
+        if (this._throttleMs !== undefined) {
+            throttleMs = this._throttleMs;
+        } else {
+            // If the store doens't define any throttling, pick up the default
+            throttleMs = Options.defaultThrottleMs;
+        }
+        if (throttleMs) {
             if (!this._throttleData) {
                 // Needs to accumulate and trigger later -- start a timer if we don't have one running already
                 // If there are no callbacks, don't bother setting up the timer
                 this._throttleData = {
                     timerId: Options.setTimeout(this._resolveThrottledCallbacks, this._throttleMs),
-                    callbackTime: Date.now() + this._throttleMs
+                    callbackTime: Date.now() + throttleMs
                 };
             }
             throttledUntil = this._throttleData.callbackTime;

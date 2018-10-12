@@ -18,7 +18,7 @@ export interface AutoSubscription {
     used: boolean;
 }
 export declare abstract class StoreBase {
-    private _throttleMs;
+    private _throttleMs?;
     private _bypassTriggerBlocks;
     static readonly Key_All: string;
     private _subscriptions;
@@ -35,7 +35,7 @@ export declare abstract class StoreBase {
     static pushTriggerBlock(): void;
     static popTriggerBlock(): void;
     static setThrottleStatus(enabled: boolean): void;
-    constructor(_throttleMs?: number, _bypassTriggerBlocks?: boolean);
+    constructor(_throttleMs?: number | undefined, _bypassTriggerBlocks?: boolean);
     private static _updateExistingMeta;
     protected trigger(keyOrKeys?: string | number | (string | number)[]): void;
     private _resolveThrottledCallbacks;
