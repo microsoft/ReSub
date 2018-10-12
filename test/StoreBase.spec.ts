@@ -189,4 +189,25 @@ describe('StoreBase', function () {
             done();
         }, 100);
     });
+
+    it('Subscription callbacks de-dupe', (done: Function) => {
+        let store = new BraindeadStore(100, false);
+        let callbackCount = 0;
+        const subCallback = () => {
+            callbackCount++;
+        };
+
+        store.subscribe(subCallback, store.Key_Something);
+        store.subscribe(subCallback, store.Key_Something2);
+        store.subscribe(subCallback);
+        store.emitSomething();
+        store.emitSomethings();
+        store.emitAll();
+
+        expect(callbackCount).toBe(0);
+        delay(() => {
+            expect(callbackCount).toBe(1);
+            done();
+        }, 200);
+    });
 });
