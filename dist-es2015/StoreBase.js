@@ -16,7 +16,7 @@ import Options from './Options';
 import Instrumentation from './Instrumentation';
 var StoreBase = /** @class */ (function () {
     function StoreBase(_throttleMs, _bypassTriggerBlocks) {
-        if (_throttleMs === void 0) { _throttleMs = 0; }
+        if (_throttleMs === void 0) { _throttleMs = Options.defaultThrottleMs; }
         if (_bypassTriggerBlocks === void 0) { _bypassTriggerBlocks = false; }
         var _this = this;
         this._throttleMs = _throttleMs;
@@ -53,6 +53,9 @@ var StoreBase = /** @class */ (function () {
         if (throttledUntil && meta.throttledUntil) {
             meta.throttledUntil = Math.min(meta.throttledUntil, throttledUntil);
         }
+        if (!throttledUntil) {
+            meta.throttledUntil = undefined;
+        }
         if (bypassBlock) {
             meta.bypassBlock = true;
         }
@@ -61,19 +64,6 @@ var StoreBase = /** @class */ (function () {
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
     StoreBase.prototype.trigger = function (keyOrKeys) {
         var _this = this;
-        // Build a list of callbacks to call, trying to accumulate keys into a single callback set to avoid multiple callbacks
-        // to the same target with different keys.
-        var callbackMap = StoreBase._pendingCallbacks;
-        /*if (this._throttleMs && !StoreBase._bypassThrottle) {
-            let throttledMap = StoreBase._throttledCallbacks.get(this.storeId);
-            if (!throttledMap) {
-                throttledMap = new Map();
-                StoreBase._throttledCallbacks.set(this.storeId, throttledMap);
-            }
-            callbackMap = throttledMap;
-        } else {
-            callbackMap = StoreBase._pendingCallbacks;
-        }*/
         // If we're throttling, save execution time
         var throttledUntil;
         if (this._throttleMs) {
@@ -93,7 +83,7 @@ var StoreBase = /** @class */ (function () {
             // Inspecific key, so generic callback call
             var allSubs = _.flatten(_.values(this._subscriptions));
             _.forEach(allSubs, function (callback) {
-                var existingMeta = callbackMap.get(callback);
+                var existingMeta = StoreBase._pendingCallbacks.get(callback);
                 var newMeta = { keys: null, throttledUntil: throttledUntil, bypassBlock: bypassBlock };
                 // Clear the key list to null for the callback but respect previous throttle/bypass values
                 if (existingMeta && throttledUntil && existingMeta.throttledUntil) {
@@ -102,10 +92,10 @@ var StoreBase = /** @class */ (function () {
                 if (existingMeta && existingMeta.bypassBlock) {
                     newMeta.bypassBlock = true;
                 }
-                callbackMap.set(callback, newMeta);
+                StoreBase._pendingCallbacks.set(callback, newMeta);
             });
             _.forEach(_.flatten(_.values(this._autoSubscriptions)), function (sub) {
-                var existingMeta = callbackMap.get(sub.callback);
+                var existingMeta = StoreBase._pendingCallbacks.get(sub.callback);
                 var newMeta = { keys: null, throttledUntil: throttledUntil, bypassBlock: bypassBlock };
                 // Clear the key list to null for the callback but respect previous throttle/bypass values
                 if (existingMeta && throttledUntil && existingMeta.throttledUntil) {
@@ -114,7 +104,7 @@ var StoreBase = /** @class */ (function () {
                 if (existingMeta && existingMeta.bypassBlock) {
                     newMeta.bypassBlock = true;
                 }
-                callbackMap.set(sub.callback, newMeta);
+                StoreBase._pendingCallbacks.set(sub.callback, newMeta);
             });
         }
         else {
@@ -122,10 +112,10 @@ var StoreBase = /** @class */ (function () {
             // Key list, so go through each key and queue up the callback
             _.forEach(keys_1, function (key) {
                 _.forEach(_this._subscriptions[key], function (callback) {
-                    var existingMeta = callbackMap.get(callback);
+                    var existingMeta = StoreBase._pendingCallbacks.get(callback);
                     StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
                     if (existingMeta === undefined) {
-                        callbackMap.set(callback, { keys: [key], throttledUntil: throttledUntil, bypassBlock: bypassBlock });
+                        StoreBase._pendingCallbacks.set(callback, { keys: [key], throttledUntil: throttledUntil, bypassBlock: bypassBlock });
                     }
                     else if (existingMeta.keys === null) {
                         // Do nothing since it's already an all-key-trigger
@@ -136,10 +126,10 @@ var StoreBase = /** @class */ (function () {
                     }
                 });
                 _.forEach(_this._autoSubscriptions[key], function (sub) {
-                    var existingMeta = callbackMap.get(sub.callback);
+                    var existingMeta = StoreBase._pendingCallbacks.get(sub.callback);
                     StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
                     if (existingMeta === undefined) {
-                        callbackMap.set(sub.callback, { keys: [key], throttledUntil: throttledUntil, bypassBlock: bypassBlock });
+                        StoreBase._pendingCallbacks.set(sub.callback, { keys: [key], throttledUntil: throttledUntil, bypassBlock: bypassBlock });
                     }
                     else if (existingMeta.keys === null) {
                         // Do nothing since it's already an all-key-trigger
@@ -152,10 +142,10 @@ var StoreBase = /** @class */ (function () {
             });
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
             _.forEach(this._subscriptions[StoreBase.Key_All], function (callback) {
-                var existingMeta = callbackMap.get(callback);
+                var existingMeta = StoreBase._pendingCallbacks.get(callback);
                 StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
                 if (existingMeta === undefined) {
-                    callbackMap.set(callback, { keys: _.clone(keys_1), throttledUntil: throttledUntil, bypassBlock: bypassBlock });
+                    StoreBase._pendingCallbacks.set(callback, { keys: _.clone(keys_1), throttledUntil: throttledUntil, bypassBlock: bypassBlock });
                 }
                 else if (existingMeta.keys === null) {
                     // Do nothing since it's already an all-key-trigger
@@ -168,10 +158,10 @@ var StoreBase = /** @class */ (function () {
                 }
             });
             _.forEach(this._autoSubscriptions[StoreBase.Key_All], function (sub) {
-                var existingMeta = callbackMap.get(sub.callback);
+                var existingMeta = StoreBase._pendingCallbacks.get(sub.callback);
                 StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
                 if (existingMeta === undefined) {
-                    callbackMap.set(sub.callback, { keys: _.clone(keys_1), throttledUntil: throttledUntil, bypassBlock: bypassBlock });
+                    StoreBase._pendingCallbacks.set(sub.callback, { keys: _.clone(keys_1), throttledUntil: throttledUntil, bypassBlock: bypassBlock });
                 }
                 else if (existingMeta.keys === null) {
                     // Do nothing since it's already an all-key-trigger

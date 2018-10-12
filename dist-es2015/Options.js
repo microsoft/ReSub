@@ -10,6 +10,7 @@ var OptionsVals = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
     shouldComponentUpdateComparator: _.isEqual.bind(_),
+    defaultThrottleMs: 0,
     preventTryCatchInRender: false,
     development: typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production'
 };
