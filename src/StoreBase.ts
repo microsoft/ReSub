@@ -128,9 +128,7 @@ export abstract class StoreBase {
                     // Do nothing since it's already an all-key-trigger
                 } else {
                     // Add them all to the end of the list
-                    _.forEach(keys, key => {
-                        existingMeta.keys!!!.push(key);
-                    });
+                    existingMeta.keys.push(...keys);
                 }
             };
             const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
