@@ -218,7 +218,7 @@ describe('StoreBase', function () {
         let store = new BraindeadStore(100, false);
         let store2 = new BraindeadStore(0, false);
         let callbackCount = 0;
-        const subCallback = (keys: string[]) => {
+        const subCallback = (keys?: string[]) => {
             expect(keys).toEqual(['abc', 'def']);
             callbackCount++;
         };
