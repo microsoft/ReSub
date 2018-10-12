@@ -66,7 +66,7 @@ export abstract class StoreBase {
         StoreBase._resolveCallbacks();
     }
 
-    constructor(private _throttleMs: number = 0, private _bypassTriggerBlocks = false) {
+    constructor(private _throttleMs: number = Options.defaultThrottleMs, private _bypassTriggerBlocks = false) {
     }
 
     private static _updateExistingMeta(meta: CallbackMetadata | undefined, throttledUntil: number|undefined, bypassBlock: boolean) {
