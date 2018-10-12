@@ -38,10 +38,8 @@ export abstract class StoreBase {
 
     private _gatheredCallbacks = new Map<SubscriptionCallbackFunction, string[]|null>();
 
-    private _throttleMs: number;
-    private _throttleTimerId: number|undefined;
+    private _throttleData: { timerId: number, callbackTime: number } | undefined;
 
-    private _bypassTriggerBlocks: boolean;
     private _triggerBlocked = false;
     private _isTriggering = false;
     private _triggerPending = false;
@@ -82,25 +80,17 @@ export abstract class StoreBase {
         }
     }
 
-    constructor(throttleMs: number = 0, bypassTriggerBans = false) {
-        this._throttleMs = throttleMs;
-        this._bypassTriggerBlocks = bypassTriggerBans;
+    constructor(private _throttleMs: number = 0, private _bypassTriggerBlocks = false) {
     }
 
     // If you trigger a specific set of keys, then it will only trigger that specific set of callbacks (and subscriptions marked
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
     protected trigger(keyOrKeys?: string|number|(string|number)[]) {
-        let keys: string[]|undefined;
-
-        // trigger(0) is valid, ensure that we catch this case
-        if (keyOrKeys || _.isNumber(keyOrKeys)) {
-            keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
-        }
-
         // Build a list of callbacks to call, trying to accumulate keys into a single callback set to avoid multiple callbacks
         // to the same target with different keys.
 
-        if (!keys) {
+        // trigger(0) is valid, ensure that we catch this case
+        if (!keyOrKeys && !_.isNumber(keyOrKeys)) {
             // Inspecific key, so generic callback call
             const allSubs = _.flatten(_.values(this._subscriptions));
             _.forEach(allSubs, callback => {
@@ -113,6 +103,7 @@ export abstract class StoreBase {
                     this._gatheredCallbacks.set(sub.callback, null);
                 });
         } else {
+            const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
             // Key list, so go through each key and queue up the callback
             _.forEach(keys, key => {
                 _.forEach(this._subscriptions[key], callback => {
@@ -173,8 +164,11 @@ export abstract class StoreBase {
         if (this._throttleMs && !StoreBase._bypassThrottle) {
             // Needs to accumulate and trigger later -- start a timer if we don't have one running already
             // If there are no callbacks, don't bother setting up the timer
-            if (!this._throttleTimerId && this._gatheredCallbacks.size !== 0) {
-                this._throttleTimerId = Options.setTimeout(this._resolveThrottledCallbacks, this._throttleMs);
+            if (!this._throttleData && StoreBase._gatheredCallbacks.size !== 0) {
+                this._throttleData = {
+                    timerId: Options.setTimeout(this._resolveThrottledCallbacks, this._throttleMs),
+                    callbackTime: Date.now() + this._throttleMs
+                };
             }
         } else {
             // No throttle timeout, so just resolve now
@@ -190,9 +184,9 @@ export abstract class StoreBase {
         }
 
         // Clear a timer if one's still pending
-        if (this._throttleTimerId) {
-            Options.clearTimeout(this._throttleTimerId);
-            this._throttleTimerId = undefined;
+        if (this._throttleData) {
+            Options.clearTimeout(this._throttleData.timerId);
+            this._throttleData = undefined;
             _.remove(StoreBase._pendingThrottledStores, this);
         }
 
