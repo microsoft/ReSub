@@ -100,56 +100,34 @@ export abstract class StoreBase {
         if (!keyOrKeys && !_.isNumber(keyOrKeys)) {
             // Inspecific key, so generic callback call
             const allSubs = _.flatten(_.values(this._subscriptions));
-            const handleCallback = (callback: SubscriptionCallbackFunction) => {
-                const existingMeta = StoreBase._pendingCallbacks.get(callback);
-                const newMeta = { keys: null, throttledUntil, bypassBlock };
-                // Clear the key list to null for the callback but respect previous throttle/bypass values
-                if (existingMeta && throttledUntil && existingMeta.throttledUntil) {
-                    newMeta.throttledUntil = Math.min(throttledUntil, existingMeta.throttledUntil);
-                }
-                if (existingMeta && existingMeta.bypassBlock) {
-                    newMeta.bypassBlock = true;
-                }
-                StoreBase._pendingCallbacks.set(callback, newMeta);
-            };
 
-            _.forEach(allSubs, handleCallback);
+            _.forEach(allSubs, sub => {
+                this._setupAllKeySubscription(sub, throttledUntil, bypassBlock);
+            });
             _.forEach(_.flatten(_.values(this._autoSubscriptions)),
                 sub => {
-                    handleCallback(sub.callback);
+                    this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
                 });
         } else {
-            const handleCallback = (keys: string[], callback: SubscriptionCallbackFunction) => {
-                const existingMeta = StoreBase._pendingCallbacks.get(callback);
-                StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
-                if (existingMeta === undefined) {
-                    StoreBase._pendingCallbacks.set(callback, { keys: keys, throttledUntil, bypassBlock });
-                } else if (existingMeta.keys === null) {
-                    // Do nothing since it's already an all-key-trigger
-                } else {
-                    // Add them all to the end of the list
-                    existingMeta.keys.push(...keys);
-                }
-            };
             const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
             // Key list, so go through each key and queue up the callback
             _.forEach(keys, key => {
                 _.forEach(this._subscriptions[key], callback => {
-                    handleCallback([key], callback);
+                    this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock);
                 });
 
                 _.forEach(this._autoSubscriptions[key], sub => {
-                    handleCallback([key], sub.callback);
+                    this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock);
                 });
             });
 
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
             _.forEach(this._subscriptions[StoreBase.Key_All], callback => {
-                handleCallback(keys, callback);
+                this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock);
             });
 
             _.forEach(this._autoSubscriptions[StoreBase.Key_All], sub => {
-                handleCallback(keys, sub.callback);
+                this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock);
             });
         }
 
@@ -176,13 +154,41 @@ export abstract class StoreBase {
         }
     }
 
+    private _setupAllKeySubscription(callback: SubscriptionCallbackFunction, throttledUntil: number | undefined,
+            bypassBlock: boolean): void {
+        const existingMeta = StoreBase._pendingCallbacks.get(callback);
+        const newMeta = { keys: null, throttledUntil, bypassBlock };
+        // Clear the key list to null for the callback but respect previous throttle/bypass values
+        if (existingMeta && throttledUntil && existingMeta.throttledUntil) {
+            newMeta.throttledUntil = Math.min(throttledUntil, existingMeta.throttledUntil);
+        }
+        if (existingMeta && existingMeta.bypassBlock) {
+            newMeta.bypassBlock = true;
+        }
+        StoreBase._pendingCallbacks.set(callback, newMeta);
+    }
+
+    private _setupSpecificKeySubscription(keys: string[], callback: SubscriptionCallbackFunction,
+            throttledUntil: number | undefined, bypassBlock: boolean): void {
+        const existingMeta = StoreBase._pendingCallbacks.get(callback);
+        StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
+        if (existingMeta === undefined) {
+            StoreBase._pendingCallbacks.set(callback, { keys: keys, throttledUntil, bypassBlock });
+        } else if (existingMeta.keys === null) {
+            // Do nothing since it's already an all-key-trigger
+        } else {
+            // Add them all to the end of the list
+            existingMeta.keys.push(...keys);
+        }
+    }
+
     private _handleThrottledCallbacks = () => {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
     }
     
     private static _resolveCallbacks() {
-        // Prevent a store from trigginer while it's already in a trigger state
+        // Prevent a store from triggering while it's already in a trigger state
         if (StoreBase._isTriggering) {
             StoreBase._triggerPending = true;
             return;
