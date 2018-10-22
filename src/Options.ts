@@ -15,6 +15,8 @@ export interface IOptions {
 
     shouldComponentUpdateComparator: <T>(values: T, compareTo: T) => boolean;
 
+    defaultThrottleMs: number;
+
     // Default behavior is to try/catch in render and unmount if there was an exception. However, the new React error boundaries
     // makes this redundant. Set to false to disable our extra try/catch behavior.
     preventTryCatchInRender: boolean;
@@ -34,6 +36,8 @@ let OptionsVals: IOptions = {
     clearTimeout: clearTimeout.bind(null),
 
     shouldComponentUpdateComparator: _.isEqual.bind(_),
+
+    defaultThrottleMs: 0,
 
     preventTryCatchInRender: false,
 
