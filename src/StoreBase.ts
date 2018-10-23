@@ -178,7 +178,11 @@ export abstract class StoreBase {
             // Do nothing since it's already an all-key-trigger
         } else {
             // Add them all to the end of the list
-            existingMeta.keys.push(...keys);
+            // Refrain from using spead operater here, this can result in a stack overflow if a large number of keys are triggered
+            const keyCount = keys.length;
+            for (var i = 0; i < keyCount; i++) {
+                existingMeta.keys.push(keys[i]);
+            }
         }
     }
 

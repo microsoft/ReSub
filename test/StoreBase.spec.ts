@@ -46,6 +46,12 @@ class BraindeadStore extends StoreBase {
     }
 }
 
+class TriggerableStore extends StoreBase {
+    emit(keys: string[]) {
+        this.trigger(keys);
+    }
+}
+
 // ------------------------------------------------------------------------------------
 // Tests for auto-subscriptions.
 // Note: if an 'internal check' fails then the problem might be in the unit test itself,
@@ -237,5 +243,28 @@ describe('StoreBase', function () {
         // At this point the throttled store has no need to trigger since the callback has already been called
         jasmine.clock().tick(200);
         expect(callbackCount).toBe(1);
+    });
+
+    it('Trigger stack overflow test', () => {
+        // Test an insane amount of trigger keys so we don't end up with a stack overflow
+        let store = new TriggerableStore();
+        let callbackCalled = false;
+        const subCallback = (keys?: string[]) => {
+            expect(keys!!!.length).toEqual(150001);
+            callbackCalled = true;
+        };
+
+        store.subscribe(subCallback);
+
+        StoreBase.pushTriggerBlock();
+        store.emit(['foo']);
+        let keysToTrigger: string[] = [];
+        for (var i = 0; i < 150000; i++) {
+            keysToTrigger.push(i.toString());
+        }
+        store.emit(keysToTrigger);
+        StoreBase.popTriggerBlock();
+
+        expect(callbackCalled).toBeTruthy();
     });
 });
