@@ -1,12 +1,12 @@
 {
   "name": "resub",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
     "prepare": "npm run build",
     "tslint": "tslint -p tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
-    "clean:dist": "rimraf dist-*",
+    "clean:dist": "rimraf dist",
     "build:types": "tsc -p tsconfig/types.json",
     "build:es2015": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig/cjs.json",
@@ -64,7 +64,7 @@
   },
   "types": "dist-types/ReSub.d.ts",
   "module": "dist-es2015/ReSub.js",
-  "main": "dist-cjs/ReSub.js",
+  "main": "dist/ReSub.js",
   "keywords": [
     "react",
     "flux",
