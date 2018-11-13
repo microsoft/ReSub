@@ -1,8 +1,6 @@
 {
   "name": "counter",
   "version": "1.0.0",
-  "private": true,
-  "main": "src/index.tsx",
   "scripts": {
     "clean": "rimraf dist/",
     "build": "npm run clean && webpack --progress --colors --mode=production",
@@ -10,24 +8,24 @@
     "start:prod": "npm run build && http-server dist/ -p 9999 -o"
   },
   "devDependencies": {
-    "@types/html-webpack-plugin": "2.30.3",
-    "@types/node": "9.4.7",
+    "@types/html-webpack-plugin": "3.2.0",
+    "@types/node": "10.12.6",
     "@types/react": "16.0.40",
     "@types/react-dom": "16.0.4",
-    "@types/webpack": "4.1.0",
-    "html-webpack-plugin": "3.0.6",
+    "@types/webpack": "4.4.16",
+    "html-webpack-plugin": "3.2.0",
     "http-server": "0.11.1",
     "rimraf": "2.6.2",
-    "ts-loader": "4.0.1",
-    "ts-node": "5.0.1",
-    "typescript": "2.7.2",
-    "webpack": "4.1.1",
-    "webpack-cli": "2.0.12",
-    "webpack-dev-server": "3.1.1"
+    "ts-loader": "5.3.0",
+    "ts-node": "7.0.1",
+    "typescript": "3.1.6",
+    "webpack": "4.25.1",
+    "webpack-cli": "3.1.2",
+    "webpack-dev-server": "3.1.10"
   },
   "dependencies": {
     "react": "16.2.0",
     "react-dom": "16.2.0",
-    "resub": "1.0.8"
+    "resub": "1.0.13"
   }
 }
