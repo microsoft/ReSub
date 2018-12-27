@@ -24,7 +24,6 @@ import remove from 'lodash/remove';
 import values from 'lodash/values';
 import clone from 'lodash/clone';
 import union from 'lodash/union';
-import some from 'lodash/some';
 import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
 import find from 'lodash/find';
@@ -56,7 +55,6 @@ export {
     values,
     clone,
     union,
-    some,
     uniq,
     pull,
     find,
