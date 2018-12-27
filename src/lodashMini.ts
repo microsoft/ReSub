@@ -16,7 +16,6 @@ import isNumber from 'lodash/isNumber';
 import flatten from 'lodash/flatten';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
-import isArray from 'lodash/isArray';
 import forEach from 'lodash/forEach';
 import indexOf from 'lodash/indexOf';
 import extend from 'lodash/extend';
@@ -48,7 +47,6 @@ export {
     flatten,
     isEmpty,
     isEqual,
-    isArray,
     forEach,
     indexOf,
     extend,
