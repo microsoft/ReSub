@@ -7,9 +7,7 @@
 * Imports a subset of lodash library needed for ReSub
 */
 
-import isUndefined from 'lodash/isUndefined';
 import isFunction from 'lodash/isFunction';
-import findIndex from 'lodash/findIndex';
 import isString from 'lodash/isString';
 import uniqueId from 'lodash/uniqueId';
 import isNumber from 'lodash/isNumber';
@@ -38,9 +36,7 @@ interface Dictionary<T> {
 
 export {
     Dictionary,
-    isUndefined,
     isFunction,
-    findIndex,
     isString,
     uniqueId,
     isNumber,
