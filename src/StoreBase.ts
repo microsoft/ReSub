@@ -62,7 +62,7 @@ export abstract class StoreBase {
 
     static setThrottleStatus(enabled: boolean) {
         this._bypassThrottle = !enabled;
-        
+
         StoreBase._resolveCallbacks();
     }
 
@@ -181,7 +181,7 @@ export abstract class StoreBase {
             // Add them all to the end of the list
             // Refrain from using spead operater here, this can result in a stack overflow if a large number of keys are triggered
             const keyCount = keys.length;
-            for (var i = 0; i < keyCount; i++) {
+            for (let i = 0; i < keyCount; i++) {
                 existingMeta.keys.push(keys[i]);
             }
         }
@@ -191,7 +191,7 @@ export abstract class StoreBase {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
     }
-    
+
     private static _resolveCallbacks() {
         // Prevent a store from triggering while it's already in a trigger state
         if (StoreBase._isTriggering) {
@@ -205,7 +205,7 @@ export abstract class StoreBase {
 
         let callbacksCount = 0;
         const currentTime = Date.now();
-        
+
         // Capture the callbacks we need to call
         const callbacks: [SubscriptionCallbackFunction, string[]|undefined][] = [];
         this._pendingCallbacks.forEach((meta, callback, map) => {
@@ -337,8 +337,8 @@ export abstract class StoreBase {
         // Virtual function, noop default behavior
     }
 
-    protected _getSubscriptionKeys() {
-        return _.union(_.keys(this._subscriptions), _.keys(this._autoSubscriptions));
+    protected _getSubscriptionKeys(): string[] {
+        return _.union(Object.keys(this._subscriptions), Object.keys(this._autoSubscriptions));
     }
 
     protected _isTrackingKey(key: string) {

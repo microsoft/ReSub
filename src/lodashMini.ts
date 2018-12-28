@@ -28,7 +28,6 @@ import some from 'lodash/some';
 import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
 import find from 'lodash/find';
-import keys from 'lodash/keys';
 import noop from 'lodash/noop';
 import map from 'lodash/map';
 import get from 'lodash/get';
@@ -60,7 +59,6 @@ export {
     uniq,
     pull,
     find,
-    keys,
     noop,
     map,
     get,
