@@ -4,7 +4,7 @@ import { shallow } from 'enzyme';
 import { SimpleStore } from './SimpleStore';
 
 const WARN_IN_BUILD_STATE = 'build';
-const WARNING_MESSAGE = `Only Store methods with the @autoSubscribe decorator \
+const WARNING_MESSAGE = `[resub] Only Store methods with the @autoSubscribe decorator \
 can be called right now (e.g. in _buildState): "setStoreData"`;
 
 describe('AutoSubscribeWarnings', () => {

@@ -11,9 +11,8 @@
 * Stores can mark themselves as opt-out of the trigger-block logic for critical stores that must flow under all conditions.
 */
 
-import * as assert from 'assert';
-
 import * as _ from './lodashMini';
+import assert from './assert';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackFunction } from './Types';
@@ -53,7 +52,7 @@ export abstract class StoreBase {
 
     static popTriggerBlock() {
         this._triggerBlockCount--;
-        assert.ok(this._triggerBlockCount >= 0, 'Over-popped trigger blocks!');
+        assert(this._triggerBlockCount >= 0, 'Over-popped trigger blocks!');
 
         if (this._triggerBlockCount === 0) {
             StoreBase._resolveCallbacks();
@@ -62,7 +61,7 @@ export abstract class StoreBase {
 
     static setThrottleStatus(enabled: boolean) {
         this._bypassThrottle = !enabled;
-        
+
         StoreBase._resolveCallbacks();
     }
 
@@ -191,7 +190,7 @@ export abstract class StoreBase {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
     }
-    
+
     private static _resolveCallbacks() {
         // Prevent a store from triggering while it's already in a trigger state
         if (StoreBase._isTriggering) {
@@ -205,7 +204,7 @@ export abstract class StoreBase {
 
         let callbacksCount = 0;
         const currentTime = Date.now();
-        
+
         // Capture the callbacks we need to call
         const callbacks: [SubscriptionCallbackFunction, string[]|undefined][] = [];
         this._pendingCallbacks.forEach((meta, callback, map) => {
@@ -245,7 +244,7 @@ export abstract class StoreBase {
         const key = _.isNumber(rawKey) ? rawKey.toString() : rawKey;
 
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
-        assert.ok(key && _.isString(key), 'Trying to subscribe to invalid key: "' + key + '"');
+        assert(key && _.isString(key), `Trying to subscribe to invalid key: "${ key }"`);
 
         let callbacks = this._subscriptions[key];
         if (!callbacks) {
@@ -265,7 +264,7 @@ export abstract class StoreBase {
 
     // Unsubscribe from a previous subscription.  Pass in the token the subscribe function handed you.
     unsubscribe(subToken: number) {
-        assert.ok(this._subsByNum[subToken], 'No subscriptions found for token ' + subToken);
+        assert(this._subsByNum[subToken], `No subscriptions found for token ${ subToken }`);
 
         let key = this._subsByNum[subToken].key;
         let callback = this._subsByNum[subToken].callback;
@@ -275,7 +274,7 @@ export abstract class StoreBase {
         StoreBase._pendingCallbacks.delete(callback);
 
         let callbacks = this._subscriptions[key];
-        assert.ok(callbacks, 'No subscriptions under key ' + key);
+        assert(callbacks, `No subscriptions under key ${ key }`);
 
         const index = _.indexOf(callbacks, callback);
         if (index !== -1) {
@@ -289,7 +288,7 @@ export abstract class StoreBase {
                 }
             }
         } else {
-            assert.ok(false, 'Subscription not found during unsubscribe...');
+            assert(false, 'Subscription not found during unsubscribe...');
         }
     }
 
@@ -309,13 +308,14 @@ export abstract class StoreBase {
 
     removeAutoSubscription(subscription: AutoSubscription) {
         const key = subscription.key;
-
         let subs = this._autoSubscriptions[key];
-        assert.ok(subs, 'No subscriptions under key ' + key);
+
+        assert(subs, `No subscriptions under key ${ key }`);
 
         const oldLength = subs.length;
         _.pull(subs, subscription);
-        assert.equal(subs.length, oldLength - 1, 'Subscription not found during unsubscribe...');
+
+        assert(subs.length === oldLength - 1, 'Subscription not found during unsubscribe...');
 
         StoreBase._pendingCallbacks.delete(subscription.callback);
 
