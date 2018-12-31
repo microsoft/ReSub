@@ -62,7 +62,7 @@ export abstract class StoreBase {
 
     static setThrottleStatus(enabled: boolean) {
         this._bypassThrottle = !enabled;
-        
+
         StoreBase._resolveCallbacks();
     }
 
@@ -109,7 +109,7 @@ export abstract class StoreBase {
                     this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
                 });
         } else {
-            const keys = _.map(_.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
+            const keys = _.map(Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
             // Key list, so go through each key and queue up the callback
             _.forEach(keys, key => {
                 _.forEach(this._subscriptions[key], callback => {
@@ -191,7 +191,7 @@ export abstract class StoreBase {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
     }
-    
+
     private static _resolveCallbacks() {
         // Prevent a store from triggering while it's already in a trigger state
         if (StoreBase._isTriggering) {
@@ -205,7 +205,7 @@ export abstract class StoreBase {
 
         let callbacksCount = 0;
         const currentTime = Date.now();
-        
+
         // Capture the callbacks we need to call
         const callbacks: [SubscriptionCallbackFunction, string[]|undefined][] = [];
         this._pendingCallbacks.forEach((meta, callback, map) => {
