@@ -181,7 +181,7 @@ export abstract class StoreBase {
             // Add them all to the end of the list
             // Refrain from using spead operater here, this can result in a stack overflow if a large number of keys are triggered
             const keyCount = keys.length;
-            for (var i = 0; i < keyCount; i++) {
+            for (let i = 0; i < keyCount; i++) {
                 existingMeta.keys.push(keys[i]);
             }
         }
@@ -337,8 +337,8 @@ export abstract class StoreBase {
         // Virtual function, noop default behavior
     }
 
-    protected _getSubscriptionKeys() {
-        return _.union(_.keys(this._subscriptions), _.keys(this._autoSubscriptions));
+    protected _getSubscriptionKeys(): string[] {
+        return _.union(Object.keys(this._subscriptions), Object.keys(this._autoSubscriptions));
     }
 
     protected _isTrackingKey(key: string) {
