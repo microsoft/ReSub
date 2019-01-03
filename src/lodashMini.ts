@@ -25,7 +25,6 @@ import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
 import find from 'lodash/find';
 import noop from 'lodash/noop';
-import map from 'lodash/map';
 import get from 'lodash/get';
 
 interface Dictionary<T> {
@@ -52,6 +51,5 @@ export {
     pull,
     find,
     noop,
-    map,
     get,
 };
