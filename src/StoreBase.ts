@@ -227,6 +227,7 @@ export abstract class StoreBase {
         });
 
         callbacks.forEach(([callback, keys]) => {
+            callbacksCount++;
             callback(keys);
         });
 
