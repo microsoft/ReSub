@@ -172,9 +172,10 @@ export abstract class StoreBase {
             throttledUntil: number | undefined, bypassBlock: boolean): void {
         const existingMeta = StoreBase._pendingCallbacks.get(callback);
         StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
+
         if (existingMeta === undefined) {
             // We need to clone keys in order to prevent accidental by-ref mutations
-            StoreBase._pendingCallbacks.set(callback, { keys: _.clone(keys), throttledUntil, bypassBlock });
+            StoreBase._pendingCallbacks.set(callback, { keys: [...keys], throttledUntil, bypassBlock });
         } else if (existingMeta.keys === null) {
             // Do nothing since it's already an all-key-trigger
         } else {
