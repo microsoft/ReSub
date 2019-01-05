@@ -63,8 +63,8 @@
 
 import * as _ from './lodashMini';
 import * as Decorator from './Decorator';
-import assert from './assert';
 import Options from './Options';
+import { assert } from './utils';
 import { StoreBase } from './StoreBase';
 
 type MetadataIndex = {

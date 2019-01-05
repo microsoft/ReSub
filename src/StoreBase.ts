@@ -12,9 +12,9 @@
 */
 
 import * as _ from './lodashMini';
-import assert from './assert';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
+import { assert } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {

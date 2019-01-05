@@ -9,11 +9,11 @@
 import * as React from 'react';
 
 import * as _ from './lodashMini';
-import assert from './assert';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
+import { assert } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
