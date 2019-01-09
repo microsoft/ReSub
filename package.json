@@ -17,7 +17,6 @@
     "test:watch": "run-s clean:* karma:watch"
   },
   "dependencies": {
-    "assert": "^1.4.1",
     "lodash": "^4.17.0",
     "tslib": "^1.9.1"
   },
@@ -29,7 +28,6 @@
     "@types/enzyme-adapter-react-16": "1.0.3",
     "@types/jasmine": "2.8.8",
     "@types/lodash": "4.14.116",
-    "@types/node": "10.9.4",
     "@types/react": "16.4.14",
     "@types/react-dom": "16.0.7",
     "enzyme": "3.6.0",
