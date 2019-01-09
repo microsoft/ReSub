@@ -19,7 +19,6 @@ import indexOf from 'lodash/indexOf';
 import extend from 'lodash/extend';
 import remove from 'lodash/remove';
 import values from 'lodash/values';
-import clone from 'lodash/clone';
 import union from 'lodash/union';
 import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
@@ -46,7 +45,6 @@ export {
     extend,
     remove,
     values,
-    clone,
     union,
     uniq,
     pull,
