@@ -7,13 +7,13 @@
 */
 
 import * as React from 'react';
-import * as assert from 'assert';
 
 import * as _ from './lodashMini';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
+import { assert } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
@@ -178,8 +178,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     }
 
     protected _addSubscription(subscription: StoreSubscription<P, S>): StoreSubscription<P, S>|undefined {
-        assert.ok(subscription.store instanceof StoreBase,
-            'Subscription added with store that\'s not an StoreBase');
+        assert(subscription.store instanceof StoreBase, `Subscription added with store that\'s not an StoreBase`);
 
         const { enablePropertyName } = subscription;
 
@@ -236,12 +235,10 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     }
 
     private _registerSubscription(subscription: StoreSubscriptionInternal<P, S>, key: string|number = StoreBase.Key_All) {
-        assert.ok(!subscription._subscriptionToken,
-            'Subscription already subscribed!');
-        assert.ok(!subscription.keyPropertyName || key !== StoreBase.Key_All,
-                'Subscription created with key of all when it has a key property name');
-        assert.notDeepEqual(subscription.specificKeyValue, StoreBase.Key_All,
-                'Subscription created with specific key of all');
+        assert(!subscription._subscriptionToken, 'Subscription already subscribed!');
+        assert(!subscription.keyPropertyName || key !== StoreBase.Key_All,
+            'Subscription created with key of all when it has a key property name');
+        assert(!_.isEqual(subscription.specificKeyValue, StoreBase.Key_All), 'Subscription created with specific key of all');
 
         if (key) {
             if (_.isNumber(key)) {
@@ -400,7 +397,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
         const key = _.get(props, keyPropertyName);
         if (!_.isString(key)) {
-            assert.ok(false, 'Subscription key property value ' + keyPropertyName + ' must be a string');
+            assert(false, `Subscription key property value ${ keyPropertyName } must be a string`);
             // Fallback to subscribing to all values
             return StoreBase.Key_All;
         }

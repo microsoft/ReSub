@@ -11,12 +11,10 @@
 * Stores can mark themselves as opt-out of the trigger-block logic for critical stores that must flow under all conditions.
 */
 
-import * as assert from 'assert';
-
 import * as _ from './lodashMini';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
-import { normalizeKeys, KeyOrKeys } from './utils';
+import { assert, normalizeKeys, KeyOrKeys } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {
@@ -54,7 +52,7 @@ export abstract class StoreBase {
 
     static popTriggerBlock() {
         this._triggerBlockCount--;
-        assert.ok(this._triggerBlockCount >= 0, 'Over-popped trigger blocks!');
+        assert(this._triggerBlockCount >= 0, 'Over-popped trigger blocks!');
 
         if (this._triggerBlockCount === 0) {
             StoreBase._resolveCallbacks();
@@ -170,9 +168,10 @@ export abstract class StoreBase {
             throttledUntil: number | undefined, bypassBlock: boolean): void {
         const existingMeta = StoreBase._pendingCallbacks.get(callback);
         StoreBase._updateExistingMeta(existingMeta, throttledUntil, bypassBlock);
+
         if (existingMeta === undefined) {
             // We need to clone keys in order to prevent accidental by-ref mutations
-            StoreBase._pendingCallbacks.set(callback, { keys: _.clone(keys), throttledUntil, bypassBlock });
+            StoreBase._pendingCallbacks.set(callback, { keys: [...keys], throttledUntil, bypassBlock });
         } else if (existingMeta.keys === null) {
             // Do nothing since it's already an all-key-trigger
         } else {
@@ -224,6 +223,7 @@ export abstract class StoreBase {
         });
 
         callbacks.forEach(([callback, keys]) => {
+            callbacksCount++;
             callback(keys);
         });
 
@@ -243,7 +243,7 @@ export abstract class StoreBase {
         const key = _.isNumber(rawKey) ? rawKey.toString() : rawKey;
 
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
-        assert.ok(key && _.isString(key), 'Trying to subscribe to invalid key: "' + key + '"');
+        assert(key && _.isString(key), `Trying to subscribe to invalid key: "${ key }"`);
 
         let callbacks = this._subscriptions[key];
         if (!callbacks) {
@@ -263,7 +263,7 @@ export abstract class StoreBase {
 
     // Unsubscribe from a previous subscription.  Pass in the token the subscribe function handed you.
     unsubscribe(subToken: number) {
-        assert.ok(this._subsByNum[subToken], 'No subscriptions found for token ' + subToken);
+        assert(this._subsByNum[subToken], `No subscriptions found for token ${ subToken }`);
 
         let key = this._subsByNum[subToken].key;
         let callback = this._subsByNum[subToken].callback;
@@ -273,7 +273,7 @@ export abstract class StoreBase {
         StoreBase._pendingCallbacks.delete(callback);
 
         let callbacks = this._subscriptions[key];
-        assert.ok(callbacks, 'No subscriptions under key ' + key);
+        assert(callbacks, `No subscriptions under key ${ key }`);
 
         const index = _.indexOf(callbacks, callback);
         if (index !== -1) {
@@ -287,7 +287,7 @@ export abstract class StoreBase {
                 }
             }
         } else {
-            assert.ok(false, 'Subscription not found during unsubscribe...');
+            assert(false, 'Subscription not found during unsubscribe...');
         }
     }
 
@@ -307,13 +307,14 @@ export abstract class StoreBase {
 
     removeAutoSubscription(subscription: AutoSubscription) {
         const key = subscription.key;
-
         let subs = this._autoSubscriptions[key];
-        assert.ok(subs, 'No subscriptions under key ' + key);
+
+        assert(subs, `No subscriptions under key ${ key }`);
 
         const oldLength = subs.length;
         _.pull(subs, subscription);
-        assert.equal(subs.length, oldLength - 1, 'Subscription not found during unsubscribe...');
+
+        assert(subs.length === oldLength - 1, 'Subscription not found during unsubscribe...');
 
         StoreBase._pendingCallbacks.delete(subscription.callback);
 

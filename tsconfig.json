@@ -21,5 +21,11 @@
 
   "include": [
     "src/*"
+  ],
+
+  "exclude": [
+    "dist-es2015",
+    "dist-types",
+    "dist"
   ]
 }
