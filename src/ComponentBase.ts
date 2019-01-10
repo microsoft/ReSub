@@ -13,7 +13,7 @@ import Options from './Options';
 import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
-import { assert } from './utils';
+import { assert, noop } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
@@ -83,7 +83,7 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
     constructor(props: P) {
         super(props);
 
-        const derivedClassRender = this.render || _.noop;
+        const derivedClassRender = this.render || noop;
         let render = derivedClassRender;
         if (!Options.preventTryCatchInRender) {
             render = () => {
