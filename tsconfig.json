@@ -16,7 +16,8 @@
     "target": "es5",
     "outDir": "dist-es2015",
     "jsx": "react",
-    "lib": ["es2015", "es2016", "dom"]
+    "lib": ["es2015", "es2016", "dom"],
+    "types": ["lodash"]
   },
 
   "include": [

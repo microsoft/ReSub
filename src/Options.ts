@@ -10,8 +10,8 @@ import * as _ from './lodashMini';
 
 export interface IOptions {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want
-    setTimeout: (callback: () => void, timeoutMs?: number) => number;
-    clearTimeout: (id: number) => void;
+    setTimeout: <T extends any[]>(handler: (params: T) => void, timeout?: number | undefined , ...params: T) => number;
+    clearTimeout: (id?: number) => void;
 
     shouldComponentUpdateComparator: <T>(values: T, compareTo: T) => boolean;
 
