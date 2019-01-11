@@ -204,9 +204,13 @@ Returns true if the component is currently mounted, false otherwise. Subclasses 
 
 ##### `shouldComponentUpdate(nextProps: P, nextState: S): boolean`
 
-This method is provided by ReSub already, but can be overridden. Subclasses that override it do not need to call super.
+ReSub’s implementation of this method always returns true, which is inline with React's guidance.  If you wish to apply optimizations using `shouldComponentUpdate` we provide a few different methods to do this:
 
-ReSub’s implementation of this method uses `_.isEqual` to compare new state and props with their previous values and returns true if a change is found.
+1) Provide a `shouldComponentUpdateComparator` to the ReSub `Options` payload. This is the default comparator that is used in `shouldComponentUpdate` for components that extend `ComponentBase`. This is a good way to apply custom `shouldComponentUpdate` logic to all your components.
+1) Override `shouldComponentUpdate` in specific components and *don't* call super
+1) Apply a decorator to specific component classes to apply default or custom shouldComponentUpdate comparators:
+    * `@DeepEqualityShouldComponentUpdate` - This will do a deep equality check (`_.isEqual`) on Props, State & Context and return `true` from `shouldComponentUpdate` if any of the values have changed
+    * `CustomEqualityShouldComponentUpdate(myComparatorFunctino)` - This will call you custom comparator function (for Props, State and Context), returning `true` from `shouldComponentUpdate` if your comparator returns false.
 
 *Note: `_.isEqual` is a deep comparison operator, and hence can cause performance issues with deep data structures.*
 

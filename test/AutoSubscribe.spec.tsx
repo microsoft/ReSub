@@ -20,6 +20,7 @@ import {
     each,
     uniq,
 } from 'lodash';
+import { DeepEqualityShouldComponentUpdate } from '../src/AutoSubscriptions';
 
 // Instance of the SimpleStore used throughout the test. Re-created for each test.
 let SimpleStoreInstance: SimpleStore;
@@ -96,6 +97,23 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
         newState.storeDatas = props.ids.map(id => SimpleStoreInstance.getStoreData(id));
         newState.stateChanges = initialBuild ? 1 : this.state.stateChanges + 1;
         return newState;
+    }
+
+    render() {
+        return (
+            <div>Not testing render...</div>
+        );
+    }
+}
+
+@DeepEqualityShouldComponentUpdate
+class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
+    // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
+    // for which this component is subscribed (e.g. SimpleStore).
+
+    // Auto-subscriptions are enabled in _buildState due to ComponentBase.
+    protected _buildState(props: SimpleProps, initialBuild: boolean) {
+        return undefined;
     }
 
     render() {
@@ -381,5 +399,15 @@ describe('AutoSubscribe', function () {
             SimpleStoreInstance.unsubscribe(subToken2);
         });
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 1);
+    });
+
+    it('Equality decorator override', () => {
+        const simpleComp1 = new SimpleComponent({ ids: [] });
+        const simpleComp2 = new SimpleComponent({ ids: [] });
+        const deepEqual1 = new DeepEqualitySimpleComponent({ ids: [] });
+        const deepEqual2 = new DeepEqualitySimpleComponent({ ids: [] });
+        expect(simpleComp1.shouldComponentUpdate).toEqual(simpleComp2.shouldComponentUpdate);
+        expect(deepEqual1.shouldComponentUpdate).toEqual(deepEqual2.shouldComponentUpdate);
+        expect(simpleComp1.shouldComponentUpdate).not.toEqual(deepEqual1.shouldComponentUpdate);
     });
 });
