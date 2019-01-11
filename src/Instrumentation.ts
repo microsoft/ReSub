@@ -7,6 +7,10 @@
 import Options from './Options';
 import { noop } from './utils';
 
+declare var global: {
+    performance: Performance;
+};
+
 export interface Performance {
     mark: (name: string) => void;
     measure: (name: string, startMark: string, endMark: string) => void;
@@ -15,7 +19,7 @@ export interface Performance {
 function getPerformanceImpl(): Performance {
     const g = typeof global !== 'undefined' ? global : undefined;
     const w = typeof window !== 'undefined' ? window : undefined;
-    const { performance } = (g || w || {}) as any;
+    const { performance } = (g || w || {performance: undefined});
 
     if (performance && performance.mark && performance.measure) {
         return performance;

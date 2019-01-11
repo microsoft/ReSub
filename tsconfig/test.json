@@ -1,10 +1,11 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["jasmine"]
   },
   "include": [
-    "../src/**/*",
+    "../src/*",
     "../test/**/*"
   ]
 }
