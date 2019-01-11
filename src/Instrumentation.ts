@@ -1,12 +1,11 @@
 /**
-* Instrumentation.ts
-* Author: Lukas Weber
-* Copyright: Microsoft 2017
-*
-*/
+ * Instrumentation.ts
+ * Author: Lukas Weber
+ * Copyright: Microsoft 2017
+ */
 
-import * as _ from './lodashMini';
 import Options from './Options';
+import { noop } from './utils';
 
 export interface Performance {
     mark: (name: string) => void;
@@ -23,8 +22,8 @@ function getPerformanceImpl(): Performance {
     }
 
     return {
-        mark: _.noop,
-        measure: _.noop,
+        mark: noop,
+        measure: noop,
     };
 }
 
@@ -36,7 +35,7 @@ const CallbackEndMark = 'StoreBase callbacks end';
 // replace method implementation with noop outside of development mode
 function devOnly(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     if (!Options.development && descriptor) {
-        descriptor.value = _.noop;
+        descriptor.value = noop;
     }
 }
 

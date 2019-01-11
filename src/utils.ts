@@ -10,3 +10,7 @@ export const assert = (cond: any, message?: string | undefined) => {
         throw new Error(`[resub] ${ message || 'Assertion Failed' }`);
     }
 };
+
+export function noop() {
+    // noop
+}
