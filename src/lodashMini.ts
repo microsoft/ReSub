@@ -23,7 +23,6 @@ import union from 'lodash/union';
 import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
 import find from 'lodash/find';
-import noop from 'lodash/noop';
 import get from 'lodash/get';
 
 interface Dictionary<T> {
@@ -48,6 +47,5 @@ export {
     uniq,
     pull,
     find,
-    noop,
     get,
 };

@@ -30,7 +30,7 @@
 // Note: the previous 'value' (called 'existingMethod' in the above example) might not be the original method the developer wrote. Some
 // other decorator might have replaced the 'value' with something else. If every new 'value' holds onto the 'value' that came before it,
 // then this is kind of like a linked list ending with the original method (where the 'links' are function calls). However, you do not have
-// to call the previous 'value', e.g. `if (!__DEV__) { descriptor.value = _.noop; }`.
+// to call the previous 'value', e.g. `if (!__DEV__) { descriptor.value = noop; }`.
 //
 // More info:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
@@ -149,7 +149,7 @@ export function enableAutoSubscribeWrapper<T extends Function>(handler: AutoSubs
 }
 
 // Returns a new function that warns if any auto-subscriptions would have been encountered.
-export function forbidAutoSubscribeWrapper<T extends () => any>(existingMethod: T, thisArg?: any): T {
+export function forbidAutoSubscribeWrapper<T extends any[], R>(existingMethod: (...args: T) => R, thisArg?: any): (...args: T) => R {
     if (!Options.development) {
         return thisArg ? existingMethod.bind(thisArg) : existingMethod;
     }
