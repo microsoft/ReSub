@@ -13,7 +13,7 @@ import Options from './Options';
 import Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
-import { assert, noop } from './utils';
+import { assert, noop, normalizeKey } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
@@ -234,16 +234,14 @@ export abstract class ComponentBase<P extends React.Props<any>, S extends Object
         return removed;
     }
 
-    private _registerSubscription(subscription: StoreSubscriptionInternal<P, S>, key: string|number = StoreBase.Key_All) {
+    private _registerSubscription(subscription: StoreSubscriptionInternal<P, S>, key: string | number = StoreBase.Key_All) {
         assert(!subscription._subscriptionToken, 'Subscription already subscribed!');
         assert(!subscription.keyPropertyName || key !== StoreBase.Key_All,
             'Subscription created with key of all when it has a key property name');
         assert(!_.isEqual(subscription.specificKeyValue, StoreBase.Key_All), 'Subscription created with specific key of all');
 
         if (key) {
-            if (_.isNumber(key)) {
-                key = key.toString();
-            }
+            key = normalizeKey(key);
             subscription._subscriptionToken = subscription.store.subscribe(subscription._lambda, key);
             subscription._subscriptionKey = key;
         } else {

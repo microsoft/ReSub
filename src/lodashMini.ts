@@ -24,6 +24,7 @@ import uniq from 'lodash/uniq';
 import pull from 'lodash/pull';
 import find from 'lodash/find';
 import get from 'lodash/get';
+import map from 'lodash/map';
 
 interface Dictionary<T> {
     [index: string]: T;
@@ -48,4 +49,5 @@ export {
     pull,
     find,
     get,
+    map,
 };

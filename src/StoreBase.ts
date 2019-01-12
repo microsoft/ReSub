@@ -14,7 +14,7 @@
 import * as _ from './lodashMini';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
-import { assert, normalizeKeys, KeyOrKeys } from './utils';
+import { assert, normalizeKey, normalizeKeys, KeyOrKeys } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {
@@ -239,8 +239,8 @@ export abstract class StoreBase {
     // Subscribe to triggered events from this store.  You can leave the default key, in which case you will be
     // notified of any triggered events, or you can use a key to filter it down to specific event keys you want.
     // Returns a token you can pass back to unsubscribe.
-    subscribe(callback: SubscriptionCallbackFunction, rawKey: string|number = StoreBase.Key_All): number {
-        const key = _.isNumber(rawKey) ? rawKey.toString() : rawKey;
+    subscribe(callback: SubscriptionCallbackFunction, rawKey: string | number = StoreBase.Key_All): number {
+        const key = normalizeKey(rawKey);
 
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
         assert(key && _.isString(key), `Trying to subscribe to invalid key: "${ key }"`);
