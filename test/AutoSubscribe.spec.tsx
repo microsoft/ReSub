@@ -7,11 +7,6 @@
  */
 
 import * as React from 'react';
-import ComponentBase from '../src/ComponentBase';
-import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
-import { StoreBase } from '../src/StoreBase';
-import { mount, ReactWrapper } from 'enzyme';
-
 import {
     includes,
     cloneDeep,
@@ -20,7 +15,12 @@ import {
     each,
     uniq,
 } from 'lodash';
-import { DeepEqualityShouldComponentUpdate } from '../src/AutoSubscriptions';
+import { mount, ReactWrapper } from 'enzyme';
+
+import ComponentBase from '../src/ComponentBase';
+import { DeepEqualityShouldComponentUpdate } from '../src/ComponentDecorators';
+import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
+import { StoreBase } from '../src/StoreBase';
 
 // Instance of the SimpleStore used throughout the test. Re-created for each test.
 let SimpleStoreInstance: SimpleStore;

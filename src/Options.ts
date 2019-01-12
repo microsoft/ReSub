@@ -35,7 +35,7 @@ let OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
 
-    shouldComponentUpdateComparator: () => true,
+    shouldComponentUpdateComparator: () => false,
 
     defaultThrottleMs: 0,
 

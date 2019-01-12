@@ -16,6 +16,7 @@ export {
     key,
 } from './AutoSubscriptions';
 export { ComponentBase } from './ComponentBase';
+export { CustomEqualityShouldComponentUpdate, DeepEqualityShouldComponentUpdate } from './ComponentDecorators';
 export { default as Options } from './Options';
 export { StoreBase } from './StoreBase';
 export { Types };

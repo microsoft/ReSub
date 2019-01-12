@@ -210,7 +210,7 @@ ReSub’s implementation of this method always returns true, which is inline wit
 1) Override `shouldComponentUpdate` in specific components and *don't* call super
 1) Apply a decorator to specific component classes to apply default or custom shouldComponentUpdate comparators:
     * `@DeepEqualityShouldComponentUpdate` - This will do a deep equality check (`_.isEqual`) on Props, State & Context and return `true` from `shouldComponentUpdate` if any of the values have changed
-    * `CustomEqualityShouldComponentUpdate(myComparatorFunctino)` - This will call you custom comparator function (for Props, State and Context), returning `true` from `shouldComponentUpdate` if your comparator returns false.
+    * `@CustomEqualityShouldComponentUpdate(myComparatorFunction)` - This will call your custom comparator function (for Props, State and Context), returning `true` from `shouldComponentUpdate` if your comparator returns false.
 
 *Note: `_.isEqual` is a deep comparison operator, and hence can cause performance issues with deep data structures.*
 

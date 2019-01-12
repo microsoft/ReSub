@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { StoreBase } from '../src/StoreBase';
 import { isEqual, uniq } from 'lodash';
 import {
@@ -9,6 +8,7 @@ import {
     autoSubscribe,
     key,
 } from '../src/AutoSubscriptions';
+import { assert } from '../src/utils';
 
 export const enum TriggerKeys {
     First,
@@ -98,7 +98,7 @@ export class SimpleStore extends StoreBase {
     @disableWarnings
     protected _getSubscriptionKeys() {
         const keys = super._getSubscriptionKeys();
-        assert.deepEqual(keys, uniq(keys), 'Internal failure: StoreBase should not report duplicate keys');
+        assert(isEqual(keys, uniq(keys)), 'Internal failure: StoreBase should not report duplicate keys');
         return keys;
     }
 

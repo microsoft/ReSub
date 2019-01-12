@@ -66,7 +66,6 @@ import * as Decorator from './Decorator';
 import Options from './Options';
 import { assert } from './utils';
 import { StoreBase } from './StoreBase';
-import ComponentBase from './ComponentBase';
 
 type MetadataIndex = {
     [methodName: string]: MetadataIndexData
@@ -211,24 +210,6 @@ export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(f
 
     return func;
 };
-
-export function CustomEqualityShouldComponentUpdate<P extends React.Props<any>, S extends Object>(comparator: (this: ComponentBase<P, S>,
-        nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any) => boolean) {
-    return function <T extends { new(props: any): ComponentBase<P, S>}>(constructor: T): T {
-        constructor.prototype.shouldComponentUpdate = comparator;
-        return constructor;
-    };
-}
-
-export function DeepEqualityShouldComponentUpdate<T extends { new(props: any): ComponentBase<any, any> }>(constructor: T): T {
-    return CustomEqualityShouldComponentUpdate<any, any>(deepEqualityComparator)(constructor);
-}
-function deepEqualityComparator<P extends React.Props<any>, S extends Object>(this: ComponentBase<P, S>, nextProps: Readonly<P>,
-        nextState: Readonly<S>, nextContext: any): boolean {
-    return !_.isEqual(this.state, nextState) ||
-        !_.isEqual(this.props, nextProps) ||
-        !_.isEqual(this.context, nextContext);
-}
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
 function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[]): MethodDecorator {
