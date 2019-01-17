@@ -14,7 +14,7 @@
 import * as _ from './lodashMini';
 import Options from './Options';
 import Instrumentation from './Instrumentation';
-import { assert } from './utils';
+import { assert, normalizeKey, normalizeKeys, KeyOrKeys } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {
@@ -70,14 +70,10 @@ export abstract class StoreBase {
 
     // If you trigger a specific set of keys, then it will only trigger that specific set of callbacks (and subscriptions marked
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
-    protected trigger(keyOrKeys?: string|number|(string|number)[]) {
-        let throttleMs: number | undefined;
-        if (this._throttleMs !== undefined) {
-            throttleMs = this._throttleMs;
-        } else {
-            // If the store doens't define any throttling, pick up the default
-            throttleMs = Options.defaultThrottleMs;
-        }
+    protected trigger(keyOrKeys?: KeyOrKeys) {
+        const throttleMs = this._throttleMs !== undefined
+            ? this._throttleMs
+            : Options.defaultThrottleMs;
 
         // If we're throttling, save execution time
         let throttledUntil: number | undefined;
@@ -108,7 +104,8 @@ export abstract class StoreBase {
                     this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
                 });
         } else {
-            const keys = _.map(Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
+            const keys = normalizeKeys(keyOrKeys);
+
             // Key list, so go through each key and queue up the callback
             _.forEach(keys, key => {
                 _.forEach(this._subscriptions[key], callback => {
@@ -242,8 +239,8 @@ export abstract class StoreBase {
     // Subscribe to triggered events from this store.  You can leave the default key, in which case you will be
     // notified of any triggered events, or you can use a key to filter it down to specific event keys you want.
     // Returns a token you can pass back to unsubscribe.
-    subscribe(callback: SubscriptionCallbackFunction, rawKey: string|number = StoreBase.Key_All): number {
-        const key = _.isNumber(rawKey) ? rawKey.toString() : rawKey;
+    subscribe(callback: SubscriptionCallbackFunction, rawKey: string | number = StoreBase.Key_All): number {
+        const key = normalizeKey(rawKey);
 
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
         assert(key && _.isString(key), `Trying to subscribe to invalid key: "${ key }"`);

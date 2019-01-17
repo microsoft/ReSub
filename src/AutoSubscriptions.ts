@@ -64,12 +64,13 @@
 import * as _ from './lodashMini';
 import * as Decorator from './Decorator';
 import Options from './Options';
-import { assert } from './utils';
+import { assert, normalizeKeys, KeyOrKeys } from './utils';
 import { StoreBase } from './StoreBase';
 
 type MetadataIndex = {
     [methodName: string]: MetadataIndexData
 };
+
 type MetadataIndexData = {
     hasAutoSubscribeDecorator?: boolean;
     hasIndex?: never;
@@ -295,10 +296,9 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
 }
 
 export const autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
-export function autoSubscribeWithKey(keyOrKeys: string|number|(string|number)[]) {
-    assert(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using "autoSubscribeWithKey"');
-    const keys = _.map(Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], key => _.isNumber(key) ? key.toString() : key);
-    return makeAutoSubscribeDecorator(true, keys);
+export function autoSubscribeWithKey(keyOrKeys: KeyOrKeys) {
+    assert(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
+    return makeAutoSubscribeDecorator(true, normalizeKeys(keyOrKeys));
 }
 
 // Records which parameter of an @autoSubscribe method is the key used for the subscription.
