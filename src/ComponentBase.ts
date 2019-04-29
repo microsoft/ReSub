@@ -41,7 +41,7 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-export abstract class ComponentBase<P extends React.Props<any>, S extends Object> extends React.Component<P, S> {
+export abstract class ComponentBase<P extends {}, S extends Object> extends React.Component<P, S> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
