@@ -4,6 +4,8 @@
  */
 import { map } from './lodashMini';
 
+const CompoundKeyJoinerString = '%&';
+
 export type KeyOrKeys = string | number | (string | number)[];
 
 export const normalizeKey = (key: string | number): string => (
@@ -13,6 +15,10 @@ export const normalizeKey = (key: string | number): string => (
 export const normalizeKeys = (keyOrKeys: KeyOrKeys): string[] => (
     map(Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], normalizeKey)
 );
+
+export const formCompoundKey = (...keys: (string | number)[]): string => {
+    return keys.map(k => k.toString()).join(CompoundKeyJoinerString);
+};
 
 export const assert = (cond: any, message?: string | undefined) => {
     if (!cond) {

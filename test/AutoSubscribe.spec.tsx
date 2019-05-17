@@ -21,6 +21,7 @@ import ComponentBase from '../src/ComponentBase';
 import { DeepEqualityShouldComponentUpdate } from '../src/ComponentDecorators';
 import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
 import { StoreBase } from '../src/StoreBase';
+import { formCompoundKey } from '../src/utils';
 
 // Instance of the SimpleStore used throughout the test. Re-created for each test.
 let SimpleStoreInstance: SimpleStore;
@@ -63,6 +64,9 @@ interface SimpleProps extends React.Props<any> {
     test_keyedSub?: boolean;
     // Test implementation detail: set to test enum key'd subscriptins
     test_enumKeyedSub?: boolean;
+    // Test implementation detail: set to test compound key subscriptions
+    test_compoundSingleKeySub?: boolean;
+    test_compoundMultiKeySub?: boolean;
 }
 
 // State for component. Could use 'Stateless' if component has no state.
@@ -92,6 +96,12 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
             newState.keyedDataSum = SimpleStoreInstance.getDataSingleKeyed() + SimpleStoreInstance.getDataMultiKeyed();
         } else if (props.test_enumKeyedSub) {
             newState.keyedDataSum = SimpleStoreInstance.getDataSingleEnumKeyed() + SimpleStoreInstance.getDataMultiEnumKeyed();
+        } else if (props.test_compoundSingleKeySub) {
+            newState.keyedDataSum = SimpleStoreInstance.getSingleKeySingleASKey(props.ids[0]) +
+                SimpleStoreInstance.getSingleKeyMultiASKey(props.ids[0]);
+        } else if (props.test_compoundMultiKeySub) {
+            newState.keyedDataSum = SimpleStoreInstance.getMultiKeySingleASKey(props.ids[0], props.ids[1]) +
+                SimpleStoreInstance.getMultiKeyMultiASKey(props.ids[0], props.ids[1]);
         }
 
         newState.storeDatas = props.ids.map(id => SimpleStoreInstance.getStoreData(id));
@@ -199,7 +209,7 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
     const oldState = cloneDeep(Component.state());
 
     // Trigger a change in the store.
-    SimpleStoreInstance.setStoreData(idToChange, newValue);
+    SimpleStoreInstance.setStoreData(idToChange, idToChange, newValue);
 
     if (doesNotAffectComponent) {
         /**
@@ -231,7 +241,7 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance = new SimpleStore();
 
         // Populate the store with some data.
-        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, value));
+        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
 
         // Internal check: the store should have no subscriptions.
         expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
@@ -365,7 +375,7 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
 
-        SimpleStoreInstance.setStoreData('foo', 77);
+        SimpleStoreInstance.setStoreData('foo', 'foo', 77);
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(9);
     });
@@ -385,6 +395,44 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 3);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
         expect(Component.state('keyedDataSum')).toEqual(13);
+    });
+
+    it('autoSubscribeWithKey and key - test single-@key compound key Subscriptions', () => {
+        let expectedState = 1;
+        const Component = makeComponent({ test_compoundSingleKeySub: true, ids: ['a'] });
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(4);
+
+        SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a'], TriggerKeys.First, 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(6);
+
+        SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a'], TriggerKeys.Second, 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(7);
+
+        SimpleStoreInstance.setStoreData('a', formCompoundKey('a', TriggerKeys.First), 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(5);
+    });
+
+    it('autoSubscribeWithKey and key - test multi-@key compound key Subscriptions', () => {
+        let expectedState = 1;
+        const Component = makeComponent({ test_compoundMultiKeySub: true, ids: ['a', 'b'] });
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(10);
+
+        SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a', 'b'], TriggerKeys.First, 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(12);
+
+        SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a', 'b'], TriggerKeys.Second, 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(13);
+
+        SimpleStoreInstance.setStoreData('a', formCompoundKey('a', 'b', TriggerKeys.First), 1);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(11);
     });
 
     it('Manual Subscription triggers', () => {

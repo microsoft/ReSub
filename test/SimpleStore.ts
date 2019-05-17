@@ -8,7 +8,7 @@ import {
     autoSubscribe,
     key,
 } from '../src/AutoSubscriptions';
-import { assert } from '../src/utils';
+import { assert, formCompoundKey } from '../src/utils';
 
 export const enum TriggerKeys {
     First,
@@ -65,9 +65,35 @@ export class SimpleStore extends StoreBase {
         return this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
     }
 
+    @autoSubscribeWithKey(TriggerKeys.First)
+    getSingleKeySingleASKey(@key id: string): number {
+        return this._get(id) + this._subscribeWithEnumKeyData[TriggerKeys.First];
+    }
+
+    @autoSubscribeWithKey([TriggerKeys.First, TriggerKeys.Second])
+    getSingleKeyMultiASKey(@key id: string): number {
+        return this._get(id) + this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
+    }
+
+    @autoSubscribeWithKey(TriggerKeys.First)
+    getMultiKeySingleASKey(@key id: string, @key id2: string): number {
+        return this._get(id) + this._get(id2) + this._subscribeWithEnumKeyData[TriggerKeys.First];
+    }
+
+    @autoSubscribeWithKey([TriggerKeys.First, TriggerKeys.Second])
+    getMultiKeyMultiASKey(@key id: string, @key id2: string): number {
+        return this._get(id) + this._get(id2) +
+            this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
+    }
+
     setStoreDataForKeyedSubscription(key: 'A'|'B', data: number): void {
         this._subscribeWithKeyData[key] = data;
         this.trigger(key);
+    }
+
+    setStoreDataForCompoundEnumKeyedSubscription(idOrIds: string[], key: TriggerKeys, data: number): void {
+        this._subscribeWithEnumKeyData[key] = data;
+        this.trigger(formCompoundKey(...idOrIds, key));
     }
 
     setStoreDataForEnumKeyedSubscription(key: TriggerKeys, data: number): void {
@@ -85,12 +111,12 @@ export class SimpleStore extends StoreBase {
     // Note: explicitly adding decorator so the tests always works, even outside of debug mode. This is not necessary
     // in real stores, as explained above clearStoreData.
     @warnIfAutoSubscribeEnabled
-    setStoreData(id: string, storeData: StoreData) {
+    setStoreData(id: string, triggerKey: string, storeData: StoreData) {
         const old = this._storeDataById[id];
         this._storeDataById[id] = storeData;
 
         if (!isEqual(old, storeData)) {
-            this.trigger(id);
+            this.trigger(triggerKey);
         }
     }
 
