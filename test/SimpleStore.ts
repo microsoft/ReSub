@@ -66,22 +66,22 @@ export class SimpleStore extends StoreBase {
     }
 
     @autoSubscribeWithKey(TriggerKeys.First)
-    getSingleKeySingleASKey(@key id: string): number {
+    getSingleKeySingleAutoSubKey(@key id: string): number {
         return this._get(id) + this._subscribeWithEnumKeyData[TriggerKeys.First];
     }
 
     @autoSubscribeWithKey([TriggerKeys.First, TriggerKeys.Second])
-    getSingleKeyMultiASKey(@key id: string): number {
+    getSingleKeyMultiAutoSubKey(@key id: string): number {
         return this._get(id) + this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
     }
 
     @autoSubscribeWithKey(TriggerKeys.First)
-    getMultiKeySingleASKey(@key id: string, @key id2: string): number {
+    getMultiKeySingleAutoSubKey(@key id: string, @key id2: string): number {
         return this._get(id) + this._get(id2) + this._subscribeWithEnumKeyData[TriggerKeys.First];
     }
 
     @autoSubscribeWithKey([TriggerKeys.First, TriggerKeys.Second])
-    getMultiKeyMultiASKey(@key id: string, @key id2: string): number {
+    getMultiKeyMultiAutoSubKey(@key id: string, @key id2: string): number {
         return this._get(id) + this._get(id2) +
             this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
     }

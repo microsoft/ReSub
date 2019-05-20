@@ -73,12 +73,7 @@ type MetadataIndex = {
 
 type MetadataIndexData = {
     hasAutoSubscribeDecorator?: boolean;
-    hasIndex?: never;
-    indexes?: number[];
-} | {
-    hasAutoSubscribeDecorator?: boolean;
-    hasIndex: true;
-    indexes: number[];
+    keyIndexes?: number[];
 };
 type MetadataProperties = { __decorated?: boolean; };
 type Metadata = MetadataIndex & MetadataProperties;
@@ -247,8 +242,8 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues?: string[]
 
             // Try to find an @key parameter in the target's metadata and form initial Key(s) from it/them.
             let keyParamValues: (string | number)[] = [];
-            if (metaForMethod.hasIndex) {
-                keyParamValues = metaForMethod.indexes.map(index => {
+            if (metaForMethod.keyIndexes) {
+                keyParamValues = metaForMethod.keyIndexes.map(index => {
                     let keyArg: number | string = args[index];
 
                     if (_.isNumber(keyArg)) {
@@ -304,7 +299,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues?: string[]
 
 export const autoSubscribe = makeAutoSubscribeDecorator(true, undefined);
 export function autoSubscribeWithKey(keyOrKeys: KeyOrKeys) {
-    assert(keyOrKeys !== undefined, 'Must specify a key when using autoSubscribeWithKey');
+    assert(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     return makeAutoSubscribeDecorator(true, normalizeKeys(keyOrKeys));
 }
 
@@ -318,8 +313,7 @@ export function key(target: InstanceTarget, methodName: string, index: number) {
 
     // Save this parameter's index into the target's metadata.  Stuff it at the front since decorators
     // seem to resolve in reverse order of arguments..?
-    metaForMethod.indexes = [index].concat(metaForMethod.indexes || []);
-    metaForMethod.hasIndex = true;
+    metaForMethod.keyIndexes = [index].concat(metaForMethod.keyIndexes || []);
 }
 
 export function disableWarnings<T extends Function>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) {
