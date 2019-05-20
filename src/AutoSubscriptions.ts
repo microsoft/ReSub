@@ -64,7 +64,7 @@
 import * as _ from './lodashMini';
 import * as Decorator from './Decorator';
 import Options from './Options';
-import { assert, normalizeKeys, KeyOrKeys } from './utils';
+import { assert, normalizeKeys, KeyOrKeys, formCompoundKey } from './utils';
 import { StoreBase } from './StoreBase';
 
 type MetadataIndex = {
@@ -73,12 +73,7 @@ type MetadataIndex = {
 
 type MetadataIndexData = {
     hasAutoSubscribeDecorator?: boolean;
-    hasIndex?: never;
-    index?: number
-} | {
-    hasAutoSubscribeDecorator?: boolean;
-    hasIndex: true;
-    index: number
+    keyIndexes?: number[];
 };
 type MetadataProperties = { __decorated?: boolean; };
 type Metadata = MetadataIndex & MetadataProperties;
@@ -213,7 +208,7 @@ export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(f
 };
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
-function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[]): MethodDecorator {
+function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues?: string[]): MethodDecorator {
     return <T>(target: InstanceTarget, methodName: string|symbol, descriptor: TypedPropertyDescriptor<T>) => {
         const methodNameString = methodName.toString();
         const targetWithMetadata = instanceTargetToInstanceTargetWithMetadata(target);
@@ -245,28 +240,35 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
                 return existingMethod.apply(this, args);
             }
 
-            // Let the handler know about this auto-subscriptions, then proceed to the existing method.
+            // Try to find an @key parameter in the target's metadata and form initial Key(s) from it/them.
+            let keyParamValues: (string | number)[] = [];
+            if (metaForMethod.keyIndexes) {
+                keyParamValues = metaForMethod.keyIndexes.map(index => {
+                    let keyArg: number | string = args[index];
 
-            // Default to Key_All if no @key parameter.
-            let specificKeyValues = defaultKeyValues;
-
-            // Try to find an @key parameter in the target's metadata.
-            if (metaForMethod.hasIndex) {
-                let keyArg: number | string = args[metaForMethod.index];
-
-                if (_.isNumber(keyArg)) {
-                    keyArg = keyArg.toString();
-                }
-
-                assert(keyArg, `@key parameter must be given a non-empty string or number: ` +
-                    `"${ methodNameString }"@${ metaForMethod.index } was given ${ JSON.stringify(keyArg) }`);
-
-                assert(_.isString(keyArg), `@key parameter must be given a string or number: ` +
-                    `"${ methodNameString }"@${ metaForMethod.index }`);
-
-                specificKeyValues = [keyArg];
+                    if (_.isNumber(keyArg)) {
+                        keyArg = keyArg.toString();
+                    }
+    
+                    assert(keyArg, `@key parameter must be given a non-empty string or number: ` +
+                        `"${ methodNameString }"@${ index } was given ${ JSON.stringify(keyArg) }`);
+    
+                    assert(_.isString(keyArg), `@key parameter must be given a string or number: ` +
+                        `"${ methodNameString }"@${ index }`);
+                    
+                    return keyArg;
+                });
             }
 
+            // Form a list of keys to trigger.
+            // If we have @key values, put them first, then append the @autosubscribewithkey key to the end.
+            // If there are multiple keys in the @autosubscribewithkey list, go through each one and do the
+            // same thing (@key then value).  If there's neither @key nor @autosubscribewithkey, it's Key_All.
+            const specificKeyValues: string[] = (defaultKeyValues && defaultKeyValues.length > 0) ?
+                _.map(defaultKeyValues, kv => formCompoundKey(...keyParamValues.concat(kv))) :
+                [(keyParamValues.length > 0) ? formCompoundKey(...keyParamValues) : StoreBase.Key_All];
+
+            // Let the handler know about this auto-subscriptions, then proceed to the existing method.
             let wasInAutoSubscribe: boolean;
             const result = _tryFinally(() => {
                 // Disable further auto-subscriptions if shallow.
@@ -295,7 +297,7 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues: string[])
     };
 }
 
-export const autoSubscribe = makeAutoSubscribeDecorator(true, [StoreBase.Key_All]);
+export const autoSubscribe = makeAutoSubscribeDecorator(true, undefined);
 export function autoSubscribeWithKey(keyOrKeys: KeyOrKeys) {
     assert(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     return makeAutoSubscribeDecorator(true, normalizeKeys(keyOrKeys));
@@ -309,11 +311,9 @@ export function key(target: InstanceTarget, methodName: string, index: number) {
     // Shorthand.
     const metaForMethod = getMethodMetadata(targetWithMetadata, methodName);
 
-    assert(!metaForMethod.hasIndex, `Can only apply @key once per method: only the first will be used "${ methodName }"@${ index }`);
-
-    // Save this parameter's index into the target's metadata.
-    metaForMethod.index = index;
-    metaForMethod.hasIndex = true;
+    // Save this parameter's index into the target's metadata.  Stuff it at the front since decorators
+    // seem to resolve in reverse order of arguments..?
+    metaForMethod.keyIndexes = [index].concat(metaForMethod.keyIndexes || []);
 }
 
 export function disableWarnings<T extends Function>(target: InstanceTarget, methodName: string, descriptor: TypedPropertyDescriptor<T>) {

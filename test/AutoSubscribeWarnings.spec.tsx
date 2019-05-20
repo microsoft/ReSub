@@ -13,7 +13,7 @@ describe('AutoSubscribeWarnings', () => {
         class Component extends ComponentBase<{}, {}> {
             protected _buildState() {
                 // Test implementation detail: makes sure to use a method that will cause a warning (e.g. a setter).
-                expect(() => store.setStoreData(WARN_IN_BUILD_STATE, 1)).toThrowError(WARNING_MESSAGE);
+                expect(() => store.setStoreData(WARN_IN_BUILD_STATE, WARN_IN_BUILD_STATE, 1)).toThrowError(WARNING_MESSAGE);
                 return {};
             }
 
