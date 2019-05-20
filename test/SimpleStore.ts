@@ -101,6 +101,11 @@ export class SimpleStore extends StoreBase {
         this.trigger(key);
     }
 
+    @disableWarnings
+    triggerArbitraryKey(key: string | number | undefined): void {
+        this.trigger(key);
+    }
+
     // Setters should not be called when auto-subscribe is enabled.
     // Note: @warnIfAutoSubscribeEnabled is automatically added (in debug mode) to any method missing @autoSubscribe
     // or @disableWarnings. That will catch the case where setters are called in a _buildState.

@@ -180,7 +180,11 @@ class TodoList extends ComponentBase<TodoListProps, TodoListState> {
 
 Sometimes, either when a single store contains hierarchical data, or when you have more than one parameter to a function that you'd like to have key-based subscriptions to (i.e. a user and a name of an object that the user has), the single @key mechanism isn't good enough.  We've added the ability to put @key on multiple parameters to a function, and ReSub concatenates them with the `formCompoundKey` function (also exported by ReSub) to form the actual subscription key.  You can also combine this with @autoSubscribeWithKey to have even more hierarchy on your data.  Note that the @autoSubscribeWithKey value always goes on the _end_ of the compound key, since it should be the most selective part of your hierarchy.
 
-To trigger these compound keys, you execute `this.trigger(ReSub.formCompoundKey('key1val', 'key2val', 'autoSubscribeWithKeyval'))` and it will trigger the key to match the autosubscription of your function.  Example:
+To trigger these compound keys, you execute `this.trigger(ReSub.formCompoundKey('key1val', 'key2val', 'autoSubscribeWithKeyval'))` and it will trigger the key to match the autosubscription of your function.
+
+*NOTE:* Compound keys themselves don't actually support any sort of hierarchy.  If you don't trigger EXACTLY the correct key, your subscriptions will not update.  If you have a key of `['a', 'b', 'c']`, and you trigger `['a', 'b']`, you will be disappointed to find that none of your subscribed components update.  Compound keys are designed to help you provide discrete updates within a hierarchy of data, but are not designed to allow for updating wide swaths of that hierarchy.
+
+Example of correct usage:
 
 ```typescript
 enum TriggerKeys {

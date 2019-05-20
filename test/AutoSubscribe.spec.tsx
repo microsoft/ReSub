@@ -367,6 +367,10 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
         expect(Component.state('keyedDataSum')).toEqual(13);
+
+        // Showing that you can't use a compound key as a multi-trigger
+        SimpleStoreInstance.triggerArbitraryKey(formCompoundKey('A', 'B'));
+        expect(Component.state('stateChanges')).toEqual(expectedState);
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
@@ -378,6 +382,10 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreData('foo', 'foo', 77);
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(9);
+
+        // Showing that you can't use a compound key as a multi-trigger either
+        SimpleStoreInstance.triggerArbitraryKey(formCompoundKey('A', 'B'));
+        expect(Component.state('stateChanges')).toEqual(expectedState);
     });
 
     it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
@@ -414,6 +422,19 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreData('a', formCompoundKey('a', TriggerKeys.First), 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
         expect(Component.state('keyedDataSum')).toEqual(5);
+
+        // This will still trigger a single state update, but will change nothing
+        SimpleStoreInstance.triggerArbitraryKey(undefined);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(5);
+
+        // None of these keys should trigger any subscription changes
+        SimpleStoreInstance.setStoreData('a', 'a', 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        SimpleStoreInstance.setStoreData('a', 'b', 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        SimpleStoreInstance.setStoreData('a', TriggerKeys.First.toString(), 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
     });
 
     it('autoSubscribeWithKey and key - test multi-@key compound key Subscriptions', () => {
@@ -433,6 +454,21 @@ describe('AutoSubscribe', function () {
         SimpleStoreInstance.setStoreData('a', formCompoundKey('a', 'b', TriggerKeys.First), 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
         expect(Component.state('keyedDataSum')).toEqual(11);
+
+        // This will still trigger a single state update, but will change nothing
+        SimpleStoreInstance.triggerArbitraryKey(undefined);
+        expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.state('keyedDataSum')).toEqual(11);
+
+        // None of these keys should trigger any subscription changes
+        SimpleStoreInstance.setStoreData('a', 'a', 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        SimpleStoreInstance.setStoreData('a', 'b', 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        SimpleStoreInstance.setStoreData('a', TriggerKeys.First.toString(), 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
+        SimpleStoreInstance.setStoreData('a', formCompoundKey('a', 'b'), 1);
+        expect(Component.state('stateChanges')).toEqual(expectedState);
     });
 
     it('Manual Subscription triggers', () => {

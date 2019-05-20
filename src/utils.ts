@@ -17,7 +17,7 @@ export const normalizeKeys = (keyOrKeys: KeyOrKeys): string[] => (
 );
 
 export const formCompoundKey = (...keys: (string | number)[]): string => {
-    return keys.map(k => k.toString()).join(CompoundKeyJoinerString);
+    return keys.join(CompoundKeyJoinerString);
 };
 
 export const assert = (cond: any, message?: string | undefined) => {
