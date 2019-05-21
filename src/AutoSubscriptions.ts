@@ -208,7 +208,7 @@ export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(f
 };
 
 // Triggers the handler of the most recent @enableAutoSubscribe method called up the call stack.
-function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues?: string[]): MethodDecorator {
+function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[]): MethodDecorator {
     return <T>(target: InstanceTarget, methodName: string|symbol, descriptor: TypedPropertyDescriptor<T>) => {
         const methodNameString = methodName.toString();
         const targetWithMetadata = instanceTargetToInstanceTargetWithMetadata(target);
@@ -264,8 +264,8 @@ function makeAutoSubscribeDecorator(shallow = false, defaultKeyValues?: string[]
             // If we have @key values, put them first, then append the @autosubscribewithkey key to the end.
             // If there are multiple keys in the @autosubscribewithkey list, go through each one and do the
             // same thing (@key then value).  If there's neither @key nor @autosubscribewithkey, it's Key_All.
-            const specificKeyValues: string[] = (defaultKeyValues && defaultKeyValues.length > 0) ?
-                _.map(defaultKeyValues, kv => formCompoundKey(...keyParamValues.concat(kv))) :
+            const specificKeyValues: string[] = (autoSubscribeKeys && autoSubscribeKeys.length > 0) ?
+                _.map(autoSubscribeKeys, autoSubKey => formCompoundKey(...keyParamValues.concat(autoSubKey))) :
                 [(keyParamValues.length > 0) ? formCompoundKey(...keyParamValues) : StoreBase.Key_All];
 
             // Let the handler know about this auto-subscriptions, then proceed to the existing method.

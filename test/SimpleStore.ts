@@ -75,6 +75,11 @@ export class SimpleStore extends StoreBase {
         return this._get(id) + this._subscribeWithEnumKeyData[TriggerKeys.First] + this._subscribeWithEnumKeyData[TriggerKeys.Second];
     }
 
+    @autoSubscribe
+    getMultiKeyNoAutoSubKey(@key id: string, @key id2: string): number {
+        return this._get(id) + this._get(id2);
+    }
+
     @autoSubscribeWithKey(TriggerKeys.First)
     getMultiKeySingleAutoSubKey(@key id: string, @key id2: string): number {
         return this._get(id) + this._get(id2) + this._subscribeWithEnumKeyData[TriggerKeys.First];
@@ -117,12 +122,9 @@ export class SimpleStore extends StoreBase {
     // in real stores, as explained above clearStoreData.
     @warnIfAutoSubscribeEnabled
     setStoreData(id: string, triggerKey: string, storeData: StoreData) {
-        const old = this._storeDataById[id];
         this._storeDataById[id] = storeData;
 
-        if (!isEqual(old, storeData)) {
-            this.trigger(triggerKey);
-        }
+        this.trigger(triggerKey);
     }
 
     // Internal methods to StoreBase are safe to call regardless of auto-subscribe, so disable any warnings.
