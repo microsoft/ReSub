@@ -409,3 +409,9 @@ incorrect-state-access rule doesn't check abstract methods called from component
     "componentWillUnmount"
 ],
 ```
+
+## ESLint rules
+
+> [TSLint will be deprecated some time in 2019](https://github.com/palantir/tslint)
+
+If you plan to migrate your projects from TSLint to ESlint and want to continue using the _rules_ to automate search common problems in *ReSub* usage, you can use [eslint-plugin-resub](https://github.com/a-tarasyuk/eslint-plugin-resub).
