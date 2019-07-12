@@ -385,6 +385,16 @@ It is fine to use ReSub without TypeScript, but without access to TypeScript’s
 
 At the very least, developers can still leverage the organizational patterns of `ComponentBase` and `StoreBase`, and any virtual functions that subclasses implement will still be called.
 
+## Using ReSub with Babel
+ReSub relies heavily on typescript decorators, which are not supported out of the box when transpiling typescript via babel. If you choose to transpile your project with Babel, be sure to add the following to your babel config:
+
+```json
+  plugins: [
+    ["@babel/plugin-proposal-decorators", { legacy: true }],
+    "babel-plugin-parameter-decorator"
+  ],
+```
+
 ## TSLint rules
 
 We have couple of tslint rules to automate search of common problems in ReSub usage.
