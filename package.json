@@ -1,6 +1,6 @@
 {
   "name": "resub",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
@@ -17,41 +17,41 @@
     "test:watch": "run-s clean:* karma:watch"
   },
   "dependencies": {
-    "lodash": "^4.17.0",
-    "tslib": "^1.9.1"
+    "lodash": "^4.17.14",
+    "tslib": "^1.10.0"
   },
   "peerDependencies": {
-    "react": "^16.0.0"
+    "react": "^16.8.6"
   },
   "devDependencies": {
-    "@types/enzyme": "3.9.1",
+    "@types/enzyme": "3.10.3",
     "@types/enzyme-adapter-react-16": "1.0.5",
-    "@types/jasmine": "3.3.12",
-    "@types/lodash": "4.14.116",
-    "@types/react": "16.4.14",
-    "@types/react-dom": "16.0.11",
-    "enzyme": "3.9.0",
-    "enzyme-adapter-react-16": "1.12.1",
-    "fork-ts-checker-webpack-plugin": "1.0.3",
+    "@types/jasmine": "3.3.13",
+    "@types/lodash": "4.14.136",
+    "@types/react": "16.8.23",
+    "@types/react-dom": "16.8.4",
+    "enzyme": "3.10.0",
+    "enzyme-adapter-react-16": "1.14.0",
+    "fork-ts-checker-webpack-plugin": "1.4.3",
     "jasmine": "3.4.0",
     "jasmine-core": "3.4.0",
-    "karma": "4.1.0",
-    "karma-chrome-launcher": "2.2.0",
+    "karma": "4.2.0",
+    "karma-chrome-launcher": "3.0.0",
     "karma-jasmine": "2.0.1",
-    "karma-jasmine-html-reporter": "1.4.0",
+    "karma-jasmine-html-reporter": "1.4.2",
     "karma-sourcemap-loader": "0.3.7",
     "karma-spec-reporter": "0.0.32",
-    "karma-webpack": "4.0.0-beta.0",
+    "karma-webpack": "4.0.2",
     "npm-run-all": "4.1.5",
     "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react-dom": "^16.8.6",
     "rimraf": "2.6.3",
-    "ts-loader": "5.3.3",
-    "ts-node": "8.1.0",
-    "tslint": "5.16.0",
-    "tslint-microsoft-contrib": "6.1.1",
-    "typescript": "3.4.4",
-    "webpack": "4.30.0"
+    "ts-loader": "6.0.4",
+    "ts-node": "8.3.0",
+    "tslint": "5.18.0",
+    "tslint-microsoft-contrib": "6.2.0",
+    "typescript": "3.5.3",
+    "webpack": "4.35.3"
   },
   "repository": {
     "type": "git",
