@@ -28,11 +28,11 @@ export class Rule extends Rules.AbstractRule {
 class OverrideCallsSuperWalker extends RuleWalker {
     private _methodNamesToCheck: string[] = [];
 
-    addOverrideMethodToCheck(methodName: string) {
+    addOverrideMethodToCheck(methodName: string): void {
         this._methodNamesToCheck.push(methodName);
     }
 
-    visitMethodDeclaration(node: ts.MethodDeclaration) {
+    visitMethodDeclaration(node: ts.MethodDeclaration): void {
         const methodName = node.name.getText();
 
         if (_.includes(this._methodNamesToCheck, methodName)) {
@@ -43,7 +43,7 @@ class OverrideCallsSuperWalker extends RuleWalker {
         super.visitMethodDeclaration(node);
     }
 
-    private _checkOverrideCallsSuper(node: ts.MethodDeclaration, methodName: string) {
+    private _checkOverrideCallsSuper(node: ts.MethodDeclaration, methodName: string): void {
         // Must have a call to super (for the same method name) in the top-level list of statements.
         let hasSuperCall = false;
         if (node.body) {
@@ -78,11 +78,10 @@ class OverrideCallsSuperWalker extends RuleWalker {
         }
     }
 
-    private _hasSuperCallForSameMethodName(node: ts.Node, methodName: string) {
+    private _hasSuperCallForSameMethodName(node: ts.Node, methodName: string): boolean {
         const text = node.getText();
+        let match: RegExpExecArray | null;
 
-        let match: RegExpExecArray|null;
-        // tslint:disable-next-line
         while ((match = SUPER_REGEXP.exec(text))) {
             if (match[1] === methodName) {
                 // This method is fine, so we can bail early.

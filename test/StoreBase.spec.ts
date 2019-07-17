@@ -8,7 +8,7 @@
 import { StoreBase } from '../src/StoreBase';
 import Options from '../src/Options';
 
-type TKeys = Array<string>|undefined;
+type TKeys = string[] | undefined;
 
 class BraindeadStore extends StoreBase {
     Key_Something = 'abc';
@@ -21,7 +21,7 @@ class BraindeadStore extends StoreBase {
     keyKeys: TKeys;
     keySub!: number;
 
-    setupSubs() {
+    setupSubs(): void {
         this.allSub = this.subscribe((keys: TKeys) => {
             this.foundAll = true;
             this.allKeys = keys;
@@ -33,21 +33,21 @@ class BraindeadStore extends StoreBase {
         }, this.Key_Something);
     }
 
-    emitAll() {
+    emitAll(): void {
         this.trigger();
     }
 
-    emitSomething() {
+    emitSomething(): void {
         this.trigger(this.Key_Something);
     }
 
-    emitSomethings() {
+    emitSomethings(): void {
         this.trigger([this.Key_Something, this.Key_Something2]);
     }
 }
 
 class TriggerableStore extends StoreBase {
-    emit(keys: string[]) {
+    emit(keys: string[]): void {
         this.trigger(keys);
     }
 }
@@ -204,7 +204,7 @@ describe('StoreBase', function () {
     it('Subscription callbacks de-dupe', () => {
         let store = new BraindeadStore(100, false);
         let callbackCount = 0;
-        const subCallback = () => {
+        const subCallback = (): void => {
             callbackCount++;
         };
 
@@ -224,7 +224,7 @@ describe('StoreBase', function () {
         let store = new BraindeadStore(100, false);
         let store2 = new BraindeadStore(0, false);
         let callbackCount = 0;
-        const subCallback = (keys?: string[]) => {
+        const subCallback = (keys?: string[]): void => {
             expect(keys).toEqual(['abc', 'def']);
             callbackCount++;
         };
@@ -249,7 +249,7 @@ describe('StoreBase', function () {
         // Test an insane amount of trigger keys so we don't end up with a stack overflow
         let store = new TriggerableStore();
         let callbackCalled = false;
-        const subCallback = (keys?: string[]) => {
+        const subCallback = (keys?: string[]): void => {
             expect(keys!!!.length).toEqual(150001);
             callbackCalled = true;
         };
@@ -259,7 +259,7 @@ describe('StoreBase', function () {
         StoreBase.pushTriggerBlock();
         store.emit(['foo']);
         let keysToTrigger: string[] = [];
-        for (var i = 0; i < 150000; i++) {
+        for (let i = 0; i < 150000; i++) {
             keysToTrigger.push(i.toString());
         }
         store.emit(keysToTrigger);

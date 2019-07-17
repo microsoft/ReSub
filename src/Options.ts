@@ -6,8 +6,7 @@
 * Basic options for ReSub.
 */
 
-import * as _ from './lodashMini';
-
+// eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IOptions {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want
     setTimeout: <T extends any[]>(handler: (params: T) => void, timeout?: number | undefined , ...params: T) => number;
@@ -26,10 +25,11 @@ export interface IOptions {
     development: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IProcess {
     env: { NODE_ENV?: string };
 }
-declare var process: IProcess;
+declare var process: IProcess; // eslint-disable-line no-var
 
 let OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),

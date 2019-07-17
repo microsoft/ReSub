@@ -24,7 +24,11 @@ export interface AutoSubscription {
     used: boolean;
 }
 
-type CallbackMetadata = { keys: string[] | null, throttledUntil: number | undefined, bypassBlock: boolean };
+interface CallbackMetadata {
+    keys: string[] | null;
+    throttledUntil: number | undefined;
+    bypassBlock: boolean;
+}
 type CallbackMap = Map<SubscriptionCallbackFunction, CallbackMetadata>;
 
 export abstract class StoreBase {
@@ -34,11 +38,16 @@ export abstract class StoreBase {
     private readonly _autoSubscriptions: _.Dictionary<AutoSubscription[]> = {};
 
     private _subTokenNum = 1;
-    private readonly _subsByNum: { [token: number]: { key: string, callback: SubscriptionCallbackFunction, } } = {};
+    private readonly _subsByNum: {
+        [token: number]: {
+            key: string;
+            callback: SubscriptionCallbackFunction;
+        };
+    } = {};
 
     readonly storeId = _.uniqueId('store');
 
-    private _throttleData: { timerId: number, callbackTime: number } | undefined;
+    private _throttleData: { timerId: number; callbackTime: number } | undefined;
 
     private static _triggerPending = false;
     private static _isTriggering = false;
@@ -46,11 +55,11 @@ export abstract class StoreBase {
     private static _bypassThrottle = false;
     private static readonly _pendingCallbacks: CallbackMap = new Map();
 
-    static pushTriggerBlock() {
+    static pushTriggerBlock(): void {
         this._triggerBlockCount++;
     }
 
-    static popTriggerBlock() {
+    static popTriggerBlock(): void {
         this._triggerBlockCount--;
         assert(this._triggerBlockCount >= 0, 'Over-popped trigger blocks!');
 
@@ -59,7 +68,7 @@ export abstract class StoreBase {
         }
     }
 
-    static setThrottleStatus(enabled: boolean) {
+    static setThrottleStatus(enabled: boolean): void {
         this._bypassThrottle = !enabled;
 
         StoreBase._resolveCallbacks();
@@ -70,7 +79,7 @@ export abstract class StoreBase {
 
     // If you trigger a specific set of keys, then it will only trigger that specific set of callbacks (and subscriptions marked
     // as "All" keyed).  If the key is all, it will trigger all callbacks.
-    protected trigger(keyOrKeys?: KeyOrKeys) {
+    protected trigger(keyOrKeys?: KeyOrKeys): void {
         const throttleMs = this._throttleMs !== undefined
             ? this._throttleMs
             : Options.defaultThrottleMs;
@@ -132,7 +141,7 @@ export abstract class StoreBase {
         }
     }
 
-    private static _updateExistingMeta(meta: CallbackMetadata | undefined, throttledUntil: number|undefined, bypassBlock: boolean) {
+    private static _updateExistingMeta(meta: CallbackMetadata | undefined, throttledUntil: number|undefined, bypassBlock: boolean): void {
         if (!meta) {
             return;
         }
@@ -187,9 +196,9 @@ export abstract class StoreBase {
     private _handleThrottledCallbacks = () => {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
-    }
+    };
 
-    private static _resolveCallbacks() {
+    private static _resolveCallbacks(): void {
         // Prevent a store from triggering while it's already in a trigger state
         if (StoreBase._isTriggering) {
             StoreBase._triggerPending = true;
@@ -262,7 +271,7 @@ export abstract class StoreBase {
     }
 
     // Unsubscribe from a previous subscription.  Pass in the token the subscribe function handed you.
-    unsubscribe(subToken: number) {
+    unsubscribe(subToken: number): void {
         assert(this._subsByNum[subToken], `No subscriptions found for token ${ subToken }`);
 
         let key = this._subsByNum[subToken].key;
@@ -291,7 +300,7 @@ export abstract class StoreBase {
         }
     }
 
-    trackAutoSubscription(subscription: AutoSubscription) {
+    trackAutoSubscription(subscription: AutoSubscription): void {
         const key = subscription.key;
         const callbacks = this._autoSubscriptions[key];
         if (!callbacks) {
@@ -305,7 +314,7 @@ export abstract class StoreBase {
         }
     }
 
-    removeAutoSubscription(subscription: AutoSubscription) {
+    removeAutoSubscription(subscription: AutoSubscription): void {
         const key = subscription.key;
         let subs = this._autoSubscriptions[key];
 
@@ -340,7 +349,7 @@ export abstract class StoreBase {
         return _.union(Object.keys(this._subscriptions), Object.keys(this._autoSubscriptions));
     }
 
-    protected _isTrackingKey(key: string) {
+    protected _isTrackingKey(key: string): boolean {
         return !!this._subscriptions[key] || !!this._autoSubscriptions[key];
     }
 }

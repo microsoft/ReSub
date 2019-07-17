@@ -7,13 +7,14 @@
  */
 
 import * as React from 'react';
+import { ReactElement } from 'react';
 import {
     includes,
     cloneDeep,
     isEmpty,
     clone,
     each,
-    uniq,
+    uniq
 } from 'lodash';
 import { mount, ReactWrapper } from 'enzyme';
 
@@ -33,7 +34,7 @@ const keys = {
     missing: 'missing',
     // The store has this key from the start, but components never ask for it (i.e. auto-subscribe to it) directly.
     // Thus, changes to this key will cause _buildState to be called iff a component is subscribed to Key_All.
-    not_in_ids: '!ids',
+    not_in_ids: '!ids'
 };
 
 // Holds the next new unique StoreData value.
@@ -114,7 +115,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
         return newState;
     }
 
-    render() {
+    render(): ReactElement<any> {
         return (
             <div>Not testing render...</div>
         );
@@ -127,11 +128,11 @@ class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState
     // for which this component is subscribed (e.g. SimpleStore).
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
-    protected _buildState(props: SimpleProps, initialBuild: boolean) {
+    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> | undefined {
         return undefined;
     }
 
-    render() {
+    render(): ReactElement<any> {
         return (
             <div>Not testing render...</div>
         );
@@ -149,7 +150,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
     const Component: ReactWrapper<any, any> = mount(<SimpleComponent { ...props } />);
     const {
         stateChanges,
-        storeDatas,
+        storeDatas
     } = Component.state();
 
     // Internal check: state should have one change.

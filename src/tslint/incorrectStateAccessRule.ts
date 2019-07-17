@@ -16,7 +16,6 @@ const DEBUG = false;
 const ERROR_MESSAGE = 'this.state is undefined in componentWillMount callback.';
 
 export class Rule extends Lint.Rules.AbstractRule {
-    /* tslint:disable:object-literal-sort-keys */
     static metadata: Lint.IRuleMetadata = {
         ruleName: 'incorrect-state-access',
         description: 'Bans state access for ReSub components',
@@ -24,7 +23,7 @@ export class Rule extends Lint.Rules.AbstractRule {
         optionsDescription: '',
         options: {},
         type: 'functionality',
-        typescriptOnly: true,
+        typescriptOnly: true
     };
 
     apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
@@ -66,11 +65,11 @@ function analyzeMethodBody(node: ts.Node): void {
             analyzeNodeChildren(node, 'PropertyExpression', true);
         }
     } else {
-       analyzeNodeChildren(node, 'Node');
+        analyzeNodeChildren(node, 'Node');
     }
 }
 
-function analyzeNodeChildren(node: ts.Node, context: string, skip?: boolean) {
+function analyzeNodeChildren(node: ts.Node, context: string, skip?: boolean): void {
     if (DEBUG) {
         console.log(context, node.kind, node.getText());
     }
@@ -80,7 +79,7 @@ function analyzeNodeChildren(node: ts.Node, context: string, skip?: boolean) {
     }
 }
 
-function walk(ctx: Lint.WalkContext<string[]>) {
+function walk(ctx: Lint.WalkContext<string[]>): void {
     return ts.forEachChild(ctx.sourceFile, function cb(node): void {
         if (isMethodDeclaration(node)) {
             const methodName = node.name.getText();
@@ -108,10 +107,10 @@ function walk(ctx: Lint.WalkContext<string[]>) {
 
                 if (!visitedMethods[method.name]) {
                     visitedMethods[method.name] = true;
-                    method.stateNodes.forEach((node : ts.Node) => {
-                            ctx.addFailureAtNode(node, ERROR_MESSAGE);
-                        }
-                    );
+                    method.stateNodes.forEach((node: ts.Node) => {
+                        ctx.addFailureAtNode(node, ERROR_MESSAGE);
+                    });
+
                     method.calling.forEach((name: string) => {
                         const called = methods[name];
                         if (called) {
