@@ -20,28 +20,28 @@ export type StoreData = number;
 // Needs class decorator to support auto-subscriptions.
 @AutoSubscribeStore
 export class SimpleStore extends StoreBase {
-    private _storeDataById: { [id: string]: StoreData } = {};
+    private _storeDataById: Record<string, StoreData> = {};
     private _subscribeWithKeyData = {
         A: 0,
-        B: 0
+        B: 0,
     };
 
     private _subscribeWithEnumKeyData = {
         [TriggerKeys.First]: 0,
-        [TriggerKeys.Second]: 0
+        [TriggerKeys.Second]: 0,
     };
 
     // Auto-subscribes to Key_All (by default) since any change will affect the returned data.
     // Note: using the dangerous*Mutable convention since the returned data is not a copy.
     @autoSubscribe
-    dangerousGetAllStoreDataMutable() {
+    dangerousGetAllStoreDataMutable(): Record<string, StoreData> {
         return this._storeDataById;
     }
 
     // Auto-subscribes to the key given by 'id' (note: @key decorator on 'id') since only changes on that 'id' affects
     // the returned data.
     @autoSubscribe
-    getStoreData(@key id: string) {
+    getStoreData(@key id: string): StoreData {
         return this._get(id);
     }
 
@@ -114,14 +114,14 @@ export class SimpleStore extends StoreBase {
     // Setters should not be called when auto-subscribe is enabled.
     // Note: @warnIfAutoSubscribeEnabled is automatically added (in debug mode) to any method missing @autoSubscribe
     // or @disableWarnings. That will catch the case where setters are called in a _buildState.
-    clearStoreData() {
+    clearStoreData(): void {
         this._storeDataById = {};
     }
 
     // Note: explicitly adding decorator so the tests always works, even outside of debug mode. This is not necessary
     // in real stores, as explained above clearStoreData.
     @warnIfAutoSubscribeEnabled
-    setStoreData(id: string, triggerKey: string, storeData: StoreData) {
+    setStoreData(id: string, triggerKey: string, storeData: StoreData): void {
         this._storeDataById[id] = storeData;
 
         this.trigger(triggerKey);
@@ -129,7 +129,7 @@ export class SimpleStore extends StoreBase {
 
     // Internal methods to StoreBase are safe to call regardless of auto-subscribe, so disable any warnings.
     @disableWarnings
-    protected _getSubscriptionKeys() {
+    protected _getSubscriptionKeys(): string[] {
         const keys = super._getSubscriptionKeys();
         assert(isEqual(keys, uniq(keys)), 'Internal failure: StoreBase should not report duplicate keys');
         return keys;
@@ -141,21 +141,21 @@ export class SimpleStore extends StoreBase {
     // appropriate decorator.
     // Note: @warnIfAutoSubscribeEnabled is automatically added (in debug mode) to this method, but that decorator does
     // nothing if another decorated method is calling this one (e.g. getStoreData).
-    private _get(id: string) {
+    private _get(id: string): StoreData {
         return this._storeDataById[id];
     }
 
     // Note: using test_* convention since it is only used for testing and breaks good practice otherwise.
-    test_getSubscriptionKeys() {
+    test_getSubscriptionKeys(): string[] {
         return this._getSubscriptionKeys();
     }
 
-    test_getSubscriptions() {
+    test_getSubscriptions(): any {
         // Access private internal state of store
         return (this as any)._subscriptions;
     }
 
-    test_getAutoSubscriptions() {
+    test_getAutoSubscriptions(): any {
         // Access private internal state of store
         return (this as any)._autoSubscriptions;
     }

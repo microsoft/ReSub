@@ -20,12 +20,12 @@ export const formCompoundKey = (...keys: (string | number)[]): string => {
     return keys.join(CompoundKeyJoinerString);
 };
 
-export const assert = (cond: any, message?: string | undefined) => {
+export const assert = (cond: any, message?: string | undefined): void => {
     if (!cond) {
         throw new Error(`[resub] ${ message || 'Assertion Failed' }`);
     }
 };
 
-export function noop() {
+export function noop(): void {
     // noop
 }

@@ -7,18 +7,18 @@
  */
 
 // TypeScript should put '__decorate' in the local scope around here.
-import { __decorate as tslib_decorate } from 'tslib';
+import { __decorate as tslibDecorate } from 'tslib';
 
-declare var __decorate: Function;
+declare var __decorate: Function; // eslint-disable-line no-var
 
 // Unused class. Only here so TypeScript generates the '__decorate' method.
 class FakeClassWithDecorator {
-    @((FakeClassWithDecoratorPrototype: Object, fooName: string, descriptor: TypedPropertyDescriptor<any>) => descriptor)
-    foo() { return FakeClassWithDecorator; }
+    @((FakeClassWithDecoratorPrototype: object, fooName: string, descriptor: TypedPropertyDescriptor<any>) => descriptor)
+    foo() { return FakeClassWithDecorator; } // eslint-disable-line @typescript-eslint/explicit-function-return-type
 }
 
 // Fallback to the tslib version if this doesn't work.
-__decorate = __decorate || tslib_decorate;
+__decorate = __decorate || tslibDecorate;
 
 export {
     FakeClassWithDecorator as __unused,

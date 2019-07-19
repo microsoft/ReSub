@@ -20,6 +20,4 @@ export { CustomEqualityShouldComponentUpdate, DeepEqualityShouldComponentUpdate 
 export { default as Options } from './Options';
 export { StoreBase } from './StoreBase';
 export { Types };
-export {
-    formCompoundKey,
-} from './utils';
+export { formCompoundKey } from './utils';

@@ -7,6 +7,7 @@
 import Options from './Options';
 import { noop } from './utils';
 
+// eslint-disable-next-line no-var
 declare var global: {
     performance: Performance;
 };
@@ -37,7 +38,7 @@ const CallbackBeginMark = 'StoreBase callbacks begin';
 const CallbackEndMark = 'StoreBase callbacks end';
 
 // replace method implementation with noop outside of development mode
-function devOnly(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function devOnly(target: any, propertyKey: string, descriptor: PropertyDescriptor): void {
     if (!Options.development && descriptor) {
         descriptor.value = noop;
     }
@@ -47,7 +48,7 @@ export class Instrumentation {
     constructor(private performance = getPerformanceImpl()) {
     }
 
-    private _measure(measureName: string, beginMark: string, endMark: string) {
+    private _measure(measureName: string, beginMark: string, endMark: string): void {
         this.performance.mark(endMark);
 
         try {
@@ -62,23 +63,23 @@ export class Instrumentation {
     }
 
     @devOnly
-    beginBuildState() {
+    beginBuildState(): void {
         this.performance.mark(BuildStateBeginMark);
     }
 
     @devOnly
-    endBuildState(target: any) {
+    endBuildState(target: any): void {
         const measureName = `🌀 ${target.name || 'ComponentBase'} build state`;
         this._measure(measureName, BuildStateBeginMark, BuildStateEndMark);
     }
 
     @devOnly
-    beginInvokeStoreCallbacks() {
+    beginInvokeStoreCallbacks(): void {
         this.performance.mark(CallbackBeginMark);
     }
 
     @devOnly
-    endInvokeStoreCallbacks(target: any, count: number) {
+    endInvokeStoreCallbacks(target: any, count: number): void {
         const measureName = `📦 ${target.name || 'StoreBase'} callbacks(${count})`;
         this._measure(measureName, CallbackBeginMark, CallbackEndMark);
     }

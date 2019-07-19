@@ -8,8 +8,13 @@
 
 import { StoreBase } from './StoreBase';
 
-export type SubscriptionCallbackFunction = { (keys?: string[]): void; };
-export type SubscriptionCallbackBuildStateFunction<S> = { (keys?: string[]): Partial<S> | void; };
+export interface SubscriptionCallbackFunction {
+    (keys?: string[]): void;
+}
+
+export interface SubscriptionCallbackBuildStateFunction<S> {
+    (keys?: string[]): Partial<S> | void;
+}
 
 export interface StoreSubscription<P, S> {
     store: StoreBase;

@@ -5,16 +5,17 @@
   "author": "David de Regt <David.de.Regt@microsoft.com>",
   "scripts": {
     "prepare": "npm run build",
-    "tslint": "tslint -p tsconfig.json -r tslint.json -r ./node_modules/tslint-microsoft-contrib --fix || true",
     "clean:dist": "rimraf dist",
     "build:types": "tsc -p tsconfig/types.json",
     "build:es2015": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig/cjs.json",
-    "build": "run-s clean:* tslint build:*",
+    "build": "run-s clean:* lint build:*",
     "karma:single-run": "karma start --singleRun",
     "karma:watch": "karma start",
     "test": "run-s clean:* karma:single-run",
-    "test:watch": "run-s clean:* karma:watch"
+    "test:watch": "run-s clean:* karma:watch",
+    "lint": "eslint --config .eslintrc src/* test/* --ext .ts,.tsx",
+    "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
     "lodash": "^4.17.14",
@@ -26,12 +27,17 @@
   "devDependencies": {
     "@types/enzyme": "3.10.3",
     "@types/enzyme-adapter-react-16": "1.0.5",
-    "@types/jasmine": "3.3.13",
+    "@types/jasmine": "3.3.14",
     "@types/lodash": "4.14.136",
     "@types/react": "16.8.23",
     "@types/react-dom": "16.8.4",
+    "@typescript-eslint/eslint-plugin": "1.12.0",
+    "@typescript-eslint/parser": "1.12.0",
     "enzyme": "3.10.0",
     "enzyme-adapter-react-16": "1.14.0",
+    "eslint": "6.0.1",
+    "eslint-config-skype": "0.2.0",
+    "eslint-plugin-react": "7.14.2",
     "fork-ts-checker-webpack-plugin": "1.4.3",
     "jasmine": "3.4.0",
     "jasmine-core": "3.4.0",
@@ -43,15 +49,13 @@
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "4.0.2",
     "npm-run-all": "4.1.5",
-    "react": "^16.2.0",
+    "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "rimraf": "2.6.3",
     "ts-loader": "6.0.4",
-    "ts-node": "8.3.0",
     "tslint": "5.18.0",
-    "tslint-microsoft-contrib": "6.2.0",
     "typescript": "3.5.3",
-    "webpack": "4.35.3"
+    "webpack": "4.36.1"
   },
   "repository": {
     "type": "git",

@@ -26,12 +26,11 @@ import find from 'lodash/find';
 import get from 'lodash/get';
 import map from 'lodash/map';
 
-interface Dictionary<T> {
+export interface Dictionary<T> {
     [index: string]: T;
 }
 
 export {
-    Dictionary,
     isFunction,
     isString,
     uniqueId,

@@ -7,6 +7,7 @@
  */
 
 import * as React from 'react';
+import { ReactElement } from 'react';
 import {
     includes,
     cloneDeep,
@@ -47,7 +48,7 @@ const initialStoreDatas: { [id: string]: StoreData } = {
     'b': uniqStoreDataValue++,
     'c': uniqStoreDataValue++,
     'd': uniqStoreDataValue++,
-    'e': uniqStoreDataValue++
+    'e': uniqStoreDataValue++,
 };
 
 // ----------------------------------------------------------------------------
@@ -85,7 +86,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
         const newState: Partial<SimpleState> = {
-            keyedDataSum: 0
+            keyedDataSum: 0,
         };
 
         if (props.test_useAll) {
@@ -114,7 +115,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
         return newState;
     }
 
-    render() {
+    render(): ReactElement<any> {
         return (
             <div>Not testing render...</div>
         );
@@ -127,11 +128,11 @@ class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState
     // for which this component is subscribed (e.g. SimpleStore).
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
-    protected _buildState(props: SimpleProps, initialBuild: boolean) {
+    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> | undefined {
         return undefined;
     }
 
-    render() {
+    render(): ReactElement<any> {
         return (
             <div>Not testing render...</div>
         );
@@ -162,7 +163,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
         // Internal check: state should have up-to-date StoreDatas held in the store.
         // Note: this might not be true in general, but only using auto-subscriptions should have that behavior.
         expect(storeDatas.sort()).toEqual(
-            props.ids.map(id => SimpleStoreInstance.getStoreData(id))
+            props.ids.map(id => SimpleStoreInstance.getStoreData(id)),
         );
     }
 
@@ -203,7 +204,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
     ));
 
     expect(
-        isEmpty(SimpleStoreInstance.test_getSubscriptions())
+        isEmpty(SimpleStoreInstance.test_getSubscriptions()),
     ).toBeTruthy();
 }
 
@@ -235,7 +236,7 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
      */
     expect(Component.state('storeDatas').sort()).toEqual(
         Component.prop('ids')
-            .map((id: string) => SimpleStoreInstance.getStoreData(id)).sort()
+            .map((id: string) => SimpleStoreInstance.getStoreData(id)).sort(),
     );
 
     // Re-run the subscription tests.

@@ -1,0 +1,30 @@
+{
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "skype", "skype/react"
+  ],
+  "env": {
+    "jasmine": true
+  },
+  "rules": {},
+  "overrides": [
+    {
+      "files": [
+        "src/tslint/*.ts"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "test/*"
+      ],
+      "rules": {
+        "@typescript-eslint/camelcase": ["error", { "properties": "never", "allow": ["^test_[A-Za-z]+$"] }]
+      }
+    }
+  ]
+}
