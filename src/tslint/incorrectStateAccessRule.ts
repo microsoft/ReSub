@@ -23,7 +23,7 @@ export class Rule extends Lint.Rules.AbstractRule {
         optionsDescription: '',
         options: {},
         type: 'functionality',
-        typescriptOnly: true
+        typescriptOnly: true,
     };
 
     apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {

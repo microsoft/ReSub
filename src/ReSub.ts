@@ -13,7 +13,7 @@ export {
     AutoSubscribeStore,
     disableWarnings,
     autoSubscribe,
-    key
+    key,
 } from './AutoSubscriptions';
 export { ComponentBase } from './ComponentBase';
 export { CustomEqualityShouldComponentUpdate, DeepEqualityShouldComponentUpdate } from './ComponentDecorators';

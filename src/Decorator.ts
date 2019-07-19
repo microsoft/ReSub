@@ -22,5 +22,5 @@ __decorate = __decorate || tslibDecorate;
 
 export {
     FakeClassWithDecorator as __unused,
-    __decorate as decorate
+    __decorate as decorate,
 };

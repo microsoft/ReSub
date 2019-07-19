@@ -34,14 +34,11 @@ declare var process: IProcess; // eslint-disable-line no-var
 let OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
-
     shouldComponentUpdateComparator: () => false,
 
     defaultThrottleMs: 0,
-
     preventTryCatchInRender: false,
-
-    development: typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production'
+    development: typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production',
 };
 
 export default OptionsVals;

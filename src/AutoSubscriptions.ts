@@ -127,7 +127,7 @@ function createAutoSubscribeWrapper<T extends Function>(handler: AutoSubscribeHa
             handler: handler,
             instance: instance,
             useAutoSubscriptions: useAutoSubscriptions,
-            inAutoSubscribe: false
+            inAutoSubscribe: false,
         };
 
         const result = _tryFinally(() => {

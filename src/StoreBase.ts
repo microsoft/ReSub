@@ -92,7 +92,7 @@ export abstract class StoreBase {
                 // If there are no callbacks, don't bother setting up the timer
                 this._throttleData = {
                     timerId: Options.setTimeout(this._handleThrottledCallbacks, this._throttleMs),
-                    callbackTime: Date.now() + throttleMs
+                    callbackTime: Date.now() + throttleMs,
                 };
             }
             throttledUntil = this._throttleData.callbackTime;

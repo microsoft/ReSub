@@ -28,7 +28,7 @@ function getPerformanceImpl(): Performance {
 
     return {
         mark: noop,
-        measure: noop
+        measure: noop,
     };
 }
 

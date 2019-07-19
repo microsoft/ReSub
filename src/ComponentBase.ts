@@ -204,7 +204,7 @@ export abstract class ComponentBase<P extends {}, S extends Record<string, any>>
                     // Callback was not given.
                     : undefined,
             _lambda: this._onSubscriptionChanged.bind(this, subscription),
-            _id: ComponentBase._nextSubscriptionId++
+            _id: ComponentBase._nextSubscriptionId++,
         });
 
         if (nsubscription.keyPropertyName) {
@@ -340,7 +340,7 @@ export abstract class ComponentBase<P extends {}, S extends Record<string, any>>
             // Note: an undefined specificKeyValue will use Key_All by default.
             key: key,
             callback: this._onAutoSubscriptionChanged,
-            used: true
+            used: true,
         };
         this._handledAutoSubscriptions.push(subscription);
         subscription.store.trackAutoSubscription(subscription);
@@ -363,7 +363,7 @@ export abstract class ComponentBase<P extends {}, S extends Record<string, any>>
             const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<P, S>) => {
                 const {
                     enablePropertyName,
-                    keyPropertyName
+                    keyPropertyName,
                 } = sub;
 
                 // @see - https://github.com/Microsoft/ReSub/issues/44
@@ -417,7 +417,7 @@ export abstract class ComponentBase<P extends {}, S extends Record<string, any>>
         // Callback to handle the 'auto-subscribe'.
         handle(self: ComponentBase<any, any>, store: StoreBase, key: string) {
             self._handleAutoSubscribe(store, key);
-        }
+        },
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)

@@ -6,7 +6,7 @@ import {
     AutoSubscribeStore,
     disableWarnings,
     autoSubscribe,
-    key
+    key,
 } from '../src/AutoSubscriptions';
 import { assert, formCompoundKey } from '../src/utils';
 
@@ -23,12 +23,12 @@ export class SimpleStore extends StoreBase {
     private _storeDataById: Record<string, StoreData> = {};
     private _subscribeWithKeyData = {
         A: 0,
-        B: 0
+        B: 0,
     };
 
     private _subscribeWithEnumKeyData = {
         [TriggerKeys.First]: 0,
-        [TriggerKeys.Second]: 0
+        [TriggerKeys.Second]: 0,
     };
 
     // Auto-subscribes to Key_All (by default) since any change will affect the returned data.

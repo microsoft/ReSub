@@ -48,5 +48,5 @@ export {
     pull,
     find,
     get,
-    map
+    map,
 };
