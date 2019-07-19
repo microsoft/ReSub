@@ -395,6 +395,8 @@ ReSub relies heavily on typescript decorators, which are not supported out of th
   ],
 ```
 
+You'll also need to install `babel-plugin-parameter-decorator@^1.0.8` and `@babel/plugin-proposal-decorators`
+
 ## TSLint rules
 
 We have couple of tslint rules to automate search of common problems in ReSub usage.
