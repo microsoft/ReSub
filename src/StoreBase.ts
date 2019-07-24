@@ -13,7 +13,7 @@
 
 import * as _ from './lodashMini';
 import Options from './Options';
-import Instrumentation from './Instrumentation';
+import * as Instrumentation from './Instrumentation';
 import { assert, normalizeKey, normalizeKeys, KeyOrKeys } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
@@ -207,7 +207,7 @@ export abstract class StoreBase {
 
         StoreBase._isTriggering = true;
         StoreBase._triggerPending = false;
-        Instrumentation.beginInvokeStoreCallbacks();
+        if (Instrumentation.impl) { Instrumentation.impl.beginInvokeStoreCallbacks(); }
 
         let callbacksCount = 0;
         const currentTime = Date.now();
@@ -236,7 +236,7 @@ export abstract class StoreBase {
             callback(keys);
         });
 
-        Instrumentation.endInvokeStoreCallbacks(this.constructor, callbacksCount);
+        if (Instrumentation.impl) { Instrumentation.impl.endInvokeStoreCallbacks(this.constructor, callbacksCount); }
 
         StoreBase._isTriggering = false;
 

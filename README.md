@@ -379,6 +379,10 @@ Whether using ReSub or not, your app will likely scale best if it follows these 
 1. Components should remain pure, and as such, should only get data from props and stores.
 2. Store data should never be modified on the same cycle as component data fetching and rendering. Race conditions and update cycles can form when a component modifies store data while building its state.
 
+## Performance Analysis
+
+To assist with performance analysis of your store and component state-building/-triggering, there is a performance module built into ReSub that marks durations for buildState functions and store trigger callbacks.  If you want to enable it, call the `setPerformanceMarkingEnabled(true)` function available on the root ReSub module export.
+
 ## Using ReSub Without TypeScript
 
 It is fine to use ReSub without TypeScript, but without access to TypeScript’s method decorators, stores and components cannot leverage autosubscriptions, and as such, lose a lot of their value.

@@ -10,7 +10,7 @@ import * as React from 'react';
 
 import * as _ from './lodashMini';
 import Options from './Options';
-import Instrumentation from './Instrumentation';
+import * as Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
 import { assert, noop, normalizeKey } from './utils';
@@ -426,9 +426,9 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
             sub.used = false;
         });
 
-        Instrumentation.beginBuildState();
+        if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
         const state = this._buildState(props, initialBuild);
-        Instrumentation.endBuildState(this.constructor);
+        if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
         _.remove(this._handledAutoSubscriptions, subscription => {
             if (this._shouldRemoveAndCleanupAutoSubscription(subscription)) {
