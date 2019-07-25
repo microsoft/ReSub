@@ -145,7 +145,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
-            if (!_.isEmpty(newState)) {
+            if (newState && Object.keys(newState).length) {
                 this.setState(newState as Pick<S, any>);
             }
         }
@@ -195,20 +195,20 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
             return undefined;
         }
 
-        let nsubscription: StoreSubscriptionInternal<P, S> = _.extend(subscription, {
-            // Wrap the given callback (if any) to provide extra functionality.
-            _callback: subscription.callbackBuildState
-                // The caller wants auto-subscriptions, so enable them for the duration of the given callback.
-                ? enableAutoSubscribeWrapper(ComponentBase._autoSubscribeHandler, subscription.callbackBuildState, this)
-                : subscription.callback
-                    // The caller wants to take care of everything.
-                    // Note: eating the return value so we do not later confuse it for a state update.
-                    ? (keys?: string[]) => { subscription.callback!!!(keys); }
-                    // Callback was not given.
-                    : undefined,
-            _lambda: this._onSubscriptionChanged.bind(this, subscription),
-            _id: ComponentBase._nextSubscriptionId++,
-        });
+        // Upcast, then fill in the object. We're extending the subscription object to have an internal representation attached
+        let nsubscription: StoreSubscriptionInternal<P, S> = subscription as StoreSubscriptionInternal<P, S>;
+        // Wrap the given callback (if any) to provide extra functionality.
+        nsubscription._callback = subscription.callbackBuildState
+            // The caller wants auto-subscriptions, so enable them for the duration of the given callback.
+            ? enableAutoSubscribeWrapper(ComponentBase._autoSubscribeHandler, subscription.callbackBuildState, this)
+            : subscription.callback
+                // The caller wants to take care of everything.
+                // Note: eating the return value so we do not later confuse it for a state update.
+                ? (keys?: string[]) => { subscription.callback!!!(keys); }
+                // Callback was not given.
+                : undefined;
+        nsubscription._lambda = this._onSubscriptionChanged.bind(this, subscription);
+        nsubscription._id = ComponentBase._nextSubscriptionId++;
 
         if (nsubscription.keyPropertyName) {
             const key = this._findKeyFromPropertyName(this.props, nsubscription.keyPropertyName);
@@ -284,19 +284,25 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
             newState = this._buildStateWithAutoSubscriptions(this.props, false) as Pick<S, any> | void;
         }
 
-        if (newState && !_.isEmpty(newState)) {
+        if (newState && Object.keys(newState).length) {
             this.setState(newState);
         }
     }
 
-    private _onAutoSubscriptionChanged = () => {
-        if (!this.isComponentMounted()) {
+    // Performance optimization - don't put this in _onAutoSubscriptionChanged because every component will have it's own
+    // instance of the function instead of hanging off the prototype. Bound functions also lack some runtime optimizations
+    private static _onAutoSubscriptionChangedUnbound<P, S>(that: ComponentBase<P, S>): void {
+        if (!that.isComponentMounted()) {
             return;
         }
-        const newState = this._buildStateWithAutoSubscriptions(this.props, false);
-        if (newState && !_.isEmpty(newState)) {
-            this.setState(newState as Pick<S, any>);
+        const newState = that._buildStateWithAutoSubscriptions(that.props, false);
+        if (newState && Object.keys(newState).length) {
+            that.setState(newState as Pick<S, any>);
         }
+    }
+
+    private _onAutoSubscriptionChanged = () => {
+        ComponentBase._onAutoSubscriptionChangedUnbound(this);
     };
 
     private _addSubscriptionToLookup(subscription: StoreSubscriptionInternal<P, S>): void {
@@ -357,7 +363,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
             const subscriptionsWithStoreAndKey = subscriptionsWithStore[key];
             const subscriptionsWithStoreAndKeyAll = subscriptionsWithStore[StoreBase.Key_All];
 
-            if (!_.isEmpty(subscriptionsWithStoreAndKey) || !_.isEmpty(subscriptionsWithStoreAndKeyAll)) {
+            if (Object.keys(subscriptionsWithStoreAndKey).length || Object.keys(subscriptionsWithStoreAndKeyAll).length) {
                 // Already explicitly subscribed.
                 return true;
             }
@@ -400,7 +406,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Search Subscription "keyPropertyName" in Component props(this.props)
     private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
-        const key = _.get(props, keyPropertyName);
+        const key = props[keyPropertyName];
         if (!_.isString(key)) {
             assert(false, `Subscription key property value ${ keyPropertyName } must be a string`);
             // Fallback to subscribing to all values
@@ -412,7 +418,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Check if enablePropertyName is enabled
     private _isEnabledByPropertyName(props: Readonly<P>, enablePropertyName: keyof P): boolean {
-        return !!_.get(props, enablePropertyName);
+        return !!props[enablePropertyName];
     }
 
     // Hander for enableAutoSubscribe that does the actual auto-subscription work.

@@ -11,7 +11,6 @@ import { ReactElement } from 'react';
 import {
     includes,
     cloneDeep,
-    isEmpty,
     clone,
     each,
     uniq,
@@ -204,7 +203,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
     ));
 
     expect(
-        isEmpty(SimpleStoreInstance.test_getSubscriptions()),
+        Object.keys(SimpleStoreInstance.test_getSubscriptions().length === 0),
     ).toBeTruthy();
 }
 
