@@ -32,6 +32,7 @@ interface CallbackMetadata {
 type CallbackMap = Map<SubscriptionCallbackFunction, CallbackMetadata>;
 
 export abstract class StoreBase {
+    private static storeIdCounter = 0;
     static readonly Key_All = '%!$all';
 
     private readonly _subscriptions: _.Dictionary<SubscriptionCallbackFunction[]> = {};
@@ -45,7 +46,7 @@ export abstract class StoreBase {
         };
     } = {};
 
-    readonly storeId = _.uniqueId('store');
+    readonly storeId = `store${StoreBase.storeIdCounter++}`;
 
     private _throttleData: { timerId: number; callbackTime: number } | undefined;
 
@@ -284,7 +285,7 @@ export abstract class StoreBase {
         let callbacks = this._subscriptions[key];
         assert(callbacks, `No subscriptions under key ${ key }`);
 
-        const index = _.indexOf(callbacks, callback);
+        const index = callbacks.indexOf(callback);
         if (index !== -1) {
             callbacks.splice(index, 1);
             if (callbacks.length === 0) {
@@ -346,7 +347,7 @@ export abstract class StoreBase {
     }
 
     protected _getSubscriptionKeys(): string[] {
-        return _.union(Object.keys(this._subscriptions), Object.keys(this._autoSubscriptions));
+        return Object.keys(this._subscriptions).concat(Object.keys(this._autoSubscriptions));
     }
 
     protected _isTrackingKey(key: string): boolean {

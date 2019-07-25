@@ -123,22 +123,25 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Subclasses may override, but _MUST_ call super.
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
-        _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<P, S>) => {
-            if (subscription.keyPropertyName) {
-                const currKey = this._findKeyFromPropertyName(this.props, subscription.keyPropertyName);
-                const nextKey = this._findKeyFromPropertyName(nextProps, subscription.keyPropertyName);
+        for (const subscriptionKey in this._handledSubscriptions) {
+            if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
+                const subscription = this._handledSubscriptions[subscriptionKey];
+                if (subscription.keyPropertyName) {
+                    const currKey = this._findKeyFromPropertyName(this.props, subscription.keyPropertyName);
+                    const nextKey = this._findKeyFromPropertyName(nextProps, subscription.keyPropertyName);
 
-                if (currKey !== nextKey) {
-                    // The property we care about changed, so unsubscribe and re-subscribe under the new value
+                    if (currKey !== nextKey) {
+                        // The property we care about changed, so unsubscribe and re-subscribe under the new value
 
-                    this._removeSubscriptionFromLookup(subscription);
-                    this._cleanupSubscription(subscription);
+                        this._removeSubscriptionFromLookup(subscription);
+                        this._cleanupSubscription(subscription);
 
-                    this._registerSubscription(subscription, nextKey);
-                    this._addSubscriptionToLookup(subscription);
+                        this._registerSubscription(subscription, nextKey);
+                        this._addSubscriptionToLookup(subscription);
+                    }
                 }
             }
-        });
+        }
 
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
