@@ -267,7 +267,7 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
             // If there are multiple keys in the @autosubscribewithkey list, go through each one and do the
             // same thing (@key then value).  If there's neither @key nor @autosubscribewithkey, it's Key_All.
             const specificKeyValues: string[] = (autoSubscribeKeys && autoSubscribeKeys.length > 0) ?
-                _.map(autoSubscribeKeys, autoSubKey => formCompoundKey(...keyParamValues.concat(autoSubKey))) :
+                autoSubscribeKeys.map(autoSubKey => formCompoundKey(...keyParamValues.concat(autoSubKey))) :
                 [(keyParamValues.length > 0) ? formCompoundKey(...keyParamValues) : StoreBase.Key_All];
 
             // Let the handler know about this auto-subscriptions, then proceed to the existing method.

@@ -2,7 +2,6 @@
  * utils.ts
  * Copyright: Microsoft 2019
  */
-import { map } from './lodashMini';
 
 const CompoundKeyJoinerString = '%&';
 
@@ -13,7 +12,7 @@ export const normalizeKey = (key: string | number): string => (
 );
 
 export const normalizeKeys = (keyOrKeys: KeyOrKeys): string[] => (
-    map(Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys], normalizeKey)
+    Array.isArray(keyOrKeys) ? keyOrKeys.map(normalizeKey) : [normalizeKey(keyOrKeys)]
 );
 
 export const formCompoundKey = (...keys: (string | number)[]): string => {
