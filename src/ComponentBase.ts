@@ -291,7 +291,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Performance optimization - don't put this in _onAutoSubscriptionChanged because every component will have it's own
     // instance of the function instead of hanging off the prototype. Bound functions also lack some runtime optimizations
-    private static _onAuthSubscriptionChangedUnbound<P, S>(that: ComponentBase<P, S>): void {
+    private static _onAutoSubscriptionChangedUnbound<P, S>(that: ComponentBase<P, S>): void {
         if (!that.isComponentMounted()) {
             return;
         }
@@ -302,7 +302,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
     }
 
     private _onAutoSubscriptionChanged = () => {
-        ComponentBase._onAuthSubscriptionChangedUnbound(this);
+        ComponentBase._onAutoSubscriptionChangedUnbound(this);
     };
 
     private _addSubscriptionToLookup(subscription: StoreSubscriptionInternal<P, S>): void {
