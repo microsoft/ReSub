@@ -5,7 +5,8 @@
  * Exposes helper decorator functions for use with ReSub Components
  */
 
-import { isEqual, Dictionary } from './lodashMini';
+import isEqual from 'lodash/isEqual';
+import { Dictionary } from './utils';
 import ComponentBase from './ComponentBase';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
