@@ -6,6 +6,7 @@
 * Basic options for ReSub.
 */
 
+// @TODO need to remove I prefix
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 export interface IOptions {
     // Use this to shim calls to setTimeout/clearTimeout with any other service/local function you want

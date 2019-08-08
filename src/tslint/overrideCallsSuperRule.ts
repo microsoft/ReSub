@@ -6,7 +6,6 @@
 * Custom tslint rule used to enforce certain overrided method calls their `super` version.
 */
 
-import _ from 'lodash';
 import ts from 'typescript';
 import { RuleFailure, Rules, RuleWalker } from 'tslint';
 
@@ -34,8 +33,7 @@ class OverrideCallsSuperWalker extends RuleWalker {
 
     visitMethodDeclaration(node: ts.MethodDeclaration): void {
         const methodName = node.name.getText();
-
-        if (_.includes(this._methodNamesToCheck, methodName)) {
+        if (this._methodNamesToCheck.includes(methodName)) {
             this._checkOverrideCallsSuper(node, methodName);
         }
 
@@ -47,7 +45,7 @@ class OverrideCallsSuperWalker extends RuleWalker {
         // Must have a call to super (for the same method name) in the top-level list of statements.
         let hasSuperCall = false;
         if (node.body) {
-            hasSuperCall = _.some(node.body.statements, statement => {
+            hasSuperCall = node.body.statements.some(statement => {
                 if (statement.kind !== ts.SyntaxKind.ExpressionStatement) {
                     return false;
                 }

@@ -11,10 +11,9 @@
 * Stores can mark themselves as opt-out of the trigger-block logic for critical stores that must flow under all conditions.
 */
 
-import * as _ from './lodashMini';
-import Options from './Options';
 import * as Instrumentation from './Instrumentation';
-import { assert, normalizeKey, normalizeKeys, KeyOrKeys } from './utils';
+import Options from './Options';
+import { Dictionary, KeyOrKeys, assert, flat, isNumber, isString, normalizeKey, normalizeKeys, remove, uniq, values } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {
@@ -35,8 +34,8 @@ export abstract class StoreBase {
     private static storeIdCounter = 0;
     static readonly Key_All = '%!$all';
 
-    private readonly _subscriptions: _.Dictionary<SubscriptionCallbackFunction[]> = {};
-    private readonly _autoSubscriptions: _.Dictionary<AutoSubscription[]> = {};
+    private readonly _subscriptions: Dictionary<SubscriptionCallbackFunction[]> = {};
+    private readonly _autoSubscriptions: Dictionary<AutoSubscription[]> = {};
 
     private _subTokenNum = 1;
     private readonly _subsByNum: {
@@ -102,39 +101,31 @@ export abstract class StoreBase {
         const bypassBlock = this._bypassTriggerBlocks;
 
         // trigger(0) is valid, ensure that we catch this case
-        if (!keyOrKeys && !_.isNumber(keyOrKeys)) {
+        if (!keyOrKeys && !isNumber(keyOrKeys)) {
             // Inspecific key, so generic callback call
-            const allSubs = _.flatten(_.values(this._subscriptions));
+            flat(values(this._subscriptions))
+                .forEach(sub => this._setupAllKeySubscription(sub, throttledUntil, bypassBlock));
 
-            _.forEach(allSubs, sub => {
-                this._setupAllKeySubscription(sub, throttledUntil, bypassBlock);
-            });
-            _.forEach(_.flatten(_.values(this._autoSubscriptions)),
-                sub => {
-                    this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
-                });
+            flat(values(this._autoSubscriptions))
+                .forEach(sub => this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock));
         } else {
             const keys = normalizeKeys(keyOrKeys);
 
             // Key list, so go through each key and queue up the callback
-            _.forEach(keys, key => {
-                _.forEach(this._subscriptions[key], callback => {
-                    this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock);
-                });
+            keys.forEach(key => {
+                (this._subscriptions[key] || [])
+                    .forEach(callback => this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock));
 
-                _.forEach(this._autoSubscriptions[key], sub => {
-                    this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock);
-                });
+                (this._autoSubscriptions[key] || [])
+                    .forEach(sub => this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock));
             });
 
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
-            _.forEach(this._subscriptions[StoreBase.Key_All], callback => {
-                this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock);
-            });
+            (this._subscriptions[StoreBase.Key_All] || [])
+                .forEach(callback => this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock));
 
-            _.forEach(this._autoSubscriptions[StoreBase.Key_All], sub => {
-                this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock);
-            });
+            (this._autoSubscriptions[StoreBase.Key_All] || [])
+                .forEach(sub => this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock));
         }
 
         if (!throttledUntil || bypassBlock) {
@@ -225,8 +216,10 @@ export abstract class StoreBase {
             if (meta.throttledUntil && meta.throttledUntil > currentTime && !StoreBase._bypassThrottle) {
                 return;
             }
+
             // Do a quick dedupe on keys
-            const uniquedKeys = meta.keys ? _.uniq(meta.keys) : meta.keys;
+            const uniquedKeys = meta.keys ? uniq(meta.keys) : meta.keys;
+
             // Convert null key (meaning "all") to undefined for the callback.
             callbacks.push([callback, uniquedKeys || undefined]);
             map.delete(callback);
@@ -253,7 +246,7 @@ export abstract class StoreBase {
         const key = normalizeKey(rawKey);
 
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
-        assert(key && _.isString(key), `Trying to subscribe to invalid key: "${ key }"`);
+        assert(key && isString(key), `Trying to subscribe to invalid key: "${ key }"`);
 
         let callbacks = this._subscriptions[key];
         if (!callbacks) {
@@ -322,7 +315,7 @@ export abstract class StoreBase {
         assert(subs, `No subscriptions under key ${ key }`);
 
         const oldLength = subs.length;
-        _.pull(subs, subscription);
+        remove(subs, sub => sub === subscription);
 
         assert(subs.length === oldLength - 1, 'Subscription not found during unsubscribe...');
 

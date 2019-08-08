@@ -61,10 +61,9 @@
 // super.render, the descriptor's logic only applies until the end of that method, not the end of yours. This is why that functionality is
 // exposes as a function instead of a decorator.
 
-import * as _ from './lodashMini';
 import * as Decorator from './Decorator';
 import Options from './Options';
-import { assert, normalizeKeys, KeyOrKeys, formCompoundKey } from './utils';
+import { KeyOrKeys, assert, formCompoundKey, isFunction, isNumber, isString, normalizeKeys } from './utils';
 import { StoreBase } from './StoreBase';
 
 interface MetadataIndex {
@@ -103,7 +102,7 @@ const enum AutoOptions {
 
 // Holds the handler and info for using it.
 interface HandlerWraper {
-    handler: AutoSubscribeHandler|undefined;
+    handler: AutoSubscribeHandler | undefined;
     instance: InstanceTarget;
 
     useAutoSubscriptions: AutoOptions;
@@ -159,7 +158,7 @@ export function enableAutoSubscribe(handler: AutoSubscribeHandler): MethodDecora
     return <T>(target: InstanceTarget, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
         // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast/assert.
         const existingMethod = descriptor.value as any as Function;
-        assert(_.isFunction(existingMethod), 'Can only use @enableAutoSubscribe on methods');
+        assert(isFunction(existingMethod), 'Can only use @enableAutoSubscribe on methods');
 
         descriptor.value = enableAutoSubscribeWrapper(handler, existingMethod, undefined) as any as T;
         return descriptor;
@@ -196,8 +195,8 @@ export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(f
 
     if (Options.development) {
         // Add warning for non-decorated methods.
-        _.forEach(Object.getOwnPropertyNames(target), property => {
-            if (_.isFunction(target[property]) && property !== 'constructor') {
+        Object.getOwnPropertyNames(target).forEach(property => {
+            if (isFunction(target[property]) && property !== 'constructor') {
                 const metaForMethod = target.__resubMetadata[property];
                 if (!metaForMethod || !metaForMethod.hasAutoSubscribeDecorator) {
                     Decorator.decorate([warnIfAutoSubscribeEnabled], target, property, null);
@@ -222,7 +221,7 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
         // Save the method being decorated. Note this might not be the original method if already decorated.
         // Note: T might have other properties (e.g. T = { (): void; bar: number; }). We don't support that and need a cast/assert.
         const existingMethod = descriptor.value as any as Function;
-        assert(_.isFunction(existingMethod), 'Can only use @autoSubscribe on methods');
+        assert(isFunction(existingMethod), 'Can only use @autoSubscribe on methods');
 
         // Note: we need to be given 'this', so cannot use '=>' syntax.
         descriptor.value = function AutoSubscribe(this: any, ...args: any[]) {
@@ -248,14 +247,14 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
                 keyParamValues = metaForMethod.keyIndexes.map(index => {
                     let keyArg: number | string = args[index];
 
-                    if (_.isNumber(keyArg)) {
+                    if (isNumber(keyArg)) {
                         keyArg = keyArg.toString();
                     }
 
                     assert(keyArg, `@key parameter must be given a non-empty string or number: ` +
                         `"${ methodNameString }"@${ index } was given ${ JSON.stringify(keyArg) }`);
 
-                    assert(_.isString(keyArg), `@key parameter must be given a string or number: ` +
+                    assert(isString(keyArg), `@key parameter must be given a string or number: ` +
                         `"${ methodNameString }"@${ index }`);
 
                     return keyArg;
@@ -280,9 +279,11 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
                 scopedHandleWrapper.inAutoSubscribe = true;
 
                 // Let the handler know about this auto-subscription.
-                _.forEach(specificKeyValues, specificKeyValue => {
-                    scopedHandleWrapper.handler!!!.handle.apply(scopedHandleWrapper.instance, [scopedHandleWrapper.instance, this,
-                        specificKeyValue]);
+                specificKeyValues.forEach(specificKeyValue => {
+                    scopedHandleWrapper
+                        .handler!!!
+                        .handle
+                        .apply(scopedHandleWrapper.instance, [scopedHandleWrapper.instance, this, specificKeyValue]);
                 });
 
                 return existingMethod.apply(this, args);
@@ -301,7 +302,7 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
 
 export const autoSubscribe = makeAutoSubscribeDecorator(true, undefined);
 export function autoSubscribeWithKey(keyOrKeys: KeyOrKeys): MethodDecorator {
-    assert(keyOrKeys || _.isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
+    assert(keyOrKeys || isNumber(keyOrKeys), 'Must specify a key when using autoSubscribeWithKey');
     return makeAutoSubscribeDecorator(true, normalizeKeys(keyOrKeys));
 }
 

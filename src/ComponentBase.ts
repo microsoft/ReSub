@@ -8,12 +8,11 @@
 
 import * as React from 'react';
 
-import * as _ from './lodashMini';
 import Options from './Options';
 import * as Instrumentation from './Instrumentation';
 import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
-import { assert, noop, normalizeKey } from './utils';
+import { Dictionary, assert, find, isString, noop, normalizeKey, remove, values } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 // Subscriptions without a key need some way to be identified in the SubscriptionLookup.
@@ -45,7 +44,7 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> extends React.Component<P, S> {
+export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
@@ -153,20 +152,19 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Subclasses may override, but _MUST_ call super.
     componentWillUnmount(): void {
-        _.forEach(this._handledSubscriptions, (subscription: StoreSubscriptionInternal<P, S>) => {
-            this._cleanupSubscription(subscription);
-        });
+        values<StoreSubscriptionInternal<P, S>>(this._handledSubscriptions)
+            .forEach(sub => this._cleanupSubscription(sub));
 
         this._handledSubscriptions = {};
         this._handledSubscriptionsLookup = {};
 
         // Remove and cleanup all suscriptions
-        _.forEach(this._handledAutoSubscriptions, subscription => {
+        this._handledAutoSubscriptions.forEach(subscription => {
             subscription.used = false;
             subscription.store.removeAutoSubscription(subscription);
         });
-        this._handledAutoSubscriptions = [];
 
+        this._handledAutoSubscriptions = [];
         this._isMounted = false;
     }
 
@@ -245,7 +243,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
         assert(!subscription._subscriptionToken, 'Subscription already subscribed!');
         assert(!subscription.keyPropertyName || key !== StoreBase.Key_All,
             'Subscription created with key of all when it has a key property name');
-        assert(!_.isEqual(subscription.specificKeyValue, StoreBase.Key_All), 'Subscription created with specific key of all');
+        assert(subscription.specificKeyValue !== StoreBase.Key_All, 'Subscription created with specific key of all');
 
         if (key) {
             key = normalizeKey(key);
@@ -369,7 +367,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
             }
 
             const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
-            const matchingSubscription = _.find(subscriptionsWithStoreAndPropName, (sub: StoreSubscriptionInternal<P, S>) => {
+            const matchingSubscription = find(values<StoreSubscriptionInternal<P, S>>(subscriptionsWithStoreAndPropName), (sub) => {
                 const {
                     enablePropertyName,
                     keyPropertyName,
@@ -398,16 +396,16 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     // Search already handled auto-subscription
     private _findMatchingAutoSubscription(store: StoreBase, key: string): AutoSubscription | undefined {
-        return _.find(this._handledAutoSubscriptions, subscription => (
-            (subscription.store.storeId === store.storeId)
-            && (subscription.key === key || subscription.key === StoreBase.Key_All)
+        return find(this._handledAutoSubscriptions, subscription => (
+            (subscription.store.storeId === store.storeId) &&
+            (subscription.key === key || subscription.key === StoreBase.Key_All)
         ));
     }
 
     // Search Subscription "keyPropertyName" in Component props(this.props)
     private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
         const key = props[keyPropertyName];
-        if (!_.isString(key)) {
+        if (!isString(key)) {
             assert(false, `Subscription key property value ${ keyPropertyName } must be a string`);
             // Fallback to subscribing to all values
             return StoreBase.Key_All;
@@ -431,7 +429,7 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
     private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> | undefined {
-        _.forEach(this._handledAutoSubscriptions, sub => {
+        this._handledAutoSubscriptions.forEach(sub => {
             sub.used = false;
         });
 
@@ -439,13 +437,15 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
         const state = this._buildState(props, initialBuild);
         if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
-        _.remove(this._handledAutoSubscriptions, subscription => {
+        remove(this._handledAutoSubscriptions, subscription => {
             if (this._shouldRemoveAndCleanupAutoSubscription(subscription)) {
                 subscription.store.removeAutoSubscription(subscription);
                 return true;
             }
+
             return false;
         });
+
         return state;
     }
 
@@ -471,9 +471,8 @@ export abstract class ComponentBase<P extends {}, S extends _.Dictionary<any>> e
     // The initial state is unavailable in componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
-        _.forEach(this._initStoreSubscriptions(), subscription => {
-            this._addSubscription(subscription);
-        });
+        this._initStoreSubscriptions()
+            .forEach(subscription => this._addSubscription(subscription));
 
         // Initialize state
         const initialState = this._buildStateWithAutoSubscriptions(this.props, true) || {};
