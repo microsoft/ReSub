@@ -1,6 +1,9 @@
 {
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": [
+        "./tsconfig.json",
+        "./tsconfig/test.json"
+    ]
   },
   "extends": [
     "skype", "skype/react"
