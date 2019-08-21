@@ -115,13 +115,13 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     }
 
     // Subclasses may override, but _MUST_ call super.
-    componentWillMount(): void {
+    UNSAFE_componentWillMount(): void {
         this.setState(this._buildInitialState());
         this._isMounted = true;
     }
 
     // Subclasses may override, but _MUST_ call super.
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         for (const subscriptionKey in this._handledSubscriptions) {
             if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
                 const subscription = this._handledSubscriptions[subscriptionKey];
@@ -168,7 +168,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         this._isMounted = false;
     }
 
-    componentWillUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void {
+    UNSAFE_componentWillUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void {
         // Do nothing, included so that there is no ambiguity on when a subclass must call super
     }
 
@@ -454,7 +454,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     // 1. In the component constructor, it's called with the initial props and initialBuild = true.  This is where you should set all
     //    initial state for your component.  In many cases this case needs no special casing whatsoever because the component always
     //    rebuilds all of its state from whatever the props are, whether it's an initial build or a new props received event.
-    // 2. In the React lifecycle, during a componentWillReceiveProps, if the props change (determined by a _.isEqual), this is called
+    // 2. In the React lifecycle, during a UNSAFE_componentWillReceiveProps, if the props change (determined by a _.isEqual), this is called
     //    so that the component can rebuild state from the new props.
     // 3. If the component subscribes to any stores via the ComponentBase subscription system, if a specific callback function is not
     //    specified, then this function is called whenever the subscription is triggered.  Basically, this should be used if there are
@@ -468,7 +468,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         return undefined;
     }
 
-    // The initial state is unavailable in componentWillMount. Override this method to get access to it.
+    // The initial state is unavailable in UNSAFE_componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
         this._initStoreSubscriptions()

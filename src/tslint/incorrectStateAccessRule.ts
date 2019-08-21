@@ -4,7 +4,7 @@
 * Copyright: Microsoft 2017
 *
 * Custom tslint rule used to find cases where the code references
-* this.state from componentWillMount method.
+* this.state from UNSAFE_componentWillMount method.
 */
 
 import * as Lint from 'tslint';
@@ -13,13 +13,13 @@ import { isMethodDeclaration } from 'typescript';
 import { isCallExpression, isPropertyAccessExpression } from 'tsutils';
 
 const DEBUG = false;
-const ERROR_MESSAGE = 'this.state is undefined in componentWillMount callback.';
+const ERROR_MESSAGE = 'this.state is undefined in UNSAFE_componentWillMount callback.';
 
 export class Rule extends Lint.Rules.AbstractRule {
     static metadata: Lint.IRuleMetadata = {
         ruleName: 'incorrect-state-access',
         description: 'Bans state access for ReSub components',
-        rationale: 'In ReSub Component this.state is undefined during componentWillMount. We need to warn users about it.',
+        rationale: 'In ReSub Component this.state is undefined during UNSAFE_componentWillMount. We need to warn users about it.',
         optionsDescription: '',
         options: {},
         type: 'functionality',
@@ -93,7 +93,7 @@ function walk(ctx: Lint.WalkContext<string[]>): void {
             let visitedMethods: {[key: string]: boolean} = {};
             let queue: MethodInfo[] = [];
 
-            const methodsList = ctx.options.concat(['componentWillMount']);
+            const methodsList = ctx.options.concat(['UNSAFE_componentWillMount']);
 
             methodsList.forEach((methodName: string) => {
                 const method =  methods[methodName];
