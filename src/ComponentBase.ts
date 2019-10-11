@@ -75,6 +75,9 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     //    with the specific key that was triggered as the only parameter to the function.
 
     private static _nextSubscriptionId = 1;
+    private static _nextInstanceId = 1;
+
+    private static componentBaseInstances: Map<number, ComponentBase<any, any>> = new Map<number, ComponentBase<any, any>>();
 
     private _handledSubscriptions: { [id: number]: StoreSubscriptionInternal<P, S> } = {};
     private _handledAutoSubscriptions: AutoSubscription[] = [];
@@ -82,6 +85,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     private _handledSubscriptionsLookup: SubscriptionLookup<P, S> = {};
 
     private _isMounted = false;
+    private readonly _instanceId: number;
 
     constructor(props: P) {
         super(props);
@@ -108,20 +112,30 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         }
         // No one should use Store getters in render: do that in _buildState instead.
         this.render = forbidAutoSubscribeWrapper(render, this);
+
+        const nextId = ComponentBase._nextInstanceId++;
+        ComponentBase.componentBaseInstances.set(nextId, this);
+
+        this._instanceId = nextId;
+
+        this.state = this._buildInitialState();
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
         return [];
     }
 
-    // Subclasses may override, but _MUST_ call super.
-    UNSAFE_componentWillMount(): void {
-        this.setState(this._buildInitialState());
-        this._isMounted = true;
+    // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
+    static getDerivedStateFromProps(props: any, state: any & {instanceId: number}): any & {instanceId: number} | null {
+        let instance = ComponentBase.componentBaseInstances.get(state.instanceId);
+        if(instance) {
+            return instance.updateSubscriptions(props);
+        } else {
+            throw new Error('couldn\'t get instance of Component');
+        }
     }
 
-    // Subclasses may override, but _MUST_ call super.
-    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    updateSubscriptions(nextProps: Readonly<P>): Partial<S & {instanceId: number}> | null {
         for (const subscriptionKey in this._handledSubscriptions) {
             if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
                 const subscription = this._handledSubscriptions[subscriptionKey];
@@ -145,9 +159,10 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && Object.keys(newState).length) {
-                this.setState(newState as Pick<S, any>);
+                return newState;
             }
         }
+        return null;
     }
 
     // Subclasses may override, but _MUST_ call super.
@@ -166,10 +181,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
         this._handledAutoSubscriptions = [];
         this._isMounted = false;
-    }
-
-    UNSAFE_componentWillUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void {
-        // Do nothing, included so that there is no ambiguity on when a subclass must call super
+        ComponentBase.componentBaseInstances.delete(this._instanceId);
     }
 
     shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
@@ -428,13 +440,13 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> | undefined {
+    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<({instanceId: number} & S)> | undefined {
         this._handledAutoSubscriptions.forEach(sub => {
             sub.used = false;
         });
 
         if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
-        const state = this._buildState(props, initialBuild);
+        const state: Partial<{instanceId: number} & S> | undefined = this._buildState(props, initialBuild);
         if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
         remove(this._handledAutoSubscriptions, subscription => {
@@ -445,6 +457,15 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
             return false;
         });
+
+        if(initialBuild) {
+            // if its an initial build, we set the instanceId in the state
+            if(state) {
+                return {instanceId: this._instanceId, ...state};
+            } else {
+                return {instanceId: this._instanceId} as Partial<{instanceId: number} & S>;
+            }
+        }
 
         return state;
     }
@@ -481,6 +502,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
     // Wrap both didMount and didUpdate into componentDidRender
     componentDidMount(): void {
+        this._isMounted = true;
         this._componentDidRender();
     }
 
