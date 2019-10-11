@@ -44,7 +44,9 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-type InstanceIdState = {instanceId: number};
+interface InstanceIdState {
+    instanceId: number;
+}
 
 export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S & InstanceIdState> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two

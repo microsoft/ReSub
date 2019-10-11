@@ -123,8 +123,8 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
 
 class OverriddenComponent extends SimpleComponent {
 
-    static makeComponent(props: SimpleProps) {
-        return mount(<OverriddenComponent {...props} />);
+    static makeComponent(props: SimpleProps): ReactWrapper<any, any> {
+        return mount(<OverriddenComponent { ...props } />);
     }
 
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) => {
