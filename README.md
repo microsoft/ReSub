@@ -283,14 +283,14 @@ This method is automatically called from `componentDidMount` and  `componentDidU
 
 Methods include:
 - `constructor(props: P)`
-- `UNSAFE_componentWillMount()`
 - `componentDidMount()`
 - `componentWillUnmount()`
-- `UNSAFE_componentWillUpdate(nextProps: P, nextState: S)`
 - `componentDidUpdate(prevProps: P, prevState: S)`
-- `UNSAFE_componentWillReceiveProps(nextProps: P)`
+- `static getDerivedStateFromProps(prevProps: P, prevState: S)`
 
 Many of these methods are unnecessary in simple components thanks to `_componentDidRender` and `_buildState`, but may be overridden if needed. Implementations in subclasses **must** call super.
+If using getDerivedState in a Subclass, Implementations **must** return ComponentBase.getDerivedStateFromProps(props, state), but can add additional changes to the return value.
+
 
 ### StoreBase
 

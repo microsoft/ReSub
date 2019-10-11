@@ -44,7 +44,9 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S> {
+type InstanceIdState = {instanceId: number};
+
+export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S & InstanceIdState> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
@@ -85,7 +87,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     private _handledSubscriptionsLookup: SubscriptionLookup<P, S> = {};
 
     private _isMounted = false;
-    private readonly _instanceId: number;
+    protected readonly _instanceId: number;
 
     constructor(props: P) {
         super(props);
@@ -118,7 +120,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
         this._instanceId = nextId;
 
-        this.state = this._buildInitialState();
+        this.state = {...this._buildInitialState(), instanceId: this._instanceId};
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
@@ -126,16 +128,16 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps(props: any, state: any & {instanceId: number}): any & {instanceId: number} | null {
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, any & InstanceIdState> = (props, state) => {
         let instance = ComponentBase.componentBaseInstances.get(state.instanceId);
         if(instance) {
             return instance.updateSubscriptions(props);
         } else {
             throw new Error('couldn\'t get instance of Component');
         }
-    }
+    };
 
-    updateSubscriptions(nextProps: Readonly<P>): Partial<S & {instanceId: number}> | null {
+    updateSubscriptions(nextProps: Readonly<P>): Partial<S & InstanceIdState> | null {
         for (const subscriptionKey in this._handledSubscriptions) {
             if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
                 const subscription = this._handledSubscriptions[subscriptionKey];
@@ -440,13 +442,13 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<({instanceId: number} & S)> | undefined {
+    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> | undefined {
         this._handledAutoSubscriptions.forEach(sub => {
             sub.used = false;
         });
 
         if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
-        const state: Partial<{instanceId: number} & S> | undefined = this._buildState(props, initialBuild);
+        const state: Partial<S> | undefined = this._buildState(props, initialBuild);
         if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
         remove(this._handledAutoSubscriptions, subscription => {
@@ -457,15 +459,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
             return false;
         });
-
-        if(initialBuild) {
-            // if its an initial build, we set the instanceId in the state
-            if(state) {
-                return {instanceId: this._instanceId, ...state};
-            } else {
-                return {instanceId: this._instanceId} as Partial<{instanceId: number} & S>;
-            }
-        }
 
         return state;
     }

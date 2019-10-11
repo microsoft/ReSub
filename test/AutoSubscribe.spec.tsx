@@ -121,6 +121,17 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     }
 }
 
+class OverriddenComponent extends SimpleComponent {
+
+    static makeComponent(props: SimpleProps) {
+        return mount(<OverriddenComponent {...props} />);
+    }
+
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) => {
+        return ComponentBase.getDerivedStateFromProps(props, state);
+    };
+}
+
 @DeepEqualityShouldComponentUpdate
 class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
@@ -242,18 +253,7 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
     testSubscriptions(Component);
 }
 
-describe('AutoSubscribe', function () {
-    beforeEach(() => {
-        // Create a new store with zero subscriptions.
-        SimpleStoreInstance = new SimpleStore();
-
-        // Populate the store with some data.
-        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
-
-        // Internal check: the store should have no subscriptions.
-        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
-    });
-
+function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>): any {
     it('Auto-subscribe on id', () => {
         const Component = makeComponent({ ids: ['a'] });
         testSubscriptions(Component);
@@ -522,4 +522,34 @@ describe('AutoSubscribe', function () {
         expect(deepEqual1.shouldComponentUpdate).toEqual(deepEqual2.shouldComponentUpdate);
         expect(simpleComp1.shouldComponentUpdate).not.toEqual(deepEqual1.shouldComponentUpdate);
     });
+}
+
+describe('derivedStateFromProps', function () {
+    beforeEach(() => {
+        // Create a new store with zero subscriptions.
+        SimpleStoreInstance = new SimpleStore();
+
+        // Populate the store with some data.
+        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
+
+        // Internal check: the store should have no subscriptions.
+        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
+    });
+
+    runTests(OverriddenComponent.makeComponent);
+});
+
+describe('AutoSubscribe', function () {
+    beforeEach(() => {
+        // Create a new store with zero subscriptions.
+        SimpleStoreInstance = new SimpleStore();
+
+        // Populate the store with some data.
+        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
+
+        // Internal check: the store should have no subscriptions.
+        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
+    });
+
+    runTests(makeComponent);
 });
