@@ -185,7 +185,7 @@ export abstract class StoreBase {
         }
     }
 
-    private _handleThrottledCallbacks = () => {
+    private _handleThrottledCallbacks = (): void => {
         this._throttleData = undefined;
         StoreBase._resolveCallbacks();
     };

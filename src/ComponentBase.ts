@@ -299,7 +299,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         }
     }
 
-    private _onAutoSubscriptionChanged = () => {
+    private _onAutoSubscriptionChanged = (): void => {
         ComponentBase._onAutoSubscriptionChangedUnbound(this);
     };
 
