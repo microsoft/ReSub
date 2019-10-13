@@ -45,7 +45,7 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
 }
 
 interface InstanceIdState {
-    instanceId: number;
+    getInstance: () => ComponentBase<any, any>;
 }
 
 export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S & InstanceIdState> {
@@ -79,9 +79,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     //    with the specific key that was triggered as the only parameter to the function.
 
     private static _nextSubscriptionId = 1;
-    private static _nextInstanceId = 1;
-
-    private static componentBaseInstances: Map<number, ComponentBase<any, any>> = new Map<number, ComponentBase<any, any>>();
 
     private _handledSubscriptions: { [id: number]: StoreSubscriptionInternal<P, S> } = {};
     private _handledAutoSubscriptions: AutoSubscription[] = [];
@@ -89,7 +86,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     private _handledSubscriptionsLookup: SubscriptionLookup<P, S> = {};
 
     private _isMounted = false;
-    protected readonly _instanceId: number;
 
     constructor(props: P) {
         super(props);
@@ -117,12 +113,8 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         // No one should use Store getters in render: do that in _buildState instead.
         this.render = forbidAutoSubscribeWrapper(render, this);
 
-        const nextId = ComponentBase._nextInstanceId++;
-        ComponentBase.componentBaseInstances.set(nextId, this);
-
-        this._instanceId = nextId;
-
-        this.state = {...this._buildInitialState(), instanceId: this._instanceId};
+        const instance = this;
+        this.state = {...this._buildInitialState(), getInstance: () => instance};
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
@@ -131,12 +123,13 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, any & InstanceIdState> = (props, state) => {
-        let instance = ComponentBase.componentBaseInstances.get(state.instanceId);
-        if(instance) {
-            return instance.updateSubscriptions(props);
-        } else {
-            throw new Error('couldn\'t get instance of Component');
+        if(state) {
+            let instance = state.getInstance();
+            if(instance) {
+                return instance.updateSubscriptions(props);
+            }
         }
+        throw new Error('couldn\'t get instance of Component');
     };
 
     updateSubscriptions(nextProps: Readonly<P>): Partial<S & InstanceIdState> | null {
@@ -185,7 +178,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
         this._handledAutoSubscriptions = [];
         this._isMounted = false;
-        ComponentBase.componentBaseInstances.delete(this._instanceId);
     }
 
     shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
@@ -435,7 +427,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         return !!props[enablePropertyName];
     }
 
-    // Hander for enableAutoSubscribe that does the actual auto-subscription work.
+    // Handler for enableAutoSubscribe that does the actual auto-subscription work.
     private static _autoSubscribeHandler = {
         // Callback to handle the 'auto-subscribe'.
         handle(self: ComponentBase<any, any>, store: StoreBase, key: string) {

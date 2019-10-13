@@ -50,6 +50,8 @@ const initialStoreDatas: { [id: string]: StoreData } = {
     'e': uniqStoreDataValue++,
 };
 
+const initialExpectedState = 2;
+
 // ----------------------------------------------------------------------------
 // Component that make use of auto-subscriptions via SimpleStore.
 
@@ -356,7 +358,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>)
     });
 
     it('autoSubscribeWithKey triggers _buildState on change', () => {
-        let expectedState = 2;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
 
         /**
@@ -381,7 +383,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>)
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
-        let expectedState = 2;
+        let expectedState = initialExpectedState;
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
@@ -396,7 +398,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>)
     });
 
     it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
-        let expectedState = 2;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_enumKeyedSub: true, ids: [] });
 
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
@@ -413,7 +415,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>)
     });
 
     it('autoSubscribeWithKey and key - test single-@key compound key Subscriptions', () => {
-        let expectedState = 2;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_compoundSingleKeySub: true, test_skipIndividualIds: true, ids: ['a'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(4);
@@ -449,7 +451,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>)
     });
 
     it('autoSubscribeWithKey and key - test multi-@key compound key Subscriptions', () => {
-        let expectedState = 2;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_compoundMultiKeySub: true, test_skipIndividualIds: true, ids: ['a', 'b'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(15);
