@@ -83,7 +83,7 @@ interface SimpleState {
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
-    public buildStateCallCount = 0;
+    buildStateCallCount = 0;
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {

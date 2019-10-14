@@ -133,7 +133,8 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> = (nextProps, prevState: ComponentBaseState<any>) => {
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
+    (nextProps, prevState: ComponentBaseState<any>) => {
         if(prevState) {
             let instance: ComponentBase<any, ComponentBaseState<any>> = prevState._getInstance();
             if(instance) {
