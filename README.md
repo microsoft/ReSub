@@ -264,12 +264,12 @@ Subclasses should implement some or all of the following methods:
 This method is called to rebuild the module’s state. All but the simplest of components should implement this method. It is called on three occurrences:
 
 1. During initial component construction, `initialBuild` will be true. This is where you should set all initial state for your component. This case rarely needs special treatment because the component always rebuilds all of its state from its props, whether it's an initial build or a new props received event.
-2. In the React lifecycle, during a `UNSAFE_componentWillReceiveProps`, if the props change (determined by a `_.isEqual`), this is called so that the component can rebuild its state from the new props.
+2. In the React lifecycle, during a `getDerivedStateFromProps`, this is called on *every* render.
 3. When this component subscribes to any stores, this will be called whenever the subscription is triggered. This is the most common usage of subscriptions, and the usage created by autosubscriptions.
 
 Any calls from this method to store methods decorated with `@autoSubscribe` will establish an autosubscription.
 
-React’s `setState` method should not be called directly in this function. Instead, the new state should be returned and `ComponentBase` will call `setState`.
+React’s `setState` method should not be called directly in this function. Instead, the new state should be returned and `ComponentBase` will handle the update of the state.
 
 ##### `protected _initStoreSubscriptions(): StoreSubscription<S>[]`
 
