@@ -50,7 +50,7 @@ const initialStoreDatas: { [id: string]: StoreData } = {
     'e': uniqStoreDataValue++,
 };
 
-const initialExpectedState = 2;
+const initialExpectedState = 1;
 
 // ----------------------------------------------------------------------------
 // Component that make use of auto-subscriptions via SimpleStore.
@@ -166,7 +166,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
     } = Component.state();
 
     // Internal check: state should have two changes (including instanceId).
-    expect(stateChanges).toEqual(2);
+    expect(stateChanges).toEqual(1);
 
     // Internal check: state should have one StoreData per id in props.ids.
     if (!props.test_skipIndividualIds) {

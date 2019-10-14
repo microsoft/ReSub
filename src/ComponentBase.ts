@@ -44,11 +44,13 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-interface InstanceIdState {
+interface InternalState {
     getInstance: () => ComponentBase<any, any>;
 }
 
-export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S & InstanceIdState> {
+type ComponentBaseState<S> = S & InternalState;
+
+export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, ComponentBaseState<S>> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
@@ -114,7 +116,16 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         this.render = forbidAutoSubscribeWrapper(render, this);
 
         const instance = this;
-        this.state = {...this._buildInitialState(), getInstance: () => instance};
+        /*
+         * We can't call _buildInitialState here, because the properties of the subclass are initialized **after** the base class
+         * constructor. https://github.com/microsoft/TypeScript/issues/1617#issuecomment-69215655
+         * Therefore we need to call it after the constructor.
+         * Since getDerivedStateFromProps is called after the constructor, we can ensure, that the state is properly initialized
+         * there.
+         * But we need to put the instance into the state, so that getDerivedStateFromProps works.
+         * Hence the rather hacky type conversion.
+         */
+        this.state = {getInstance: () => instance} as unknown as ComponentBaseState<S>;
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
@@ -122,17 +133,20 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, any & InstanceIdState> = (props, state) => {
-        if(state) {
-            let instance = state.getInstance();
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> = (nextProps, prevState: ComponentBaseState<any>) => {
+        if(prevState) {
+            let instance: ComponentBase<any, ComponentBaseState<any>> = prevState.getInstance();
             if(instance) {
-                return instance.updateSubscriptions(props);
+                if(!instance._isMounted) {
+                    return instance._buildInitialState();
+                }
+                return instance._handleUpdate(nextProps);
             }
         }
         throw new Error('couldn\'t get instance of Component');
     };
 
-    updateSubscriptions(nextProps: Readonly<P>): Partial<S & InstanceIdState> | null {
+    _handleUpdate(nextProps: Readonly<P>): Partial<ComponentBaseState<S>> | null {
         for (const subscriptionKey in this._handledSubscriptions) {
             if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
                 const subscription = this._handledSubscriptions[subscriptionKey];
