@@ -45,10 +45,10 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
 }
 
 interface InternalState {
-    getInstance: () => ComponentBase<any, any>;
+    _getInstance: () => ComponentBase<any, any>;
 }
 
-type ComponentBaseState<S> = S & InternalState;
+export type ComponentBaseState<S> = S & InternalState;
 
 export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, ComponentBaseState<S>> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
@@ -125,7 +125,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
          * But we need to put the instance into the state, so that getDerivedStateFromProps works.
          * Hence the rather hacky type conversion.
          */
-        this.state = {getInstance: () => instance} as unknown as ComponentBaseState<S>;
+        this.state = {_getInstance: () => instance} as unknown as ComponentBaseState<S>;
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
@@ -135,7 +135,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> = (nextProps, prevState: ComponentBaseState<any>) => {
         if(prevState) {
-            let instance: ComponentBase<any, ComponentBaseState<any>> = prevState.getInstance();
+            let instance: ComponentBase<any, ComponentBaseState<any>> = prevState._getInstance();
             if(instance) {
                 if(!instance._isMounted) {
                     return instance._buildInitialState();

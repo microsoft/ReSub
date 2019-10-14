@@ -83,9 +83,11 @@ interface SimpleState {
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
+    public buildStateCallCount = 0;
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
+        this.buildStateCallCount++;
         const newState: Partial<SimpleState> = {
             keyedDataSum: 0,
         };
@@ -125,13 +127,18 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
 
 class OverriddenComponent extends SimpleComponent {
 
-    static makeComponent(props: SimpleProps): ReactWrapper<any, any> {
+    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
+        return super._buildState(props, initialBuild);
+    }
+
+    static makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleState, OverriddenComponent> {
         return mount(<OverriddenComponent { ...props } />);
     }
 
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) => {
         return ComponentBase.getDerivedStateFromProps(props, state);
     };
+
 }
 
 @DeepEqualityShouldComponentUpdate
@@ -157,9 +164,9 @@ class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState
  */
 
 // Makes a new SimpleComponent and performs some internal checks.
-function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
+function makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleState, SimpleComponent> {
     // Make the component, calling _buildState in the constructor.
-    const Component: ReactWrapper<any, any> = mount(<SimpleComponent { ...props } />);
+    const Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent> = mount(<SimpleComponent { ...props } />);
     const {
         stateChanges,
         storeDatas,
@@ -167,6 +174,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
 
     // Internal check: state should have two changes (including instanceId).
     expect(stateChanges).toEqual(1);
+    expect(Component.instance().buildStateCallCount).toEqual(1);
 
     // Internal check: state should have one StoreData per id in props.ids.
     if (!props.test_skipIndividualIds) {
@@ -183,7 +191,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
 }
 
 // The main tests for a component/store using auto-subscriptions.
-function testSubscriptions(Component: ReactWrapper<any, any>): void {
+function testSubscriptions(Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent>): void {
     // Store should now have subscriptions. There were none at the start of the test, so they all came from this
     // component. If subscribed to Key_All, there should be one subscription. Otherwise, one per id in props.ids.
     const subscriptionKeys = SimpleStoreInstance.test_getSubscriptionKeys();
@@ -222,7 +230,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
 
 // Tests if a change in the store causes the component to re-build its state, or not re-build if
 // doesNotAffectComponent is true.
-function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: string, newValue: StoreData,
+function testSubscriptionChange(Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent>, idToChange: string, newValue: StoreData,
         doesNotAffectComponent = false): void {
 
     // Hold onto the current state before the store changes.
@@ -255,7 +263,7 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
     testSubscriptions(Component);
 }
 
-function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<any, any>): any {
+function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<SimpleProps, SimpleState, SimpleComponent>): any {
     it('Auto-subscribe on id', () => {
         const Component = makeComponent({ ids: ['a'] });
         testSubscriptions(Component);
