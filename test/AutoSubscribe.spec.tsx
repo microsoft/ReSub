@@ -82,11 +82,11 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
 
-    public buildStateCallCount = 0;
+    buildStateCallCount = 0;
 
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
-        this.buildStateCallCount++
+        this.buildStateCallCount++;
         const newState: Partial<SimpleState> = {
             keyedDataSum: 0,
         };
@@ -157,7 +157,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleStat
 
     // Internal check: state should have one change.
     expect(stateChanges).toEqual(1);
-    expect(Component.instance().buildStateCallCount).toEqual(1)
+    expect(Component.instance().buildStateCallCount).toEqual(1);
 
 
     // Internal check: state should have one StoreData per id in props.ids.
