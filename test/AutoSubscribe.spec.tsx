@@ -82,8 +82,11 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
 
+    buildStateCallCount = 0;
+
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
+        this.buildStateCallCount++;
         const newState: Partial<SimpleState> = {
             keyedDataSum: 0,
         };
@@ -144,9 +147,9 @@ class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState
  */
 
 // Makes a new SimpleComponent and performs some internal checks.
-function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
+function makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleState, SimpleComponent> {
     // Make the component, calling _buildState in the constructor.
-    const Component: ReactWrapper<any, any> = mount(<SimpleComponent { ...props } />);
+    const Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent> = mount(<SimpleComponent { ...props } />);
     const {
         stateChanges,
         storeDatas,
@@ -154,6 +157,8 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
 
     // Internal check: state should have one change.
     expect(stateChanges).toEqual(1);
+    expect(Component.instance().buildStateCallCount).toEqual(1);
+
 
     // Internal check: state should have one StoreData per id in props.ids.
     if (!props.test_skipIndividualIds) {
@@ -170,7 +175,7 @@ function makeComponent(props: SimpleProps): ReactWrapper<any, any> {
 }
 
 // The main tests for a component/store using auto-subscriptions.
-function testSubscriptions(Component: ReactWrapper<any, any>): void {
+function testSubscriptions(Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent>): void {
     // Store should now have subscriptions. There were none at the start of the test, so they all came from this
     // component. If subscribed to Key_All, there should be one subscription. Otherwise, one per id in props.ids.
     const subscriptionKeys = SimpleStoreInstance.test_getSubscriptionKeys();
@@ -209,7 +214,7 @@ function testSubscriptions(Component: ReactWrapper<any, any>): void {
 
 // Tests if a change in the store causes the component to re-build its state, or not re-build if
 // doesNotAffectComponent is true.
-function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: string, newValue: StoreData,
+function testSubscriptionChange(Component: ReactWrapper<SimpleProps, SimpleState, SimpleComponent>, idToChange: string, newValue: StoreData,
         doesNotAffectComponent = false): void {
 
     // Hold onto the current state before the store changes.
@@ -227,6 +232,7 @@ function testSubscriptionChange(Component: ReactWrapper<any, any>, idToChange: s
     } else {
         // Component state should change.
         expect(Component.state('stateChanges')).toEqual(oldState.stateChanges + 1);
+        expect(Component.instance().buildStateCallCount).toEqual(oldState.stateChanges + 1);
     }
 
     /**
@@ -365,19 +371,23 @@ describe('AutoSubscribe', function () {
          */
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(2);
 
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(9);
 
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(13);
 
         // Showing that you can't use a compound key as a multi-trigger
         SimpleStoreInstance.triggerArbitraryKey(formCompoundKey('A', 'B'));
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
@@ -388,11 +398,13 @@ describe('AutoSubscribe', function () {
 
         SimpleStoreInstance.setStoreData('foo', 'foo', 77);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(9);
 
         // Showing that you can't use a compound key as a multi-trigger either
         SimpleStoreInstance.triggerArbitraryKey(formCompoundKey('A', 'B'));
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
     });
 
     it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
@@ -401,14 +413,17 @@ describe('AutoSubscribe', function () {
 
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(2);
 
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.Second, 7);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(9);
 
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 3);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(13);
     });
 
@@ -416,32 +431,40 @@ describe('AutoSubscribe', function () {
         let expectedState = 1;
         const Component = makeComponent({ test_compoundSingleKeySub: true, test_skipIndividualIds: true, ids: ['a'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(4);
 
         SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a'], TriggerKeys.First, 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(6);
 
         SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a'], TriggerKeys.Second, 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(7);
 
         SimpleStoreInstance.setStoreData('a', formCompoundKey('a', TriggerKeys.First), 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(5);
 
         // This will still trigger a single state update, but will change nothing
         SimpleStoreInstance.triggerArbitraryKey(undefined);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(5);
 
         // None of these keys should trigger any subscription changes
         SimpleStoreInstance.setStoreData('a', 'a', 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', 'b', 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', TriggerKeys.First.toString(), 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
 
         // Triggering keys out of order also shouldn't work
         SimpleStoreInstance.setStoreData('a', formCompoundKey(TriggerKeys.First, 'a'), 1);
@@ -452,45 +475,57 @@ describe('AutoSubscribe', function () {
         let expectedState = 1;
         const Component = makeComponent({ test_compoundMultiKeySub: true, test_skipIndividualIds: true, ids: ['a', 'b'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(15);
 
         SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a', 'b'], TriggerKeys.First, 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(17);
 
         SimpleStoreInstance.setStoreDataForCompoundEnumKeyedSubscription(['a', 'b'], TriggerKeys.Second, 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(18);
 
         SimpleStoreInstance.setStoreData('a', formCompoundKey('a', 'b', TriggerKeys.First), 1);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(15);
 
         // Catch the other subscription (not very useful, but it exists)
         SimpleStoreInstance.setStoreData('a', formCompoundKey('a', 'b'), 2);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(18);
 
         // This will still trigger a single state update, but will change nothing
         SimpleStoreInstance.triggerArbitraryKey(undefined);
         expect(Component.state('stateChanges')).toEqual(++expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         expect(Component.state('keyedDataSum')).toEqual(18);
 
         // None of these keys should trigger any subscription changes
         SimpleStoreInstance.setStoreData('a', 'a', 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', 'b', 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', TriggerKeys.First.toString(), 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
 
         // Triggering keys out of order also shouldn't work
         SimpleStoreInstance.setStoreData('a', formCompoundKey('b', 'a'), 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', formCompoundKey('b', 'a', TriggerKeys.First), 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
         SimpleStoreInstance.setStoreData('a', formCompoundKey(TriggerKeys.First, 'a', 'b'), 1);
         expect(Component.state('stateChanges')).toEqual(expectedState);
+        expect(Component.instance().buildStateCallCount).toEqual(expectedState);
     });
 
     it('Manual Subscription triggers', () => {
