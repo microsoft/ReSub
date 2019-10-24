@@ -11,16 +11,17 @@ import * as React from 'react';
 import Options from './Options';
 import * as Instrumentation from './Instrumentation';
 import { forbidAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
-import { Dictionary, find, noop, remove } from './utils';
+import { find, noop, remove } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 interface InternalState {
-    _getInstance: () => ComponentBase<any, any>;
+    _getInstance: () => ComponentBase<unknown, InternalState & unknown>;
+    _resubDirty: boolean;
 }
 
 export type ComponentBaseState<S> = S & InternalState;
 
-export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, ComponentBaseState<S>> {
+export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S & InternalState> {
     // ComponentBase is provided a method to wrap autosubscriptions via _buildState in a component
 
     private _handledAutoSubscriptions: AutoSubscription[] = [];
@@ -63,14 +64,17 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
          * But we need to put the instance into the state, so that getDerivedStateFromProps works.
          * Hence the rather hacky type conversion.
          */
-        this.state = {_getInstance: () => instance} as unknown as ComponentBaseState<S>;
+        this.state = {
+            _getInstance: () => instance,
+            _resubDirty: false,
+        } as unknown as ComponentBaseState<S>;
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
-    (nextProps, prevState: ComponentBaseState<any>) => {
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, any> =
+    (nextProps, prevState: InternalState) => {
         if(prevState) {
-            let instance: ComponentBase<any, ComponentBaseState<any>> = prevState._getInstance();
+            let instance = prevState._getInstance();
             if(instance) {
                 if(!instance._isMounted) {
                     return instance._buildInitialState();
@@ -81,7 +85,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         throw new Error('couldn\'t get instance of Component');
     };
 
-    _handleUpdate(nextProps: Readonly<P>): Partial<ComponentBaseState<S>> | null {
+    _handleUpdate(nextProps: Readonly<P>): Partial<S> | null {
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && Object.keys(newState).length) {
@@ -119,14 +123,13 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
     // Performance optimization - don't put this in _onAutoSubscriptionChanged because every component will have it's own
     // instance of the function instead of hanging off the prototype. Bound functions also lack some runtime optimizations
-    private static _onAutoSubscriptionChangedUnbound<P, S>(that: ComponentBase<P, S>): void {
+    private static _onAutoSubscriptionChangedUnbound<P, S extends {}>(that: ComponentBase<P, S>): void {
         if (!that.isComponentMounted()) {
             return;
         }
-        const newState = that._buildStateWithAutoSubscriptions(that.props, false);
-        if (newState && Object.keys(newState).length) {
-            that.setState(newState as Pick<S, any>);
-        }
+
+        //eslint-disable-next-line
+        that.setState({_resubDirty: true} as InternalState as any);
     }
 
     private _onAutoSubscriptionChanged = (): void => {
