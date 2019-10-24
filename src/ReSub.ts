@@ -22,3 +22,6 @@ export { formCompoundKey } from './utils';
 export { ComponentBase } from './ComponentBase';
 export { StoreBase } from './StoreBase';
 export { Types };
+export { createEntityStore, EntityStoreProperties, EntityStore } from './Entity/EntityStore';
+export { createSelectEntityStore, SelectEntityStoreProperties, SelectEntityStore } from './Entity/SelectEntityStore';
+export { createDynamicLoadingStore, DynamicLoadingStoreProperties, DynamicLoadingStore } from './Entity/DynamicLoadingStore';
