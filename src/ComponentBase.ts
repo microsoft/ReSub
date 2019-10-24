@@ -10,39 +10,9 @@ import * as React from 'react';
 
 import Options from './Options';
 import * as Instrumentation from './Instrumentation';
-import { SubscriptionCallbackBuildStateFunction, SubscriptionCallbackFunction, StoreSubscription } from './Types';
-import { forbidAutoSubscribeWrapper, enableAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
-import { Dictionary, assert, find, isString, noop, normalizeKey, remove, values } from './utils';
+import { forbidAutoSubscribeWrapper, enableAutoSubscribe } from './AutoSubscriptions';
+import { Dictionary, find, noop, remove } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
-
-// Subscriptions without a key need some way to be identified in the SubscriptionLookup.
-const SubKeyNoKey = '%$^NONE';
-
-interface SubscriptionLookup<P, S> {
-    [storeId: string]: {
-        [key: string]: { [id: number]: StoreSubscriptionInternal<P, S> };
-    };
-}
-
-interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
-    // Re-typing it here from the base interface so that it's strongly typed
-    store: StoreBase;
-
-    // Globally unique for each subscription being handled in the components.
-    _id: number;
-
-    // Internal value used for tracking the local callback for this subscription
-    _lambda: any;
-
-    // The callback to be used in the _lambda, if any.
-    _callback?: SubscriptionCallbackFunction | SubscriptionCallbackBuildStateFunction<S>;
-
-    // Subscription token for unsubscribing (undefined before registering)
-    _subscriptionToken?: number;
-
-    // Key's value used in above subscription (undefined if not subscribed)
-    _subscriptionKey?: string;
-}
 
 interface InternalState {
     _getInstance: () => ComponentBase<any, any>;
@@ -51,41 +21,9 @@ interface InternalState {
 export type ComponentBaseState<S> = S & InternalState;
 
 export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, ComponentBaseState<S>> {
-    // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
-    // main subscription types (and then ways to combine them with some options in more nuanced ways):
-    // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
-    //    { store: UsersStore }
-    // 2. Subscription only to a specific key -- when you are only looking for specific items to update based on, you can
-    //    subscribe in two ways, depending on how the key is made available:
-    //    a. You can trigger on a specific fixed value -- the subscription won't change over the lifetime, it's locked to one key:
-    //       { store: UsersStore, specificKeyValue: '8:codingparadox' }
-    //    b. You can trigger based on a property of the component -- if your component has a property called "conversationId", you can
-    //       have ComponentBase automatically update the store subscription whenever the value of that property changes:
-    //       { store: UsersStore, keyPropertyName: 'conversationId' }
-    //       Note: You can do compound keys here as well (i.e. 'conversation.id' if you have a property named 'conversation' with a
-    //       field called 'id' that you're trying to listen on.
-    //
-    // You can add these subscriptions to ComponentBase in two ways:
-    // 1. There is a protected _initStoreSubscriptions() array of subscriptions that you can just override in your class, and those will be
-    //    managed throughout the lifecycle of the component, and torn down when the component unmounts.
-    // 2. If you have a subscription that you want to bring up dynamically, you can call this._addSubscription with the subscription
-    //    object.  Anything added in this way will also be turn down when the component unmounts, or you can call _removeSubscription
-    //    if you want to remove it before then.
-    //
-    // Finally, when ComponentBase receives a subscription trigger, there are two ways for the component to respond to
-    // the trigger:
-    // 1. If you don't provide a callback function in the subscription, _buildState will be called, providing an opportunity to rebuild
-    //    the component's state now that the stores have changed.
-    // 2. You can provide a callbackBuildState (or callback) in the subscription, which will be called whenever that specific
-    //    subscription is triggered. If the subscription is granular to a specific key (not Key_All), then the callback will be invoked
-    //    with the specific key that was triggered as the only parameter to the function.
+    // ComponentBase is provided a method to wrap autosubscriptions via _buildState in a component
 
-    private static _nextSubscriptionId = 1;
-
-    private _handledSubscriptions: { [id: number]: StoreSubscriptionInternal<P, S> } = {};
     private _handledAutoSubscriptions: AutoSubscription[] = [];
-
-    private _handledSubscriptionsLookup: SubscriptionLookup<P, S> = {};
 
     private _isMounted = false;
 
@@ -128,10 +66,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         this.state = {_getInstance: () => instance} as unknown as ComponentBaseState<S>;
     }
 
-    protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
-        return [];
-    }
-
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
     (nextProps, prevState: ComponentBaseState<any>) => {
@@ -148,26 +82,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     };
 
     _handleUpdate(nextProps: Readonly<P>): Partial<ComponentBaseState<S>> | null {
-        for (const subscriptionKey in this._handledSubscriptions) {
-            if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
-                const subscription = this._handledSubscriptions[subscriptionKey];
-                if (subscription.keyPropertyName) {
-                    const currKey = this._findKeyFromPropertyName(this.props, subscription.keyPropertyName);
-                    const nextKey = this._findKeyFromPropertyName(nextProps, subscription.keyPropertyName);
-
-                    if (currKey !== nextKey) {
-                        // The property we care about changed, so unsubscribe and re-subscribe under the new value
-
-                        this._removeSubscriptionFromLookup(subscription);
-                        this._cleanupSubscription(subscription);
-
-                        this._registerSubscription(subscription, nextKey);
-                        this._addSubscriptionToLookup(subscription);
-                    }
-                }
-            }
-        }
-
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && Object.keys(newState).length) {
@@ -179,12 +93,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
     // Subclasses may override, but _MUST_ call super.
     componentWillUnmount(): void {
-        values<StoreSubscriptionInternal<P, S>>(this._handledSubscriptions)
-            .forEach(sub => this._cleanupSubscription(sub));
-
-        this._handledSubscriptions = {};
-        this._handledSubscriptionsLookup = {};
-
         // Remove and cleanup all suscriptions
         this._handledAutoSubscriptions.forEach(subscription => {
             subscription.used = false;
@@ -205,109 +113,8 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         return this._isMounted;
     }
 
-    protected _addSubscription(subscription: StoreSubscription<P, S>): StoreSubscription<P, S> | undefined {
-        assert(subscription.store instanceof StoreBase, `Subscription added with store that's not an StoreBase`);
-
-        const { enablePropertyName } = subscription;
-
-        if (enablePropertyName && !this._isEnabledByPropertyName(this.props, enablePropertyName)) {
-            // Do not process subscription
-            // TODO: save this subscription and try again when props change!
-            return undefined;
-        }
-
-        // Upcast, then fill in the object. We're extending the subscription object to have an internal representation attached
-        let nsubscription: StoreSubscriptionInternal<P, S> = subscription as StoreSubscriptionInternal<P, S>;
-        // Wrap the given callback (if any) to provide extra functionality.
-        nsubscription._callback = subscription.callbackBuildState
-            // The caller wants auto-subscriptions, so enable them for the duration of the given callback.
-            ? enableAutoSubscribeWrapper(ComponentBase._autoSubscribeHandler, subscription.callbackBuildState, this)
-            : subscription.callback
-                // The caller wants to take care of everything.
-                // Note: eating the return value so we do not later confuse it for a state update.
-                ? (keys?: string[]) => { subscription.callback!!!(keys); }
-                // Callback was not given.
-                : undefined;
-        nsubscription._lambda = this._onSubscriptionChanged.bind(this, subscription);
-        nsubscription._id = ComponentBase._nextSubscriptionId++;
-
-        if (nsubscription.keyPropertyName) {
-            const key = this._findKeyFromPropertyName(this.props, nsubscription.keyPropertyName);
-            this._registerSubscription(nsubscription, key);
-        } else if (nsubscription.specificKeyValue) {
-            this._registerSubscription(nsubscription, nsubscription.specificKeyValue);
-        } else {
-            this._registerSubscription(nsubscription);
-        }
-
-        this._handledSubscriptions[nsubscription._id] = nsubscription;
-        this._addSubscriptionToLookup(nsubscription);
-
-        return subscription;
-    }
-
-    protected _removeSubscription(subscription: StoreSubscription<P, S>): StoreSubscription<P, S>[] {
-        const removed: StoreSubscription<P, S>[] = [];
-        const nsubscription = subscription as StoreSubscriptionInternal<P, S>;
-
-        const removedExplicit = this._handledSubscriptions[nsubscription._id];
-        if (removedExplicit) {
-            removed.push(removedExplicit);
-            this._cleanupSubscription(removedExplicit);
-            delete this._handledSubscriptions[nsubscription._id];
-        }
-
-        this._removeSubscriptionFromLookup(subscription as StoreSubscriptionInternal<P, S>);
-
-        return removed;
-    }
-
-    private _registerSubscription(subscription: StoreSubscriptionInternal<P, S>, key: string | number = StoreBase.Key_All): void {
-        assert(!subscription._subscriptionToken, 'Subscription already subscribed!');
-        assert(!subscription.keyPropertyName || key !== StoreBase.Key_All,
-            'Subscription created with key of all when it has a key property name');
-        assert(subscription.specificKeyValue !== StoreBase.Key_All, 'Subscription created with specific key of all');
-
-        if (key) {
-            key = normalizeKey(key);
-            subscription._subscriptionToken = subscription.store.subscribe(subscription._lambda, key);
-            subscription._subscriptionKey = key;
-        } else {
-            subscription._subscriptionKey = undefined;
-        }
-    }
-
-    private _cleanupSubscription(subscription: StoreSubscriptionInternal<P, S>): void {
-        if (subscription._subscriptionToken) {
-            subscription.store.unsubscribe(subscription._subscriptionToken);
-            subscription._subscriptionToken = undefined;
-        }
-    }
-
     private _shouldRemoveAndCleanupAutoSubscription(subscription: AutoSubscription): boolean {
         return !subscription.used;
-    }
-
-    private _onSubscriptionChanged(subscription: StoreSubscription<P, S>, changedItem: any): void {
-        // The only time we can get a subscription callback that's unmounted is after the component has already been
-        // mounted and torn down, so this check can only catch that case (subscriptions living past the end of the
-        // component's lifetime).
-        if (!this.isComponentMounted()) {
-            return;
-        }
-
-        let newState: Pick<S, any>|void = undefined;
-
-        let nsubscription = subscription as StoreSubscriptionInternal<P, S>;
-        if (nsubscription._callback) {
-            newState = nsubscription._callback(changedItem) as Pick<S, any> | void;
-        } else {
-            newState = this._buildStateWithAutoSubscriptions(this.props, false) as Pick<S, any> | void;
-        }
-
-        if (newState && Object.keys(newState).length) {
-            this.setState(newState);
-        }
     }
 
     // Performance optimization - don't put this in _onAutoSubscriptionChanged because every component will have it's own
@@ -326,41 +133,12 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         ComponentBase._onAutoSubscriptionChangedUnbound(this);
     };
 
-    private _addSubscriptionToLookup(subscription: StoreSubscriptionInternal<P, S>): void {
-        let lookup = this._handledSubscriptionsLookup;
-        const storeId = subscription.store.storeId;
-        const key = subscription._subscriptionKey || SubKeyNoKey;
-
-        if (!lookup[storeId]) {
-            lookup[storeId] = {};
-        }
-        if (!lookup[storeId][key]) {
-            lookup[storeId][key] = {};
-        }
-        lookup[storeId][key][subscription._id] = subscription;
-    }
-
-    private _removeSubscriptionFromLookup(subscription: StoreSubscriptionInternal<P, S>): void {
-        let lookup = this._handledSubscriptionsLookup;
-        const storeId = subscription.store.storeId;
-        const key = subscription._subscriptionKey || SubKeyNoKey;
-
-        if (lookup[storeId] && lookup[storeId][key] && lookup[storeId][key][subscription._id]) {
-            delete lookup[storeId][key][subscription._id];
-        }
-    }
-
     private _handleAutoSubscribe(store: StoreBase, key: string): void {
         // Check for an existing auto-subscription.
         const autoSubscription = this._findMatchingAutoSubscription(store, key);
         if (autoSubscription) {
             // Set auto-subscription as used
             autoSubscription.used = true;
-            return;
-        }
-
-        // Check for an existing explicit subscription.
-        if (this._hasMatchingSubscription(store.storeId, key)) {
             return;
         }
 
@@ -376,70 +154,12 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         subscription.store.trackAutoSubscription(subscription);
     }
 
-    // Check if we already handle a subscription (explicit) for storeId with key.
-    private _hasMatchingSubscription(storeId: string, key: string): boolean {
-        const subscriptionsWithStore = this._handledSubscriptionsLookup[storeId];
-
-        if (subscriptionsWithStore) {
-            const subscriptionsWithStoreAndKey = subscriptionsWithStore[key];
-            const subscriptionsWithStoreAndKeyAll = subscriptionsWithStore[StoreBase.Key_All];
-
-            if (Object.keys(subscriptionsWithStoreAndKey).length || Object.keys(subscriptionsWithStoreAndKeyAll).length) {
-                // Already explicitly subscribed.
-                return true;
-            }
-
-            const subscriptionsWithStoreAndPropName = subscriptionsWithStore[SubKeyNoKey];
-            const matchingSubscription = find(values<StoreSubscriptionInternal<P, S>>(subscriptionsWithStoreAndPropName), (sub) => {
-                const {
-                    enablePropertyName,
-                    keyPropertyName,
-                } = sub;
-
-                // @see - https://github.com/Microsoft/ReSub/issues/44
-                if (
-                    keyPropertyName
-                    && (!enablePropertyName || this._isEnabledByPropertyName(this.props, enablePropertyName))
-                ) {
-                    const currKey = this._findKeyFromPropertyName(this.props, keyPropertyName);
-                    return currKey === key;
-                }
-
-                // Subscribed to Key_All.
-                return true;
-            });
-
-            if (matchingSubscription) {
-                // Already explicitly subscribed.
-                return true;
-            }
-        }
-        return false;
-    }
-
     // Search already handled auto-subscription
     private _findMatchingAutoSubscription(store: StoreBase, key: string): AutoSubscription | undefined {
         return find(this._handledAutoSubscriptions, subscription => (
             (subscription.store.storeId === store.storeId) &&
             (subscription.key === key || subscription.key === StoreBase.Key_All)
         ));
-    }
-
-    // Search Subscription "keyPropertyName" in Component props(this.props)
-    private _findKeyFromPropertyName(props: Readonly<P>, keyPropertyName: keyof P): string {
-        const key = props[keyPropertyName];
-        if (!isString(key)) {
-            assert(false, `Subscription key property value ${ keyPropertyName } must be a string`);
-            // Fallback to subscribing to all values
-            return StoreBase.Key_All;
-        }
-
-        return key;
-    }
-
-    // Check if enablePropertyName is enabled
-    private _isEnabledByPropertyName(props: Readonly<P>, enablePropertyName: keyof P): boolean {
-        return !!props[enablePropertyName];
     }
 
     // Handler for enableAutoSubscribe that does the actual auto-subscription work.
@@ -494,8 +214,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
     // The initial state is unavailable in UNSAFE_componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
-        this._initStoreSubscriptions()
-            .forEach(subscription => this._addSubscription(subscription));
 
         // Initialize state
         const initialState = this._buildStateWithAutoSubscriptions(this.props, true) || {};

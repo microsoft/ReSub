@@ -113,37 +113,7 @@ class TodosStore extends StoreBase {
 }
 ```
 
-Components that call `TodosStore.getHighPriorityTodos()` inside `_buildState` will automatically subscribe to all future high priority todos triggers from `TodosStore`.
-
-Alternatively, this subscription can be made manually. Subclasses of `ComponentBase` would implement a `_initStoreSubscriptions` method that returns a custom `StoreSubscription` like the following:
-
-```javascript
-protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
-    return [{
-        store: TodosStore,
-        specificKeyValue: 'Key_HighPriorityTodoAdded'
-    }];
-}
-```
-
 *Note: Of course it’s possible to separate high and low priority todo items into separate stores, but sometimes similar data is simultaneously divided on different axes and is therefore difficult to separate into stores without duplicating. Using custom keys is an elegant solution to this problem.*
-
-#### Subscriptions by props:
-
-Once you’re comfortable with key-based subscriptions, you can push the concept further and eliminate even more boilerplate code. `ComponentBase` allows developers to create manual subscriptions that, instead of specifying a `key`, will use whatever value is found inside of a given component `prop`.
-
-For example, perhaps our `TodosList` receives the user’s `username` as a prop, and it only wishes to subscribe to `TodosStore` updates related to that user. This could be established like the following:
-
-```javascript
-protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
-    return [{
-        store: TodosStore,
-        keyPropertyName: 'username'
-    }];
-}
-```
-
-Here, `ComponentBase` will automatically read the value from `props.username` and use this as the subscription key on `TodosStore`. If `props.username` is ever modified, the old subscription will be unregistered and a new one will be formed with the new key.
 
 #### Autosubscriptions using `@key`:
 
@@ -174,7 +144,7 @@ class TodoList extends ComponentBase<TodoListProps, TodoListState> {
 }
 ```
 
-`_buildState` will be called when `TodoStore` triggers any changes for the specified username, but not for any other usernames. This eliminates the need completely for any manual subscriptions to be made in `_initStoreSubscriptions`.
+`_buildState` will be called when `TodoStore` triggers any changes for the specified username, but not for any other usernames.
 
 #### Compound-key subscriptions/triggering
 
@@ -217,22 +187,6 @@ class UserBoxADisplay extends ComponentBase<SomeProps, SomeState> {
 }
 ```
 
-#### Custom subscription callbacks:
-
-`StoreSubscriptions` created inside of `_initStoreSubscriptions` will call `_buildState` by default when they trigger. Instead, developers can specify a custom callback in `StoreSubscription` definitions using either `callbackBuildState` (with autosubscription support just like using `_buildState`) or `callback` (no autosubscription support):
-
-```javascript
-protected _initStoreSubscriptions(): StoreSubscription<TodoListState>[] {
-    return [{
-        store: TodosStore,
-        keyPropertyName: 'username',
-        callbackBuildState: this._userUpdated.bind(this)
-    }];
-}
-```
-
-Custom callbacks are usually unnecessary, but they do give components the opportunity to do delta state management and other performance tuning.
-
 ### ComponentBase
 
 To get the most out of ReSub, your components should inherit `ComponentBase` and should implement some or all of the methods below.
@@ -270,10 +224,6 @@ This method is called to rebuild the module’s state. All but the simplest of c
 Any calls from this method to store methods decorated with `@autoSubscribe` will establish an autosubscription.
 
 React’s `setState` method should not be called directly in this function. Instead, the new state should be returned and `ComponentBase` will handle the update of the state.
-
-##### `protected _initStoreSubscriptions(): StoreSubscription<S>[]`
-
-This method is called during component construction and should return a list of all `StoreSubscriptions`. These subscriptions will be registered and will work in addition to any autosubscriptions formed later.
 
 ##### `protected _componentDidRender()`
 
