@@ -85,8 +85,6 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // for which this component is subscribed (e.g. SimpleStore).
     buildStateCallCount = 0;
 
-    buildStateCallCount = 0;
-
     // Auto-subscriptions are enabled in _buildState due to ComponentBase.
     protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
         this.buildStateCallCount++;
@@ -96,7 +94,7 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
 
         if (props.test_useAll) {
             // Auto-subscribes to Key_All, even though we do not use the returned data.
-            // Note: this line of code is an anit-pattern. Use explicit subscriptions (_initStoreSubscriptions()) instead.
+            // Note: this line of code is an anit-pattern but useful for tests
             SimpleStoreInstance.dangerousGetAllStoreDataMutable();
         }
 
