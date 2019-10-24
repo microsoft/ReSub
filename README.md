@@ -4,6 +4,14 @@
 
 A library for writing better React components and data stores. Uses automatic subscriptions to reduce code and avoid common data flow pitfalls. Scales for projects of all sizes and works great with TypeScript.
 
+## ReSub v2
+
+For the 2.x+ ReSub releases, to get in line with the apparent future of React, we have changed how ReSub uses the React lifecycle functions to instead use the `getDerivedStateFromProps` path.  This means that, for the standard happy path of just using `_buildState`, everything should keep working just like it used to.  However, if you were doing hackery with the older React lifecycle functions (`componentWillMount`, `componentWillReceiveProps`, etc.), the behavior of your `this.state` may differ from what you're used to, and you should test that sort of thing pretty extensively.  This should future-proof ReSub for a while, and play more nicely with the future async rendering that React is moving toward.
+
+As a small secondary note, for 2.x+, we also removed support for the old-school manual subscriptions.  We strongly suggest moving to either autosubscriptions (where ReSub's true differentiating value is) or, if you prefer manual subscriptions, directly subscribe to the stores in your component using whatever lifecycle you prefer.
+
+All in all, for more complicated projects especially, these may be substantial changes to your usage of ReSub, and upgrading may be hard.  You're obviously welcome to keep using the 1.x branch of ReSub indefinitely, and if there are bugs, please let us know and we will attempt to fix them, but we won't be putting any more energy into features/examples/etc. on 1.x and should consider it to be on LTS at this point, since it doesn't work with versions of React newer than 16.8.6.
+
 ## Overview
 
 In React’s early days, Flux gave us guidance on how to manage data flow in our apps. At its core, data would be placed into stores and React components would fetch it from them. When a store’s data was updated, it would notify all concerned components and give them the opportunity to rebuild their states.
