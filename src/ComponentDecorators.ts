@@ -6,11 +6,10 @@
  */
 
 import isEqual from 'lodash/isEqual';
-import { Dictionary } from './utils';
 import ComponentBase from './ComponentBase';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function CustomEqualityShouldComponentUpdate<P extends React.Props<any>, S extends Dictionary<any>>(
+export function CustomEqualityShouldComponentUpdate<P extends React.Props<any>, S = {}>(
         comparator: (this: ComponentBase<P, S>, nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any) => boolean) {
     return function <T extends { new(props: any): ComponentBase<P, S>}>(constructor: T): T {
         constructor.prototype.shouldComponentUpdate = comparator;
@@ -22,7 +21,7 @@ export function DeepEqualityShouldComponentUpdate<T extends { new(props: any): C
     return CustomEqualityShouldComponentUpdate<any, any>(deepEqualityComparator)(constructor);
 }
 
-function deepEqualityComparator<P extends React.Props<any>, S extends Dictionary<any>>(
+function deepEqualityComparator<P extends React.Props<any>, S = {}>(
         this: ComponentBase<P, S>, nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
     return isEqual(this.state, nextState) || isEqual(this.props, nextProps) || isEqual(this.context, nextContext);
 }

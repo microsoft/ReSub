@@ -5,10 +5,6 @@
 
 const CompoundKeyJoinerString = '%&';
 
-export interface Dictionary<T> {
-    [index: string]: T;
-}
-
 export type KeyOrKeys = string | number | (string | number)[];
 
 export function noop(): void {
@@ -43,22 +39,6 @@ export const assert = (cond: any, message?: string | undefined): void => {
     if (!cond) {
         throw new Error(`[resub] ${ message || 'Assertion Failed' }`);
     }
-};
-
-export const values = <T>(value: Dictionary<T>): T[] => {
-    if (isFunction(Object.values)) {
-        return Object.values(value);
-    }
-
-    return Object.keys(value).map(key => value[key]);
-};
-
-export const flat = <T>(value: T[][]): T[] => {
-    if (isFunction(value.flat)) {
-        return value.flat();
-    }
-
-    return value.reduce((acc, val) => acc.concat(val), [] as T[]);
 };
 
 export const remove = <T>(array: T[], predicate: (value: T) => boolean): void => {

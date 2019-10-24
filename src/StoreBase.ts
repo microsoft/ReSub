@@ -13,7 +13,7 @@
 
 import * as Instrumentation from './Instrumentation';
 import Options from './Options';
-import { Dictionary, KeyOrKeys, assert, flat, isNumber, isString, normalizeKey, normalizeKeys, remove, uniq, values } from './utils';
+import { KeyOrKeys, assert, isNumber, isString, normalizeKey, normalizeKeys, remove, uniq } from './utils';
 import { SubscriptionCallbackFunction } from './Types';
 
 export interface AutoSubscription {
@@ -34,16 +34,14 @@ export abstract class StoreBase {
     private static storeIdCounter = 0;
     static readonly Key_All = '%!$all';
 
-    private readonly _subscriptions: Dictionary<SubscriptionCallbackFunction[]> = {};
-    private readonly _autoSubscriptions: Dictionary<AutoSubscription[]> = {};
+    private readonly _subscriptions: Map<string, SubscriptionCallbackFunction[]> = new Map();
+    private readonly _autoSubscriptions: Map<string, AutoSubscription[]> = new Map();
 
     private _subTokenNum = 1;
-    private readonly _subsByNum: {
-        [token: number]: {
-            key: string;
-            callback: SubscriptionCallbackFunction;
-        };
-    } = {};
+    private readonly _subsByNum: Map<number, {
+        key: string;
+        callback: SubscriptionCallbackFunction;
+    }> = new Map();;
 
     readonly storeId = `store${StoreBase.storeIdCounter++}`;
 
@@ -103,28 +101,34 @@ export abstract class StoreBase {
         // trigger(0) is valid, ensure that we catch this case
         if (!keyOrKeys && !isNumber(keyOrKeys)) {
             // Inspecific key, so generic callback call
-            flat(values(this._subscriptions))
-                .forEach(sub => this._setupAllKeySubscription(sub, throttledUntil, bypassBlock));
+            this._subscriptions.forEach(subs => {
+                for (const sub of subs) {
+                    this._setupAllKeySubscription(sub, throttledUntil, bypassBlock);
+                }
+            });
 
-            flat(values(this._autoSubscriptions))
-                .forEach(sub => this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock));
+            this._autoSubscriptions.forEach(subs => {
+                for (const sub of subs) {
+                    this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
+                }
+            });
         } else {
             const keys = normalizeKeys(keyOrKeys);
 
             // Key list, so go through each key and queue up the callback
             keys.forEach(key => {
-                (this._subscriptions[key] || [])
+                (this._subscriptions.get(key) || [])
                     .forEach(callback => this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock));
 
-                (this._autoSubscriptions[key] || [])
+                (this._autoSubscriptions.get(key) || [])
                     .forEach(sub => this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock));
             });
 
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
-            (this._subscriptions[StoreBase.Key_All] || [])
+            (this._subscriptions.get(StoreBase.Key_All) || [])
                 .forEach(callback => this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock));
 
-            (this._autoSubscriptions[StoreBase.Key_All] || [])
+            (this._autoSubscriptions.get(StoreBase.Key_All) || [])
                 .forEach(sub => this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock));
         }
 
@@ -248,11 +252,11 @@ export abstract class StoreBase {
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
         assert(key && isString(key), `Trying to subscribe to invalid key: "${ key }"`);
 
-        let callbacks = this._subscriptions[key];
+        let callbacks = this._subscriptions.get(key);
         if (!callbacks) {
-            this._subscriptions[key] = [callback];
+            this._subscriptions.set(key, [callback]);
 
-            if (key !== StoreBase.Key_All && !this._autoSubscriptions[key]) {
+            if (key !== StoreBase.Key_All && !this._autoSubscriptions.has(key)) {
                 this._startedTrackingKey(key);
             }
         } else {
@@ -260,32 +264,39 @@ export abstract class StoreBase {
         }
 
         let token = this._subTokenNum++;
-        this._subsByNum[token] = { key: key, callback: callback };
+        this._subsByNum.set(token, { key: key, callback: callback });
         return token;
     }
 
     // Unsubscribe from a previous subscription.  Pass in the token the subscribe function handed you.
     unsubscribe(subToken: number): void {
-        assert(this._subsByNum[subToken], `No subscriptions found for token ${ subToken }`);
+        const sub = this._subsByNum.get(subToken);
+        if (!sub) {
+            assert(sub, `No subscriptions found for token ${ subToken }`);
+            return;
+        }
 
-        let key = this._subsByNum[subToken].key;
-        let callback = this._subsByNum[subToken].callback;
-        delete this._subsByNum[subToken];
+        let key = sub.key;
+        let callback = sub.callback;
+        this._subsByNum.delete(subToken);
 
         // Remove this callback set from our tracking lists
         StoreBase._pendingCallbacks.delete(callback);
 
-        let callbacks = this._subscriptions[key];
-        assert(callbacks, `No subscriptions under key ${ key }`);
+        let callbacks = this._subscriptions.get(key);
+        if (!callbacks) {
+            assert(callbacks, `No subscriptions under key ${ key }`);
+            return;
+        }
 
         const index = callbacks.indexOf(callback);
         if (index !== -1) {
             callbacks.splice(index, 1);
             if (callbacks.length === 0) {
                 // No more callbacks for key, so clear it out
-                delete this._subscriptions[key];
+                this._subscriptions.delete(key);
 
-                if (key !== StoreBase.Key_All && !this._autoSubscriptions[key]) {
+                if (key !== StoreBase.Key_All && !this._autoSubscriptions.has(key)) {
                     this._stoppedTrackingKey(key);
                 }
             }
@@ -296,11 +307,11 @@ export abstract class StoreBase {
 
     trackAutoSubscription(subscription: AutoSubscription): void {
         const key = subscription.key;
-        const callbacks = this._autoSubscriptions[key];
+        const callbacks = this._autoSubscriptions.get(key);
         if (!callbacks) {
-            this._autoSubscriptions[key] = [subscription];
+            this._autoSubscriptions.set(key, [subscription]);
 
-            if (key !== StoreBase.Key_All && !this._subscriptions[key]) {
+            if (key !== StoreBase.Key_All && !this._subscriptions.has(key)) {
                 this._startedTrackingKey(key);
             }
         } else {
@@ -310,9 +321,12 @@ export abstract class StoreBase {
 
     removeAutoSubscription(subscription: AutoSubscription): void {
         const key = subscription.key;
-        let subs = this._autoSubscriptions[key];
+        let subs = this._autoSubscriptions.get(key);
 
-        assert(subs, `No subscriptions under key ${ key }`);
+        if (!subs) {
+            assert(subs, `No subscriptions under key ${ key }`);
+            return;
+        }
 
         const oldLength = subs.length;
         remove(subs, sub => sub === subscription);
@@ -323,9 +337,9 @@ export abstract class StoreBase {
 
         if (subs.length === 0) {
             // No more callbacks for key, so clear it out
-            delete this._autoSubscriptions[key];
+            this._autoSubscriptions.delete(key);
 
-            if (key !== StoreBase.Key_All && !this._subscriptions[key]) {
+            if (key !== StoreBase.Key_All && !this._subscriptions.has(key)) {
                 this._stoppedTrackingKey(key);
             }
         }
@@ -340,10 +354,10 @@ export abstract class StoreBase {
     }
 
     protected _getSubscriptionKeys(): string[] {
-        return Object.keys(this._subscriptions).concat(Object.keys(this._autoSubscriptions));
+        return [...Array.from(this._subscriptions.keys()), ...Array.from(this._autoSubscriptions.keys())];
     }
 
     protected _isTrackingKey(key: string): boolean {
-        return !!this._subscriptions[key] || !!this._autoSubscriptions[key];
+        return this._subscriptions.has(key) || this._autoSubscriptions.has(key);
     }
 }
