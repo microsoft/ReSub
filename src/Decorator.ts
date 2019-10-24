@@ -13,8 +13,10 @@ declare var __decorate: Function; // eslint-disable-line no-var
 
 // Unused class. Only here so TypeScript generates the '__decorate' method.
 class FakeClassWithDecorator {
+    /* eslint-disable @typescript-eslint/explicit-function-return-type */
     @((FakeClassWithDecoratorPrototype: object, fooName: string, descriptor: TypedPropertyDescriptor<any>) => descriptor)
-    foo() { return FakeClassWithDecorator; } // eslint-disable-line @typescript-eslint/explicit-function-return-type
+    foo() { return FakeClassWithDecorator; }
+    /* eslint-enable @typescript-eslint/explicit-function-return-type */
 }
 
 // Fallback to the tslib version if this doesn't work.

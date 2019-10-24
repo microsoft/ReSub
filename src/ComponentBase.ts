@@ -44,7 +44,13 @@ interface StoreSubscriptionInternal<P, S> extends StoreSubscription<P, S> {
     _subscriptionKey?: string;
 }
 
-export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, S> {
+interface InternalState {
+    _getInstance: () => ComponentBase<any, any>;
+}
+
+export type ComponentBaseState<S> = S & InternalState;
+
+export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> extends React.Component<P, ComponentBaseState<S>> {
     // ComponentBase gives the developer a variety of helpful ways to subscribe to changes on stores.  There are two
     // main subscription types (and then ways to combine them with some options in more nuanced ways):
     // 1. Simple subscription to a store -- every single trigger from a store causes this subscription to trigger:
@@ -108,20 +114,40 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         }
         // No one should use Store getters in render: do that in _buildState instead.
         this.render = forbidAutoSubscribeWrapper(render, this);
+
+        const instance = this;
+        /*
+         * We can't call _buildInitialState here, because the properties of the subclass are initialized **after** the base class
+         * constructor. https://github.com/microsoft/TypeScript/issues/1617#issuecomment-69215655
+         * Therefore we need to call it after the constructor.
+         * Since getDerivedStateFromProps is called after the constructor, we can ensure, that the state is properly initialized
+         * there.
+         * But we need to put the instance into the state, so that getDerivedStateFromProps works.
+         * Hence the rather hacky type conversion.
+         */
+        this.state = {_getInstance: () => instance} as unknown as ComponentBaseState<S>;
     }
 
     protected _initStoreSubscriptions(): StoreSubscription<P, S>[] {
         return [];
     }
 
-    // Subclasses may override, but _MUST_ call super.
-    UNSAFE_componentWillMount(): void {
-        this.setState(this._buildInitialState());
-        this._isMounted = true;
-    }
+    // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
+    (nextProps, prevState: ComponentBaseState<any>) => {
+        if(prevState) {
+            let instance: ComponentBase<any, ComponentBaseState<any>> = prevState._getInstance();
+            if(instance) {
+                if(!instance._isMounted) {
+                    return instance._buildInitialState();
+                }
+                return instance._handleUpdate(nextProps);
+            }
+        }
+        throw new Error('couldn\'t get instance of Component');
+    };
 
-    // Subclasses may override, but _MUST_ call super.
-    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    _handleUpdate(nextProps: Readonly<P>): Partial<ComponentBaseState<S>> | null {
         for (const subscriptionKey in this._handledSubscriptions) {
             if (this._handledSubscriptions.hasOwnProperty(subscriptionKey)) {
                 const subscription = this._handledSubscriptions[subscriptionKey];
@@ -145,9 +171,10 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
             if (newState && Object.keys(newState).length) {
-                this.setState(newState as Pick<S, any>);
+                return newState;
             }
         }
+        return null;
     }
 
     // Subclasses may override, but _MUST_ call super.
@@ -166,10 +193,6 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
         this._handledAutoSubscriptions = [];
         this._isMounted = false;
-    }
-
-    UNSAFE_componentWillUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void {
-        // Do nothing, included so that there is no ambiguity on when a subclass must call super
     }
 
     shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
@@ -299,7 +322,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         }
     }
 
-    private _onAutoSubscriptionChanged = () => {
+    private _onAutoSubscriptionChanged = (): void => {
         ComponentBase._onAutoSubscriptionChangedUnbound(this);
     };
 
@@ -419,7 +442,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         return !!props[enablePropertyName];
     }
 
-    // Hander for enableAutoSubscribe that does the actual auto-subscription work.
+    // Handler for enableAutoSubscribe that does the actual auto-subscription work.
     private static _autoSubscribeHandler = {
         // Callback to handle the 'auto-subscribe'.
         handle(self: ComponentBase<any, any>, store: StoreBase, key: string) {
@@ -434,7 +457,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
         });
 
         if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
-        const state = this._buildState(props, initialBuild);
+        const state: Partial<S> | undefined = this._buildState(props, initialBuild);
         if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
         remove(this._handledAutoSubscriptions, subscription => {
@@ -481,6 +504,7 @@ export abstract class ComponentBase<P extends {}, S extends Dictionary<any>> ext
 
     // Wrap both didMount and didUpdate into componentDidRender
     componentDidMount(): void {
+        this._isMounted = true;
         this._componentDidRender();
     }
 

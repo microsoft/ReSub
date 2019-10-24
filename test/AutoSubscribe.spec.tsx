@@ -50,6 +50,8 @@ const initialStoreDatas: { [id: string]: StoreData } = {
     'e': uniqStoreDataValue++,
 };
 
+const initialExpectedState = 1;
+
 // ----------------------------------------------------------------------------
 // Component that make use of auto-subscriptions via SimpleStore.
 
@@ -81,6 +83,7 @@ interface SimpleState {
 class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
     // for which this component is subscribed (e.g. SimpleStore).
+    buildStateCallCount = 0;
 
     buildStateCallCount = 0;
 
@@ -124,6 +127,22 @@ class SimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     }
 }
 
+class OverriddenComponent extends SimpleComponent {
+
+    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> {
+        return super._buildState(props, initialBuild);
+    }
+
+    static makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleState, OverriddenComponent> {
+        return mount(<OverriddenComponent { ...props } />);
+    }
+
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) => {
+        return ComponentBase.getDerivedStateFromProps(props, state);
+    };
+
+}
+
 @DeepEqualityShouldComponentUpdate
 class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
     // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
@@ -155,10 +174,9 @@ function makeComponent(props: SimpleProps): ReactWrapper<SimpleProps, SimpleStat
         storeDatas,
     } = Component.state();
 
-    // Internal check: state should have one change.
+    // Internal check: state should have two changes (including instanceId).
     expect(stateChanges).toEqual(1);
     expect(Component.instance().buildStateCallCount).toEqual(1);
-
 
     // Internal check: state should have one StoreData per id in props.ids.
     if (!props.test_skipIndividualIds) {
@@ -248,18 +266,7 @@ function testSubscriptionChange(Component: ReactWrapper<SimpleProps, SimpleState
     testSubscriptions(Component);
 }
 
-describe('AutoSubscribe', function () {
-    beforeEach(() => {
-        // Create a new store with zero subscriptions.
-        SimpleStoreInstance = new SimpleStore();
-
-        // Populate the store with some data.
-        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
-
-        // Internal check: the store should have no subscriptions.
-        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
-    });
-
+function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<SimpleProps, SimpleState, SimpleComponent>): any {
     it('Auto-subscribe on id', () => {
         const Component = makeComponent({ ids: ['a'] });
         testSubscriptions(Component);
@@ -362,7 +369,7 @@ describe('AutoSubscribe', function () {
     });
 
     it('autoSubscribeWithKey triggers _buildState on change', () => {
-        let expectedState = 1;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
 
         /**
@@ -391,7 +398,7 @@ describe('AutoSubscribe', function () {
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
-        let expectedState = 1;
+        let expectedState = initialExpectedState;
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
@@ -408,7 +415,7 @@ describe('AutoSubscribe', function () {
     });
 
     it('autoSubscribeWithKey - test Enum Keyed Subscriptions', () => {
-        let expectedState = 1;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_enumKeyedSub: true, ids: [] });
 
         SimpleStoreInstance.setStoreDataForEnumKeyedSubscription(TriggerKeys.First, 1);
@@ -428,7 +435,7 @@ describe('AutoSubscribe', function () {
     });
 
     it('autoSubscribeWithKey and key - test single-@key compound key Subscriptions', () => {
-        let expectedState = 1;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_compoundSingleKeySub: true, test_skipIndividualIds: true, ids: ['a'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.instance().buildStateCallCount).toEqual(expectedState);
@@ -472,7 +479,7 @@ describe('AutoSubscribe', function () {
     });
 
     it('autoSubscribeWithKey and key - test multi-@key compound key Subscriptions', () => {
-        let expectedState = 1;
+        let expectedState = initialExpectedState;
         const Component = makeComponent({ test_compoundMultiKeySub: true, test_skipIndividualIds: true, ids: ['a', 'b'] });
         expect(Component.state('stateChanges')).toEqual(expectedState);
         expect(Component.instance().buildStateCallCount).toEqual(expectedState);
@@ -557,4 +564,34 @@ describe('AutoSubscribe', function () {
         expect(deepEqual1.shouldComponentUpdate).toEqual(deepEqual2.shouldComponentUpdate);
         expect(simpleComp1.shouldComponentUpdate).not.toEqual(deepEqual1.shouldComponentUpdate);
     });
+}
+
+describe('derivedStateFromProps', function () {
+    beforeEach(() => {
+        // Create a new store with zero subscriptions.
+        SimpleStoreInstance = new SimpleStore();
+
+        // Populate the store with some data.
+        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
+
+        // Internal check: the store should have no subscriptions.
+        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
+    });
+
+    runTests(OverriddenComponent.makeComponent);
+});
+
+describe('AutoSubscribe', function () {
+    beforeEach(() => {
+        // Create a new store with zero subscriptions.
+        SimpleStoreInstance = new SimpleStore();
+
+        // Populate the store with some data.
+        each(initialStoreDatas, (value, id) => SimpleStoreInstance.setStoreData(id, id, value));
+
+        // Internal check: the store should have no subscriptions.
+        expect(SimpleStoreInstance.test_getSubscriptionKeys().length).toEqual(0);
+    });
+
+    runTests(makeComponent);
 });
