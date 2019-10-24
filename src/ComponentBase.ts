@@ -15,7 +15,7 @@ import { find, noop, remove } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 interface InternalState {
-    _getInstance: () => ComponentBase<unknown, InternalState & unknown>;
+    _resubGetInstance: () => ComponentBase<unknown, InternalState & unknown>;
     _resubDirty: boolean;
 }
 
@@ -65,16 +65,16 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
          * Hence the rather hacky type conversion.
          */
         this.state = {
-            _getInstance: () => instance,
+            _resubGetInstance: () => instance,
             _resubDirty: false,
         } as unknown as ComponentBaseState<S>;
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, any> =
-    (nextProps, prevState: InternalState) => {
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
+    (nextProps, prevState: ComponentBaseState<unknown>) => {
         if(prevState) {
-            let instance = prevState._getInstance();
+            let instance = prevState._resubGetInstance();
             if(instance) {
                 if(!instance._isMounted) {
                     return instance._buildInitialState();
