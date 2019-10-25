@@ -6,7 +6,7 @@ A library for writing better React components and data stores. Uses automatic su
 
 ## ReSub v2
 
-For the 2.x+ ReSub releases, to get in line with the apparent future of React, we have changed how ReSub uses the React lifecycle functions to instead use the `getDerivedStateFromProps` path.  This means that, for the standard happy path of just using `_buildState`, everything should keep working just like it used to.  However, if you were doing hackery with the older React lifecycle functions (`componentWillMount`, `componentWillReceiveProps`, etc.), the behavior of your `this.state` may differ from what you're used to, and you should test that sort of thing pretty extensively.  This should future-proof ReSub for a while, and play more nicely with the future async rendering that React is moving toward.
+For the 2.x+ ReSub releases, to get in line with the apparent future of React, we have changed how ReSub uses the React lifecycle functions to instead use the `getDerivedStateFromProps` path.  See [this link](https://medium.com/swlh/lifecycle-state-and-getderivedstatefromprops-761b3a19c4e) for more details on the new lifecycle.  This means that, for the standard happy path of just using `_buildState`, everything should keep working just like it used to.  However, if you were using the old React lifecycle functions (`componentWillMount`, `componentWillReceiveProps`, etc.) in any way, you will likely find those functions not being called anymore.  This change should future-proof ReSub for a while, and play more nicely with the future async rendering path that React is moving toward.
 
 As a small secondary note, for 2.x+, we also removed support for the old-school manual subscriptions.  We strongly suggest moving to either autosubscriptions (where ReSub's true differentiating value is) or, if you prefer manual subscriptions, directly subscribe to the stores in your component using whatever lifecycle you prefer.
 
@@ -92,7 +92,7 @@ ReSub is built with scalability in mind; it works for apps of all sizes with all
 1. Start by doing all your work in `_buildState` and rebuilding the state from scratch using autosubscriptions. Tracking deltas and only rebuilding partial state at this stage is unnecessary for the vast majority of components.
 2. If you find that components are re-rendering too often, introduce subscriptions keys. For more information, see the “Subscriptions by key” and “Subscriptions by props” sections below.
 3. If components are still re-rendering too often, consider using trigger throttling and trigger blocks to cut down on the number of callbacks. For more information, see the “Trigger throttling” and “Trigger blocks” sections below.
-4. If rebuilding state completely from scratch is expensive, manual subscriptions with custom callbacks may help. For more information, see the “Custom subscription callbacks” section below.
+4. If rebuilding state completely from scratch is still too expensive, manual subscriptions to stores (`store.subscribe()`) with callbacks where you manage your own state changes may help.
 
 ## A Deep Dive on ReSub Features
 
