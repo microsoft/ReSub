@@ -8,25 +8,25 @@
     "start:prod": "npm run build && http-server dist/ -p 9999 -o"
   },
   "devDependencies": {
-    "@types/html-webpack-plugin": "3.2.0",
-    "@types/node": "12.0.1",
-    "@types/react": "16.8.17",
-    "@types/react-dom": "16.8.4",
-    "@types/webpack": "4.4.31",
-    "@types/webpack-dev-server": "3.1.5",
+    "@types/html-webpack-plugin": "3.2.1",
+    "@types/node": "12.11.7",
+    "@types/react": "16.9.10",
+    "@types/react-dom": "16.9.2",
+    "@types/webpack": "4.39.5",
+    "@types/webpack-dev-server": "3.4.0",
     "html-webpack-plugin": "3.2.0",
     "http-server": "0.11.1",
-    "rimraf": "2.6.3",
-    "ts-loader": "6.0.0",
-    "ts-node": "8.1.0",
-    "typescript": "3.4.5",
-    "webpack": "4.31.0",
-    "webpack-cli": "3.3.2",
-    "webpack-dev-server": "3.3.1"
+    "rimraf": "3.0.0",
+    "ts-loader": "6.2.1",
+    "ts-node": "8.4.1",
+    "typescript": "3.6.4",
+    "webpack": "4.41.2",
+    "webpack-cli": "3.3.9",
+    "webpack-dev-server": "3.9.0"
   },
   "dependencies": {
-    "react": "16.8.6",
-    "react-dom": "16.8.6",
-    "resub": "1.0.13"
+    "react": "16.11.0",
+    "react-dom": "16.11.0",
+    "resub": "2.0.0-alpha.scary.1"
   }
 }
