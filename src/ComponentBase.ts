@@ -15,13 +15,12 @@ import { find, noop, remove } from './utils';
 import { AutoSubscription, StoreBase } from './StoreBase';
 
 interface InternalState {
-    _resubGetInstance: () => ComponentBase<unknown, InternalState & unknown>;
+    _resubGetInstance: () => ComponentBase<unknown, unknown>;
     _resubDirty: boolean;
 }
 
-export type ComponentBaseState<S> = S & InternalState;
-
-export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S & InternalState> {
+// ComponentBase actually has InternalState, but we don't want this exposed, so don't indicate that on the component definition
+export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S> {
     // ComponentBase is provided a method to wrap autosubscriptions via _buildState in a component
 
     private _handledAutoSubscriptions: AutoSubscription[] = [];
@@ -67,22 +66,27 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
         this.state = {
             _resubGetInstance: () => instance,
             _resubDirty: false,
-        } as unknown as ComponentBaseState<S>;
+        } as InternalState as unknown as S;
     }
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
-    (nextProps, prevState: ComponentBaseState<unknown>) => {
-        if(prevState) {
-            let instance = prevState._resubGetInstance();
-            if(instance) {
-                if(!instance._isMounted) {
-                    return instance._buildInitialState();
-                }
-                return instance._handleUpdate(nextProps);
-            }
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<unknown, unknown> =
+    (nextProps, prevState: unknown) => {
+        const internalState = prevState as InternalState;
+        if (!internalState._resubGetInstance) {
+            throw new Error("Resub internal state missing - ensure you aren't setting state directly in component construtor")
         }
-        throw new Error('couldn\'t get instance of Component');
+        let newState: unknown & Partial<InternalState>;
+        let instance = internalState._resubGetInstance();
+        if(!instance._isMounted) {
+            newState = instance._buildInitialState();
+        } else {
+            newState = instance._handleUpdate(nextProps) || {};
+        }
+
+        // reset dirty bit
+        newState._resubDirty = false;
+        return newState;
     };
 
     _handleUpdate(nextProps: Readonly<P>): Partial<S> | null {
