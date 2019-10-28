@@ -1,8 +1,8 @@
 {
   "parserOptions": {
     "project": [
-        "./tsconfig.json",
-        "./tsconfig/test.json"
+      "./tsconfig.json",
+      "./tsconfig/test.json"
     ]
   },
   "extends": [

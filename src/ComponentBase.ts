@@ -73,10 +73,10 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<any, ComponentBaseState<any>> =
     (nextProps, prevState: ComponentBaseState<unknown>) => {
-        if(prevState) {
+        if (prevState) {
             let instance = prevState._resubGetInstance();
-            if(instance) {
-                if(!instance._isMounted) {
+            if (instance) {
+                if (!instance._isMounted) {
                     return instance._buildInitialState();
                 }
                 return instance._handleUpdate(nextProps);
