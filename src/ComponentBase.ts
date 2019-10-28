@@ -56,13 +56,14 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
         const instance = this;
         /*
          * We can't call _buildInitialState here, because the properties of the subclass are initialized **after** the base class
-         * constructor. https://github.com/microsoft/TypeScript/issues/1617#issuecomment-69215655
+         * constructor. https://github.com/microsoft/ 1TypeScript/issues/1617#issuecomment-69215655
          * Therefore we need to call it after the constructor.
          * Since getDerivedStateFromProps is called after the constructor, we can ensure, that the state is properly initialized
          * there.
          * But we need to put the instance into the state, so that getDerivedStateFromProps works.
          * Hence the rather hacky type conversion.
          */
+        //eslint-disable-next-line
         this.state = {
             _resubGetInstance: () => instance,
             _resubDirty: false,
@@ -74,11 +75,11 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     (nextProps, prevState: unknown) => {
         const internalState = prevState as InternalState;
         if (!internalState._resubGetInstance) {
-            throw new Error("Resub internal state missing - ensure you aren't setting state directly in component construtor")
+            throw new Error('Resub internal state missing - ensure you aren\'t setting state directly in component construtor');
         }
         let newState: unknown & Partial<InternalState>;
         let instance = internalState._resubGetInstance();
-        if(!instance._isMounted) {
+        if (!instance._isMounted) {
             newState = instance._buildInitialState();
         } else {
             newState = instance._handleUpdate(nextProps) || {};
