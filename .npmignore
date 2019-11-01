@@ -3,3 +3,11 @@
 /src/bin
 /src/obj
 *.user
+examples
+karma
+test
+.vscode
+.editorconfig
+.eslintrc
+.travis.yml
+karma.conf.js
