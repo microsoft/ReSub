@@ -1,8 +1,8 @@
 {
   "name": "resub",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
-  "author": "David de Regt <David.de.Regt@microsoft.com>",
+  "author": "ReactXP Team <reactxp@microsoft.com>",
   "scripts": {
     "prepare": "npm run build",
     "clean:dist": "rimraf dist*",

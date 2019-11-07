@@ -73,7 +73,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<unknown, unknown> =
     (nextProps, prevState: unknown) => {
-        const internalState = prevState as InternalState;
+        const internalState = prevState as Readonly<InternalState>;
         if (!internalState._resubGetInstance) {
             throw new Error('Resub internal state missing - ensure you aren\'t setting state directly in component construtor');
         }
@@ -82,7 +82,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
         if (!instance._isMounted) {
             newState = instance._buildInitialState();
         } else {
-            newState = instance._handleUpdate(nextProps) || {};
+            newState = instance._handleUpdate(nextProps, internalState) || {};
         }
 
         // reset dirty bit
@@ -90,9 +90,9 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
         return newState;
     };
 
-    _handleUpdate(nextProps: Readonly<P>): Partial<S> | null {
+    _handleUpdate(nextProps: Readonly<P>, incomingState: Readonly<S>): Partial<S> | null {
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
-            const newState = this._buildStateWithAutoSubscriptions(nextProps, false);
+            const newState = this._buildStateWithAutoSubscriptions(nextProps, incomingState, false);
             if (newState && Object.keys(newState).length) {
                 return newState;
             }
@@ -179,13 +179,13 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, initialBuild: boolean): Partial<S> | undefined {
+    private _buildStateWithAutoSubscriptions(props: P, incomingState: {} | Readonly<S>, initialBuild: boolean): Partial<S> | undefined {
         this._handledAutoSubscriptions.forEach(sub => {
             sub.used = false;
         });
 
         if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
-        const state: Partial<S> | undefined = this._buildState(props, initialBuild);
+        const state: Partial<S> | undefined = this._buildState(props, initialBuild, incomingState);
         if (Instrumentation.impl) { Instrumentation.impl.endBuildState(this.constructor); }
 
         remove(this._handledAutoSubscriptions, subscription => {
@@ -215,16 +215,15 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // In the majority of cases, this turns into a simple function that doesn't care about initialBuild, and simply
     // rebuilds the whole state of the component whenever called.  This should usually only be made more specific if
     // there are performance considerations with over-rebuilding.
-    protected _buildState(props: P, initialBuild: boolean): Partial<S> | undefined {
+    protected _buildState(props: P, initialBuild: boolean, incomingState: Readonly<S> | {}): Partial<S> | undefined {
         return undefined;
     }
 
     // The initial state is unavailable in UNSAFE_componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
-
         // Initialize state
-        const initialState = this._buildStateWithAutoSubscriptions(this.props, true) || {};
+        const initialState = this._buildStateWithAutoSubscriptions(this.props, this.state, true) || {};
         return initialState as S;
     }
 
