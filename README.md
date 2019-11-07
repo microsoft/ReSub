@@ -63,7 +63,7 @@ interface TodoListState {
 }
 
 class TodoList extends ComponentBase<{}, TodoListState> {
-    protected _buildState(props: {}, initialBuild: boolean): TodoListState {
+    protected _buildState(props: {}, initialBuild: boolean, incomingState: {} | TodoListState): TodoListState {
         return {
             todos: TodosStore.getTodos()
         }
@@ -144,7 +144,7 @@ Now, we can establish the autosubscription for this user in `_buildState`:
 class TodoList extends ComponentBase<TodoListProps, TodoListState> {
     ...
 
-    protected _buildState(props: {}, initialBuild: boolean): TodoListState {
+    protected _buildState(props: {}, initialBuild: boolean, incomingState: {} | TodoListState): TodoListState {
         return {
             todos: TodosStore.getTodosForUser(this.props.username)
         }
@@ -187,7 +187,7 @@ class UserStuffStore extends StoreBase {
 class UserBoxADisplay extends ComponentBase<SomeProps, SomeState> {
     ...
 
-    protected _buildState(props: SomeProps, initialBuild: boolean): TodoListState {
+    protected _buildState(props: SomeProps, initialBuild: boolean, incomingState: {} | SomeState): TodoListState {
         return {
             boxA: UserStuffStore.getBoxAForUser(props.userCategory, props.username),
         };
@@ -221,17 +221,19 @@ ReSub’s implementation of this method always returns true, which is inline wit
 
 Subclasses should implement some or all of the following methods:
 
-##### `protected _buildState(props: P, initialBuild: boolean): S`
+##### `protected _buildState(props: P, initialBuild: boolean, incomingState: {} | S): Partial<S> | undefined`
 
 This method is called to rebuild the module’s state. All but the simplest of components should implement this method. It is called on three occurrences:
 
 1. During initial component construction, `initialBuild` will be true. This is where you should set all initial state for your component. This case rarely needs special treatment because the component always rebuilds all of its state from its props, whether it's an initial build or a new props received event.
-2. In the React lifecycle, during a `getDerivedStateFromProps`, this is called on *every* render.
+2. In the React lifecycle, during a `getDerivedStateFromProps`, this is called before *every* render.
 3. When this component subscribes to any stores, this will be called whenever the subscription is triggered. This is the most common usage of subscriptions, and the usage created by autosubscriptions.
 
 Any calls from this method to store methods decorated with `@autoSubscribe` will establish an autosubscription.
 
 React’s `setState` method should not be called directly in this function. Instead, the new state should be returned and `ComponentBase` will handle the update of the state.
+
+Note: If your _buildState ever relies on component state, utilize the incomingState argument, otherwise you risk using an old snapshot of the state (See https://github.com/microsoft/ReSub/issues/131 for more details)
 
 ##### `protected _componentDidRender()`
 
