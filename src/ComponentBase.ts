@@ -179,7 +179,8 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     };
 
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
-    private _buildStateWithAutoSubscriptions(props: P, incomingState: {} | Readonly<S>, initialBuild: boolean): Partial<S> | undefined {
+    private _buildStateWithAutoSubscriptions(props: P, incomingState: undefined | Readonly<S>, initialBuild: boolean):
+    Partial<S> | undefined {
         this._handledAutoSubscriptions.forEach(sub => {
             sub.used = false;
         });
@@ -215,15 +216,15 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // In the majority of cases, this turns into a simple function that doesn't care about initialBuild, and simply
     // rebuilds the whole state of the component whenever called.  This should usually only be made more specific if
     // there are performance considerations with over-rebuilding.
-    protected _buildState(props: P, initialBuild: boolean, incomingState: Readonly<S> | {}): Partial<S> | undefined {
+    protected _buildState(props: P, initialBuild: boolean, incomingState: Readonly<S> | undefined): Partial<S> | undefined {
         return undefined;
     }
 
     // The initial state is unavailable in UNSAFE_componentWillMount. Override this method to get access to it.
     // Subclasses may override, but _MUST_ call super.
     protected _buildInitialState(): Readonly<S> {
-        // Initialize state
-        const initialState = this._buildStateWithAutoSubscriptions(this.props, this.state, true) || {};
+        // Initialize state, here we omit the internal state to the user
+        const initialState = this._buildStateWithAutoSubscriptions(this.props, undefined, true) || {};
         return initialState as S;
     }
 
