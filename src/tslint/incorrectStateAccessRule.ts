@@ -8,9 +8,8 @@
 */
 
 import * as Lint from 'tslint';
-import ts from 'typescript';
-import { isMethodDeclaration } from 'typescript';
 import { isCallExpression, isPropertyAccessExpression } from 'tsutils';
+import ts, { isMethodDeclaration } from 'typescript';
 
 const DEBUG = false;
 const ERROR_MESSAGE = 'this.state is undefined in UNSAFE_componentWillMount callback.';
@@ -45,7 +44,7 @@ let method: MethodInfo;
 // For each method stores this.state statements
 function analyzeMethodBody(node: ts.Node): void {
     if (isCallExpression(node)) {
-        let expr = node.getText();
+        const expr = node.getText();
         if (expr.indexOf('this.') === 0) {
             const index = expr.indexOf('(');
             if (index) {
@@ -90,8 +89,8 @@ function walk(ctx: Lint.WalkContext<string[]>): void {
             }
         } else if (node.kind === ts.SyntaxKind.EndOfFileToken) {
             // End of file. Use collected information to analyze function call graph starting from willComponentMount
-            let visitedMethods: {[key: string]: boolean} = {};
-            let queue: MethodInfo[] = [];
+            const visitedMethods: {[key: string]: boolean} = {};
+            const queue: MethodInfo[] = [];
 
             const methodsList = ctx.options.concat(['UNSAFE_componentWillMount']);
 

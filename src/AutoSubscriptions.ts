@@ -129,12 +129,11 @@ function createAutoSubscribeWrapper<T extends Function>(handler: AutoSubscribeHa
             inAutoSubscribe: false,
         };
 
-        const result = _tryFinally(() => {
-            return existingMethod.apply(instance, args);
-        }, () => {
-            // Restore the previous handler.
-            handlerWrapper = previousHandlerWrapper;
-        });
+        const result = _tryFinally(() => existingMethod.apply(instance, args),
+            () => {
+                // Restore the previous handler.
+                handlerWrapper = previousHandlerWrapper;
+            });
 
         return result;
     } as any as T;

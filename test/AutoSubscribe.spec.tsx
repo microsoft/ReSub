@@ -7,6 +7,7 @@
  */
 
 import * as React from 'react';
+// eslint-disable-next-line
 import { ReactElement } from 'react';
 import {
     includes,
@@ -19,9 +20,11 @@ import { mount, ReactWrapper } from 'enzyme';
 
 import ComponentBase from '../src/ComponentBase';
 import { DeepEqualityShouldComponentUpdate } from '../src/ComponentDecorators';
-import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
+
 import { StoreBase } from '../src/StoreBase';
 import { formCompoundKey } from '../src/utils';
+
+import { SimpleStore, TriggerKeys, StoreData } from './SimpleStore';
 
 // Instance of the SimpleStore used throughout the test. Re-created for each test.
 let SimpleStoreInstance: SimpleStore;
@@ -135,10 +138,8 @@ class OverriddenComponent extends SimpleComponent {
         return mount(<OverriddenComponent { ...props } />);
     }
 
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) => {
-        return ComponentBase.getDerivedStateFromProps(props, state);
-    };
-
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) =>
+        ComponentBase.getDerivedStateFromProps(props, state);
 }
 
 @DeepEqualityShouldComponentUpdate
@@ -396,7 +397,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<SimpleProp
     });
 
     it('autoSubscribeWithKey does not trigger _buildState on other subscription change', () => {
-        let expectedState = initialExpectedState;
+        const expectedState = initialExpectedState;
         SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 1);
         SimpleStoreInstance.setStoreDataForKeyedSubscription('B', 7);
         const Component = makeComponent({ test_keyedSub: true, ids: [] });
@@ -564,7 +565,7 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<SimpleProp
     });
 }
 
-describe('derivedStateFromProps', function () {
+describe('derivedStateFromProps', function() {
     beforeEach(() => {
         // Create a new store with zero subscriptions.
         SimpleStoreInstance = new SimpleStore();
@@ -579,7 +580,7 @@ describe('derivedStateFromProps', function () {
     runTests(OverriddenComponent.makeComponent);
 });
 
-describe('AutoSubscribe', function () {
+describe('AutoSubscribe', function() {
     beforeEach(() => {
         // Create a new store with zero subscriptions.
         SimpleStoreInstance = new SimpleStore();

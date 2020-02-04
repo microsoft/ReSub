@@ -31,9 +31,7 @@ export const normalizeKeys = (keyOrKeys: KeyOrKeys): string[] => (
     Array.isArray(keyOrKeys) ? keyOrKeys.map(normalizeKey) : [normalizeKey(keyOrKeys)]
 );
 
-export const formCompoundKey = (...keys: (string | number)[]): string => {
-    return keys.join(CompoundKeyJoinerString);
-};
+export const formCompoundKey = (...keys: (string | number)[]): string => keys.join(CompoundKeyJoinerString);
 
 export const assert = (cond: any, message?: string | undefined): void => {
     if (!cond) {

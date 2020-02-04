@@ -11,7 +11,9 @@ import Options from '../src/Options';
 type TKeys = string[] | undefined;
 
 class BraindeadStore extends StoreBase {
+    // eslint-disable-next-line
     Key_Something = 'abc';
+    // eslint-disable-next-line
     Key_Something2 = 'def';
 
     foundAll = false;
@@ -57,7 +59,7 @@ class TriggerableStore extends StoreBase {
 // Note: if an 'internal check' fails then the problem might be in the unit test itself,
 //       or in some other file.
 
-describe('StoreBase', function () {
+describe('StoreBase', function() {
     beforeEach(() => {
         jasmine.clock().install();
         jasmine.clock().mockDate(new Date());
@@ -74,7 +76,7 @@ describe('StoreBase', function () {
     });
 
     it('Non-timed/Non-bypass Store', () => {
-        let store = new BraindeadStore(0, false);
+        const store = new BraindeadStore(0, false);
         store.setupSubs();
 
         // Try all emit
@@ -135,7 +137,7 @@ describe('StoreBase', function () {
     });
 
     it('Non-timed/Bypass Store', () => {
-        let store = new BraindeadStore(0, true);
+        const store = new BraindeadStore(0, true);
         store.setupSubs();
 
         // Try all emit
@@ -161,7 +163,7 @@ describe('StoreBase', function () {
     });
 
     it('Timed/non-Bypass Store', () => {
-        let store = new BraindeadStore(100, false);
+        const store = new BraindeadStore(100, false);
         store.setupSubs();
 
         // Try all emit -- should do nothing at the moment
@@ -176,7 +178,7 @@ describe('StoreBase', function () {
     });
 
     it('Double Trigger w/ Unsubscribe', () => {
-        let store = new BraindeadStore();
+        const store = new BraindeadStore();
 
         let callCount1 = 0;
         const token1 = store.subscribe(() => {
@@ -202,7 +204,7 @@ describe('StoreBase', function () {
     });
 
     it('Subscription callbacks de-dupe', () => {
-        let store = new BraindeadStore(100, false);
+        const store = new BraindeadStore(100, false);
         let callbackCount = 0;
         const subCallback = (): void => {
             callbackCount++;
@@ -221,8 +223,8 @@ describe('StoreBase', function () {
     });
 
     it('Callback throttling validation', () => {
-        let store = new BraindeadStore(100, false);
-        let store2 = new BraindeadStore(0, false);
+        const store = new BraindeadStore(100, false);
+        const store2 = new BraindeadStore(0, false);
         let callbackCount = 0;
         const subCallback = (keys?: string[]): void => {
             expect(keys).toEqual(['abc', 'def']);
@@ -247,7 +249,7 @@ describe('StoreBase', function () {
 
     it('Trigger stack overflow test', () => {
         // Test an insane amount of trigger keys so we don't end up with a stack overflow
-        let store = new TriggerableStore();
+        const store = new TriggerableStore();
         let callbackCalled = false;
         const subCallback = (keys?: string[]): void => {
             expect(keys!!!.length).toEqual(150001);
@@ -258,7 +260,7 @@ describe('StoreBase', function () {
 
         StoreBase.pushTriggerBlock();
         store.emit(['foo']);
-        let keysToTrigger: string[] = [];
+        const keysToTrigger: string[] = [];
         for (let i = 0; i < 150000; i++) {
             keysToTrigger.push(i.toString());
         }

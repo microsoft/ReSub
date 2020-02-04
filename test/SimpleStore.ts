@@ -1,5 +1,6 @@
-import { StoreBase } from '../src/StoreBase';
 import { isEqual, uniq } from 'lodash';
+
+import { StoreBase } from '../src/StoreBase';
 import {
     warnIfAutoSubscribeEnabled,
     autoSubscribeWithKey,

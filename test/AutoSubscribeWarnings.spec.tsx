@@ -1,7 +1,11 @@
 import * as React from 'react';
+// eslint-disable-next-line
 import { ReactElement } from 'react';
-import ComponentBase from '../src/ComponentBase';
+
 import { shallow } from 'enzyme';
+
+import ComponentBase from '../src/ComponentBase';
+
 import { SimpleStore } from './SimpleStore';
 
 const WARN_IN_BUILD_STATE = 'build';
