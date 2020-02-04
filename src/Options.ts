@@ -32,7 +32,7 @@ interface IProcess {
 }
 declare var process: IProcess; // eslint-disable-line no-var
 
-let OptionsVals: IOptions = {
+const OptionsVals: IOptions = {
     setTimeout: setTimeout.bind(null),
     clearTimeout: clearTimeout.bind(null),
     shouldComponentUpdateComparator: () => false,

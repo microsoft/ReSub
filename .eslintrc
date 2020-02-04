@@ -11,7 +11,9 @@
   "env": {
     "jasmine": true
   },
-  "rules": {},
+  "rules": {
+    "linebreak-style": [0, "error", "windows"]
+  },
   "overrides": [
     {
       "files": [

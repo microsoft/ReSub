@@ -31,7 +31,8 @@ interface CallbackMetadata {
 type CallbackMap = Map<SubscriptionCallbackFunction, CallbackMetadata>;
 
 export abstract class StoreBase {
-    private static storeIdCounter = 0;
+    private static _storeIdCounter = 0;
+    // eslint-disable-next-line
     static readonly Key_All = '%!$all';
 
     private readonly _subscriptions: Map<string, SubscriptionCallbackFunction[]> = new Map();
@@ -43,7 +44,7 @@ export abstract class StoreBase {
         callback: SubscriptionCallbackFunction;
     }> = new Map();;
 
-    readonly storeId = `store${StoreBase.storeIdCounter++}`;
+    readonly storeId = `store${StoreBase._storeIdCounter++}`;
 
     private _throttleData: { timerId: number; callbackTime: number } | undefined;
 
@@ -252,7 +253,7 @@ export abstract class StoreBase {
         // Adding extra type-checks since the key is often the result of following a string path, which is not type-safe.
         assert(key && isString(key), `Trying to subscribe to invalid key: "${ key }"`);
 
-        let callbacks = this._subscriptions.get(key);
+        const callbacks = this._subscriptions.get(key);
         if (!callbacks) {
             this._subscriptions.set(key, [callback]);
 
@@ -263,7 +264,7 @@ export abstract class StoreBase {
             callbacks.push(callback);
         }
 
-        let token = this._subTokenNum++;
+        const token = this._subTokenNum++;
         this._subsByNum.set(token, { key: key, callback: callback });
         return token;
     }
@@ -276,14 +277,14 @@ export abstract class StoreBase {
             return;
         }
 
-        let key = sub.key;
-        let callback = sub.callback;
+        const key = sub.key;
+        const callback = sub.callback;
         this._subsByNum.delete(subToken);
 
         // Remove this callback set from our tracking lists
         StoreBase._pendingCallbacks.delete(callback);
 
-        let callbacks = this._subscriptions.get(key);
+        const callbacks = this._subscriptions.get(key);
         if (!callbacks) {
             assert(callbacks, `No subscriptions under key ${ key }`);
             return;
@@ -321,7 +322,7 @@ export abstract class StoreBase {
 
     removeAutoSubscription(subscription: AutoSubscription): void {
         const key = subscription.key;
-        let subs = this._autoSubscriptions.get(key);
+        const subs = this._autoSubscriptions.get(key);
 
         if (!subs) {
             assert(subs, `No subscriptions under key ${ key }`);

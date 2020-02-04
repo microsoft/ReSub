@@ -63,7 +63,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
          * But we need to put the instance into the state, so that getDerivedStateFromProps works.
          * Hence the rather hacky type conversion.
          */
-        //eslint-disable-next-line
+        // eslint-disable-next-line
         this.state = {
             _resubGetInstance: () => instance,
             _resubDirty: false,
@@ -78,7 +78,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
             throw new Error('Resub internal state missing - ensure you aren\'t setting state directly in component construtor');
         }
         let newState: unknown & Partial<InternalState>;
-        let instance = internalState._resubGetInstance();
+        const instance = internalState._resubGetInstance();
         if (!instance._isMounted) {
             newState = instance._buildInitialState();
         } else {
@@ -90,7 +90,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
         return newState;
     };
 
-    _handleUpdate(nextProps: Readonly<P>, incomingState: Readonly<S>): Partial<S> | null {
+    private _handleUpdate(nextProps: Readonly<P>, incomingState: Readonly<S>): Partial<S> | null {
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {
             const newState = this._buildStateWithAutoSubscriptions(nextProps, incomingState, false);
             if (newState && Object.keys(newState).length) {
@@ -133,7 +133,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
             return;
         }
 
-        //eslint-disable-next-line
+        // eslint-disable-next-line
         that.setState({_resubDirty: true} as InternalState as any);
     }
 
