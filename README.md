@@ -312,6 +312,18 @@ Lifts the trigger block on all stores and releases any queued triggers. If more 
 
 Subclass constructors should call super. `throttleMs` refers to the throttle time (see “Trigger throttling” section). `bypassTriggerBlocks` refers to the trigger blocking system (see “Trigger blocks” section).
 
+##### `_startedTrackingSub(key?: string)`
+
+`StoreBase` uses reference counting on subscriptions. This method is called whenever a subscription is first created, either as a global subscription (key = undefined in this function) or with a key.
+
+Subclasses do not need to call super.
+
+##### `_stoppedTrackingSub(key?: string)`
+
+`StoreBase` uses reference counting on subscriptions. This method is called whenever a subscription is last removed, either as a global subscription (key = undefined in this function) or with a key.
+
+Subclasses do not need to call super.
+
 ##### `_startedTrackingKey(key: string)`
 
 `StoreBase` uses reference counting on subscription keys. This method is called whenever a subscription is created using a new `key`.
