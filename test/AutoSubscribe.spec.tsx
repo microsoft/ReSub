@@ -138,7 +138,7 @@ class OverriddenComponent extends SimpleComponent {
         return mount(<OverriddenComponent { ...props } />);
     }
 
-    static getDerivedStateFromProps: React.GetDerivedStateFromProps<SimpleProps, SimpleState> = (props, state) =>
+    static getDerivedStateFromProps: React.GetDerivedStateFromProps<unknown, unknown> = (props, state) =>
         ComponentBase.getDerivedStateFromProps(props, state);
 }
 

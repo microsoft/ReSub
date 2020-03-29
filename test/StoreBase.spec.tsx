@@ -5,8 +5,14 @@
  *
  * Tests all the various expected behavior of StoreBase.
  */
+
+import { mount } from 'enzyme';
+import * as React from 'react';
+
+import { ComponentBase } from '../src/ComponentBase';
 import { StoreBase } from '../src/StoreBase';
 import Options from '../src/Options';
+import { AutoSubscribeStore, autoSubscribeWithKey, autoSubscribe } from '../src/AutoSubscriptions';
 
 type TKeys = string[] | undefined;
 
@@ -268,5 +274,86 @@ describe('StoreBase', function() {
         StoreBase.popTriggerBlock();
 
         expect(callbackCalled).toBeTruthy();
+    });
+
+    it('Started/StoppedTrackingKey/Sub', () => {
+        @AutoSubscribeStore
+        class KeyStore extends StoreBase {
+            trackingKey: string | undefined;
+            keyCount = 0;
+            getKeyCalls = 0;
+
+            subCount = 0;
+            getCalls = 0;
+
+            @autoSubscribeWithKey('a')
+            getKeyTest(): number {
+                this.getKeyCalls++;
+                return 4;
+            }
+
+            @autoSubscribe
+            getSubTest(): number {
+                this.getCalls++;
+                return 3;
+            }
+
+            protected _startedTrackingKey(key: string): void {
+                this.trackingKey = key;
+                this.keyCount++;
+            }
+
+            protected _stoppedTrackingKey(key: string): void {
+                if (this.trackingKey === key) {
+                    this.trackingKey = undefined;
+                }
+                this.keyCount--;
+            }
+
+            protected _startedTrackingSub(key?: string): void {
+                this.subCount++;
+            }
+
+            protected _stoppedTrackingSub(key?: string): void {
+                this.subCount--;
+            }
+        }
+
+        class DumbComp extends ComponentBase<{s: KeyStore}, {}> {
+            protected _buildState(props: {s: KeyStore}, initState: boolean): {} {
+                props.s.getKeyTest();
+                props.s.getSubTest();
+                return {};
+            }
+
+            render(): JSX.Element | null {
+                return null;
+            }
+        }
+
+        const s = new KeyStore();
+        expect(s.getKeyCalls).toEqual(0);
+        expect(s.keyCount).toEqual(0);
+        expect(s.trackingKey).toEqual(undefined);
+        expect(s.getCalls).toEqual(0);
+        expect(s.subCount).toEqual(0);
+        const wrapper = mount(<DumbComp s={ s } />);
+        expect(s.getKeyCalls).toEqual(1);
+        expect(s.keyCount).toEqual(1);
+        expect(s.trackingKey).toEqual('a');
+        expect(s.getCalls).toEqual(1);
+        expect(s.subCount).toEqual(2);
+        (s as any).trigger();
+        expect(s.getKeyCalls).toEqual(2);
+        expect(s.keyCount).toEqual(1);
+        expect(s.trackingKey).toEqual('a');
+        expect(s.getCalls).toEqual(2);
+        expect(s.subCount).toEqual(2);
+        wrapper.unmount();
+        expect(s.getKeyCalls).toEqual(2);
+        expect(s.keyCount).toEqual(0);
+        expect(s.trackingKey).toEqual(undefined);
+        expect(s.getCalls).toEqual(2);
+        expect(s.subCount).toEqual(0);
     });
 });
