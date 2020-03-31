@@ -211,11 +211,25 @@ ReSub’s implementation of this method always returns true, which is inline wit
 
 1) Provide a `shouldComponentUpdateComparator` to the ReSub `Options` payload. This is the default comparator that is used in `shouldComponentUpdate` for components that extend `ComponentBase`. This is a good way to apply custom `shouldComponentUpdate` logic to all your components.
 1) Override `shouldComponentUpdate` in specific components and *don't* call super
-1) Apply a decorator to specific component classes to apply default or custom shouldComponentUpdate comparators:
-    * `@DeepEqualityShouldComponentUpdate` - This will do a deep equality check (`_.isEqual`) on Props, State & Context and return `true` from `shouldComponentUpdate` if any of the values have changed
-    * `@CustomEqualityShouldComponentUpdate(myComparatorFunction)` - This will call your custom comparator function (for Props, State and Context), returning `true` from `shouldComponentUpdate` if your comparator returns false.
+1) Apply a decorator to specific component classes to apply default or custom shouldComponentUpdate comparators.  Examples:
+    * `@CustomEqualityShouldComponentUpdate(myComparatorFunction)` - This will call your custom comparator function (for Props, State and Context), returning `true` from `shouldComponentUpdate` if your comparator returns false.  This is built into ReSub's public module export.
+    * `@DeepEqualityShouldComponentUpdate` - This will do a deep equality check (`_.isEqual`) on Props, State & Context and return `true` from `shouldComponentUpdate` if any of the values have changed.  As of 2.1.0+ of ReSub, this is no longer included in the public module export, to avoid including lodash in your bundles.  The implementation, if you want to still use it:
+```ts
+import isEqual from 'lodash/isEqual';
 
-*Note: `_.isEqual` is a deep comparison operator, and hence can cause performance issues with deep data structures.*
+import ComponentBase from './ComponentBase';
+
+export function DeepEqualityShouldComponentUpdate<T extends { new(props: any): ComponentBase<any, any> }>(constructor: T): T {
+    return CustomEqualityShouldComponentUpdate<any, any>(deepEqualityComparator)(constructor);
+}
+
+function deepEqualityComparator<P extends React.Props<any>, S = {}>(
+        this: ComponentBase<P, S>, nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
+    return isEqual(this.state, nextState) || isEqual(this.props, nextProps) || isEqual(this.context, nextContext);
+}
+```
+
+*Note: `_.isEqual` is a deep comparison operator, and hence can cause performance issues with deep data structures. Weigh the pros/cons of using this deep equality comparator carefully.*
 
 #### Subclassing:
 
@@ -296,7 +310,7 @@ This method returns a de-duped list of all `keys` on which subscribers have subs
 
 ##### `protected _isTrackingKey(key: string)`
 
-Returns true if a subscription has been made on the specified `key`, or false otherwise.
+Returns true if a subscription has been made on the specified `key`, or false otherwise.  This also responds to the Key_All key to check for global subscriptions.
 
 ##### `static pushTriggerBlock()`
 
@@ -321,22 +335,6 @@ Subclasses do not need to call super.
 ##### `_stoppedTrackingSub(key?: string)`
 
 `StoreBase` uses reference counting on subscriptions. This method is called whenever a subscription is last removed, either as a global subscription (key = undefined in this function) or with a key.
-
-Subclasses do not need to call super.
-
-##### `_startedTrackingKey(key: string)`
-
-`StoreBase` uses reference counting on subscription keys. This method is called whenever a subscription is created using a new `key`.
-
-In certain applications, a store will be passed data that it chooses to ignore until it knows that a subscriber is interested in it. This method will notify the store to begin collecting that data.
-
-Subclasses do not need to call super.
-
-##### `_stoppedTrackingKey(key: string)`
-
-`StoreBase` uses reference counting on subscription keys. This method is called when the last occurrence of this `key` is unsubscribed.
-
-In certain applications, a store will be passed data that it chooses to ignore until it knows that a subscriber is interested in it. When there are no longer any interested subscribers for a given `key`, this method gives the store the opportunity to flush this data.
 
 Subclasses do not need to call super.
 
