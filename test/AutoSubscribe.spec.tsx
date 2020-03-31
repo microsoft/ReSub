@@ -19,7 +19,6 @@ import {
 import { mount, ReactWrapper } from 'enzyme';
 
 import ComponentBase from '../src/ComponentBase';
-import { DeepEqualityShouldComponentUpdate } from '../src/ComponentDecorators';
 
 import { StoreBase } from '../src/StoreBase';
 import { formCompoundKey } from '../src/utils';
@@ -140,23 +139,6 @@ class OverriddenComponent extends SimpleComponent {
 
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<unknown, unknown> = (props, state) =>
         ComponentBase.getDerivedStateFromProps(props, state);
-}
-
-@DeepEqualityShouldComponentUpdate
-class DeepEqualitySimpleComponent extends ComponentBase<SimpleProps, SimpleState> {
-    // Note: _buildState is called from ComponentBase's constructor, when props change, and when a store triggers
-    // for which this component is subscribed (e.g. SimpleStore).
-
-    // Auto-subscriptions are enabled in _buildState due to ComponentBase.
-    protected _buildState(props: SimpleProps, initialBuild: boolean): Partial<SimpleState> | undefined {
-        return undefined;
-    }
-
-    render(): ReactElement<any> {
-        return (
-            <div>Not testing render...</div>
-        );
-    }
 }
 
 /**
@@ -552,16 +534,6 @@ function runTests(makeComponent: (props: SimpleProps) => ReactWrapper<SimpleProp
             SimpleStoreInstance.unsubscribe(subToken3);
         });
         SimpleStoreInstance.triggerArbitraryKey(formCompoundKey('a', 'b'));
-    });
-
-    it('Equality decorator override', () => {
-        const simpleComp1 = new SimpleComponent({ ids: [] });
-        const simpleComp2 = new SimpleComponent({ ids: [] });
-        const deepEqual1 = new DeepEqualitySimpleComponent({ ids: [] });
-        const deepEqual2 = new DeepEqualitySimpleComponent({ ids: [] });
-        expect(simpleComp1.shouldComponentUpdate).toEqual(simpleComp2.shouldComponentUpdate);
-        expect(deepEqual1.shouldComponentUpdate).toEqual(deepEqual2.shouldComponentUpdate);
-        expect(simpleComp1.shouldComponentUpdate).not.toEqual(deepEqual1.shouldComponentUpdate);
     });
 }
 

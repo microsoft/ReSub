@@ -260,10 +260,6 @@ export abstract class StoreBase {
             // First manual subscription for this key.  See if we also aren't already tracking an auto subscription for it.
             if (!this._autoSubscriptions.has(key)) {
                 this._startedTrackingSub(key === StoreBase.Key_All ? undefined : key);
-
-                if (key !== StoreBase.Key_All) {
-                    this._startedTrackingKey(key);
-                }
             }
         } else {
             callbacks.push(callback);
@@ -305,10 +301,6 @@ export abstract class StoreBase {
                 // Last manual unsubscription for this key.  See if we also aren't already tracking an auto subscription for it.
                 if (!this._autoSubscriptions.has(key)) {
                     this._stoppedTrackingSub(key === StoreBase.Key_All ? undefined : key);
-
-                    if (key !== StoreBase.Key_All) {
-                        this._stoppedTrackingKey(key);
-                    }
                 }
             }
         } else {
@@ -325,10 +317,6 @@ export abstract class StoreBase {
             // First autosubscription for this key.  See if we also aren't already tracking a manual subscription for it.
             if (!this._subscriptions.has(key)) {
                 this._startedTrackingSub(key === StoreBase.Key_All ? undefined : key);
-
-                if (key !== StoreBase.Key_All) {
-                    this._startedTrackingKey(key);
-                }
             }
         } else {
             callbacks.push(subscription);
@@ -358,10 +346,6 @@ export abstract class StoreBase {
             // Last autosubscription for this key.  See if we also aren't already tracking a manual subscription for it.
             if (!this._subscriptions.has(key)) {
                 this._stoppedTrackingSub(key === StoreBase.Key_All ? undefined : key);
-
-                if (key !== StoreBase.Key_All) {
-                    this._stoppedTrackingKey(key);
-                }
             }
         }
     }
@@ -371,14 +355,6 @@ export abstract class StoreBase {
     }
 
     protected _stoppedTrackingSub(key?: string): void {
-        // Virtual function, noop default behavior
-    }
-
-    protected _startedTrackingKey(key: string): void {
-        // Virtual function, noop default behavior
-    }
-
-    protected _stoppedTrackingKey(key: string): void {
         // Virtual function, noop default behavior
     }
 
