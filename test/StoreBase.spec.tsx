@@ -276,13 +276,10 @@ describe('StoreBase', function() {
         expect(callbackCalled).toBeTruthy();
     });
 
-    it('Started/StoppedTrackingKey/Sub', () => {
+    it('Started/StoppedTrackingSub', () => {
         @AutoSubscribeStore
         class KeyStore extends StoreBase {
-            trackingKey: string | undefined;
-            keyCount = 0;
             getKeyCalls = 0;
-
             subCount = 0;
             getCalls = 0;
 
@@ -296,18 +293,6 @@ describe('StoreBase', function() {
             getSubTest(): number {
                 this.getCalls++;
                 return 3;
-            }
-
-            protected _startedTrackingKey(key: string): void {
-                this.trackingKey = key;
-                this.keyCount++;
-            }
-
-            protected _stoppedTrackingKey(key: string): void {
-                if (this.trackingKey === key) {
-                    this.trackingKey = undefined;
-                }
-                this.keyCount--;
             }
 
             protected _startedTrackingSub(key?: string): void {
@@ -333,26 +318,18 @@ describe('StoreBase', function() {
 
         const s = new KeyStore();
         expect(s.getKeyCalls).toEqual(0);
-        expect(s.keyCount).toEqual(0);
-        expect(s.trackingKey).toEqual(undefined);
         expect(s.getCalls).toEqual(0);
         expect(s.subCount).toEqual(0);
         const wrapper = mount(<DumbComp s={ s } />);
         expect(s.getKeyCalls).toEqual(1);
-        expect(s.keyCount).toEqual(1);
-        expect(s.trackingKey).toEqual('a');
         expect(s.getCalls).toEqual(1);
         expect(s.subCount).toEqual(2);
         (s as any).trigger();
         expect(s.getKeyCalls).toEqual(2);
-        expect(s.keyCount).toEqual(1);
-        expect(s.trackingKey).toEqual('a');
         expect(s.getCalls).toEqual(2);
         expect(s.subCount).toEqual(2);
         wrapper.unmount();
         expect(s.getKeyCalls).toEqual(2);
-        expect(s.keyCount).toEqual(0);
-        expect(s.trackingKey).toEqual(undefined);
         expect(s.getCalls).toEqual(2);
         expect(s.subCount).toEqual(0);
     });

@@ -15,7 +15,7 @@ export {
     autoSubscribe,
     key,
 } from './AutoSubscriptions';
-export { CustomEqualityShouldComponentUpdate, DeepEqualityShouldComponentUpdate } from './ComponentDecorators';
+export { CustomEqualityShouldComponentUpdate } from './ComponentDecorators';
 export { setPerformanceMarkingEnabled } from './Instrumentation';
 export { default as Options } from './Options';
 export { formCompoundKey } from './utils';

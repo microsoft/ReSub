@@ -206,8 +206,8 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // 1. In the component constructor, it's called with the initial props and initialBuild = true.  This is where you should set all
     //    initial state for your component.  In many cases this case needs no special casing whatsoever because the component always
     //    rebuilds all of its state from whatever the props are, whether it's an initial build or a new props received event.
-    // 2. In the React lifecycle, during a UNSAFE_componentWillReceiveProps, if the props change (determined by a _.isEqual), this is called
-    //    so that the component can rebuild state from the new props.
+    // 2. In the React lifecycle, during a UNSAFE_componentWillReceiveProps, if the props change, this is called so that the component
+    //    can rebuild state from the new props.
     // 3. If the component subscribes to any stores via the ComponentBase subscription system, if a specific callback function is not
     //    specified, then this function is called whenever the subscription is triggered.  Basically, this should be used if there are
     //    no performance considerations with simply rebuilding the whole component whenever a subscription is triggered, which is
