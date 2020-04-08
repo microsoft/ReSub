@@ -1,6 +1,7 @@
 {
     "extends": "../tsconfig",
     "compilerOptions": {
+        "target": "es5",
         "esModuleInterop": true,
         "module": "commonjs",
         "outDir": "../dist"

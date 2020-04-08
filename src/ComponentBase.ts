@@ -103,10 +103,10 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     // Subclasses may override, but _MUST_ call super.
     componentWillUnmount(): void {
         // Remove and cleanup all suscriptions
-        this._handledAutoSubscriptions.forEach(subscription => {
+        for (const subscription of this._handledAutoSubscriptions) {
             subscription.used = false;
             subscription.store.removeAutoSubscription(subscription);
-        });
+        }
 
         this._handledAutoSubscriptions = [];
         this._isMounted = false;
@@ -181,9 +181,9 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     @enableAutoSubscribe(ComponentBase._autoSubscribeHandler)
     private _buildStateWithAutoSubscriptions(props: P, incomingState: undefined | Readonly<S>, initialBuild: boolean):
     Partial<S> | undefined {
-        this._handledAutoSubscriptions.forEach(sub => {
+        for (const sub of this._handledAutoSubscriptions) {
             sub.used = false;
-        });
+        }
 
         if (Instrumentation.impl) { Instrumentation.impl.beginBuildState(); }
         const state: Partial<S> | undefined = this._buildState(props, initialBuild, incomingState);

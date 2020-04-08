@@ -54,7 +54,9 @@ export const uniq = <T>(array: T[]): T[] => {
     }
 
     const uniq: T[] = [];
-    set.forEach(value => uniq.push(value));
+    for (const value of set) {
+        uniq.push(value);
+    }
 
     return uniq;
 };

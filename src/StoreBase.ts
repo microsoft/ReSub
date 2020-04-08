@@ -102,35 +102,39 @@ export abstract class StoreBase {
         // trigger(0) is valid, ensure that we catch this case
         if (!keyOrKeys && !isNumber(keyOrKeys)) {
             // Inspecific key, so generic callback call
-            this._subscriptions.forEach(subs => {
+            for (const subs of this._subscriptions.values()) {
                 for (const sub of subs) {
                     this._setupAllKeySubscription(sub, throttledUntil, bypassBlock);
                 }
-            });
+            }
 
-            this._autoSubscriptions.forEach(subs => {
+            for (const subs of this._autoSubscriptions.values()) {
                 for (const sub of subs) {
                     this._setupAllKeySubscription(sub.callback, throttledUntil, bypassBlock);
                 }
-            });
+            }
         } else {
             const keys = normalizeKeys(keyOrKeys);
 
             // Key list, so go through each key and queue up the callback
-            keys.forEach(key => {
-                (this._subscriptions.get(key) || [])
-                    .forEach(callback => this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock));
+            for (const key of keys) {
+                for (const callback of (this._subscriptions.get(key) || [])){
+                    this._setupSpecificKeySubscription([key], callback, throttledUntil, bypassBlock);
+                }
 
-                (this._autoSubscriptions.get(key) || [])
-                    .forEach(sub => this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock));
-            });
+                for (const sub of (this._autoSubscriptions.get(key) || [])) {
+                    this._setupSpecificKeySubscription([key], sub.callback, throttledUntil, bypassBlock);
+                }
+            }
 
             // Go through each of the all-key subscriptions and add the full key list to their gathered list
-            (this._subscriptions.get(StoreBase.Key_All) || [])
-                .forEach(callback => this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock));
+            for (const callback of (this._subscriptions.get(StoreBase.Key_All) || [])) {
+                this._setupSpecificKeySubscription(keys, callback, throttledUntil, bypassBlock);
+            }
 
-            (this._autoSubscriptions.get(StoreBase.Key_All) || [])
-                .forEach(sub => this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock));
+            for (const sub of (this._autoSubscriptions.get(StoreBase.Key_All) || [])) {
+                this._setupSpecificKeySubscription(keys, sub.callback, throttledUntil, bypassBlock);
+            }
         }
 
         if (!throttledUntil || bypassBlock) {
@@ -211,15 +215,16 @@ export abstract class StoreBase {
 
         // Capture the callbacks we need to call
         const callbacks: [SubscriptionCallbackFunction, string[]|undefined][] = [];
-        this._pendingCallbacks.forEach((meta, callback, map) => {
+
+        for (const [callback, meta] of this._pendingCallbacks){
             // Block check
             if (StoreBase._triggerBlockCount > 0 && !meta.bypassBlock) {
-                return;
+                continue;
             }
 
             // Throttle check
             if (meta.throttledUntil && meta.throttledUntil > currentTime && !StoreBase._bypassThrottle) {
-                return;
+                continue;
             }
 
             // Do a quick dedupe on keys
@@ -227,13 +232,13 @@ export abstract class StoreBase {
 
             // Convert null key (meaning "all") to undefined for the callback.
             callbacks.push([callback, uniquedKeys || undefined]);
-            map.delete(callback);
-        });
+            this._pendingCallbacks.delete(callback);
+        }
 
-        callbacks.forEach(([callback, keys]) => {
+        for (const [callback, keys ] of callbacks) {
             callbacksCount++;
             callback(keys);
-        });
+        }
 
         if (Instrumentation.impl) { Instrumentation.impl.endInvokeStoreCallbacks(this.constructor, callbacksCount); }
 

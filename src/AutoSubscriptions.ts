@@ -194,14 +194,14 @@ export const AutoSubscribeStore: ClassDecorator = <TFunction extends Function>(f
 
     if (Options.development) {
         // Add warning for non-decorated methods.
-        Object.getOwnPropertyNames(target).forEach(property => {
+        for (const property of Object.getOwnPropertyNames(target)) {
             if (isFunction(target[property]) && property !== 'constructor') {
                 const metaForMethod = target.__resubMetadata[property];
                 if (!metaForMethod || !metaForMethod.hasAutoSubscribeDecorator) {
                     Decorator.decorate([warnIfAutoSubscribeEnabled], target, property, null);
                 }
             }
-        });
+        }
     }
 
     return func;
@@ -278,12 +278,12 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
                 scopedHandleWrapper.inAutoSubscribe = true;
 
                 // Let the handler know about this auto-subscription.
-                specificKeyValues.forEach(specificKeyValue => {
+                for (const specificKeyValue of specificKeyValues) {
                     scopedHandleWrapper
                         .handler!!!
                         .handle
                         .apply(scopedHandleWrapper.instance, [scopedHandleWrapper.instance, this, specificKeyValue]);
-                });
+                }
 
                 return existingMethod.apply(this, args);
             }, () => {
