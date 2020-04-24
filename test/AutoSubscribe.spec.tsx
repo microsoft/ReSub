@@ -16,10 +16,11 @@ import {
     each,
     uniq,
 } from 'lodash';
+import * as ReactTestUtils from 'react-dom/test-utils';
 import { mount, ReactWrapper } from 'enzyme';
 
+import { withResubAutoSubscriptions } from '../src/AutoSubscriptions';
 import ComponentBase from '../src/ComponentBase';
-
 import { StoreBase } from '../src/StoreBase';
 import { formCompoundKey } from '../src/utils';
 
@@ -565,4 +566,25 @@ describe('AutoSubscribe', function() {
     });
 
     runTests(makeComponent);
+});
+
+it('Test hook system', function() {
+    SimpleStoreInstance = new SimpleStore();
+
+    function FuncComp(): JSX.Element {
+        const val = SimpleStoreInstance.getDataSingleKeyed();
+        return <>{ val.toString() }</>;
+    }
+    const WrappedFuncComp = withResubAutoSubscriptions(FuncComp);
+
+    const container = mount(<WrappedFuncComp />);
+    expect(container.text()).toEqual('0');
+    expect(SimpleStoreInstance.test_getSubscriptions().get('A').length).toEqual(1);
+    ReactTestUtils.act(() => {
+        SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
+    });
+    container.update();
+    expect(container.text()).toEqual('3');
+    container.unmount();
+    expect(SimpleStoreInstance.test_getSubscriptions().has('A')).toEqual(false);
 });

@@ -61,6 +61,8 @@
 // super.render, the descriptor's logic only applies until the end of that method, not the end of yours. This is why that functionality is
 // exposes as a function instead of a decorator.
 
+import { useEffect, useState } from 'react';
+
 import * as Decorator from './Decorator';
 import Options from './Options';
 import { KeyOrKeys, assert, formCompoundKey, isFunction, isNumber, isString, normalizeKeys } from './utils';
@@ -402,4 +404,28 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
     } as any as T;
 
     return descriptor;
+}
+
+const autoSubscribeHookHandler = {
+    masterVal: 0,
+    handle(self: any, store: StoreBase, key: string) {
+        const [ _, setter ] = useState(this.masterVal);
+        useEffect(() => {
+            const token = store.subscribe(() => {
+                const val = ++this.masterVal;
+                if (this.masterVal > 1000000000) {
+                    this.masterVal = 0;
+                }
+                setter(val);
+            }, key);
+            return () => {
+                store.unsubscribe(token);
+            };
+        }, [store, key]);
+        return _;
+    },
+};
+
+export function withResubAutoSubscriptions(func: Function): Function {
+    return createAutoSubscribeWrapper(autoSubscribeHookHandler, 1, func, autoSubscribeHookHandler);
 }

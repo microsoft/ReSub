@@ -14,6 +14,7 @@ export {
     disableWarnings,
     autoSubscribe,
     key,
+    withResubAutoSubscriptions,
 } from './AutoSubscriptions';
 export { CustomEqualityShouldComponentUpdate } from './ComponentDecorators';
 export { setPerformanceMarkingEnabled } from './Instrumentation';
