@@ -228,6 +228,19 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
         descriptor.value = function AutoSubscribe(this: any, ...args: any[]) {
             assert(targetWithMetadata.__resubMetadata.__decorated, `Missing @AutoSubscribeStore class decorator: "${ methodNameString }"`);
 
+            if (Options.development) {
+                let inRender = false;
+                try {
+                    useState();
+                    inRender = true;
+                } catch {
+                    // I guess we weren't in render.
+                }
+
+                assert(!inRender || !!handlerWrapper, 'Autosubscribe method called from inside a render function ' +
+                    'or function component without using withResubAutoSubscriptions');
+            }
+
             // Just call the method if no handler is setup.
             const scopedHandleWrapper = handlerWrapper;
             if (!scopedHandleWrapper || scopedHandleWrapper.useAutoSubscriptions === AutoOptions.None) {
