@@ -18,7 +18,7 @@ In React’s early days, Flux gave us guidance on how to manage data flow in our
 
 While Flux works well, it can also be cumbersome and error prone. Separate actions, action creators, and stores can result in a great deal of boilerplate code. Developers can fetch data from a store but fail to subscribe to changes, or components can oversubscribe and cause performance issues. Furthermore, developers are left to implement these patterns from scratch.
 
-ReSub aims to eliminate these limitations (and more) through the use of automatic data binding between stores and components called autosubscriptions. By using TypeScript’s method decorators, ReSub components can subscribe to only the data they need on only the stores that provide it, all without writing any code.
+ReSub aims to eliminate these limitations (and more) through the use of automatic data binding between stores and components called autosubscriptions. By using TypeScript’s method decorators, ReSub components can subscribe to only the data they need on only the stores that provide it, all without writing any code.  ReSub works with both traditional class components as well as function components, which is the direction that React seems to be heading for most usage.
 
 ## Basic Example
 
@@ -194,6 +194,31 @@ class UserBoxADisplay extends ComponentBase<SomeProps, SomeState> {
     }
 }
 ```
+
+### withResubAutoSubscriptions
+
+We've added a new hook-like mechanism to ReSub in 2.3.  It uses hooks under the covers, so treat them like hooks for ordering purposes and not using them inside conditional blocks.  It basically uses the same autosubscribe logic from ComponentBase, but it does so from inside function components that have been wrapped in the `withResubAutoSubscriptions` HOC wrapper function.  Let's just jump straight into an example, it'll be more clear.  Let's adapt the initial example from earlier in the doc to the new format.  The `TodosStore` is the same as above, but we can now make the `TodoList` function much simpler.
+
+```typescript
+import * as React from 'react';
+import { withResubAutoSubscriptions } from 'resub';
+
+import TodosStore = require('./TodosStore');
+
+function TodoList() {
+    const todos = TodosStore.getTodos();
+
+    return (
+        <ul className="todos">
+            { this.state.todos.map(todo => <li>{ todo }</li> ) }
+        </ul>
+    );
+}
+
+export default withResubAutoSubscriptions(TodoList);
+```
+
+Much simpler, right?  The call to `getTodos` is intercepted just like it were being called from a `_buildState` class method, and a subscription is automatically generated back to the `TodosStore`, which causes a useState mutation internally if the subscription gets triggered, which then makes the function component re-render again.  Super easy.  Just remember that these methods need to be treated like hooks for all intents and purposes when used like this, and that you need to wrap your function component in the `withResubAutoSubscriptions` call, or else autosubscriptions won't work and you'll be very confused.  In development mode, there's a check that should warn you if you get this wrong, but in production mode (Options.development === false), the check disappears, so you're on your own!
 
 ### ComponentBase
 
