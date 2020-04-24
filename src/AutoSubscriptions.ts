@@ -407,22 +407,17 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
 }
 
 const autoSubscribeHookHandler = {
-    masterVal: 0,
     handle(self: any, store: StoreBase, key: string) {
-        const [ _, setter ] = useState(this.masterVal);
+        const [ , setter ] = useState();
         useEffect(() => {
             const token = store.subscribe(() => {
-                const val = ++this.masterVal;
-                if (this.masterVal > 1000000000) {
-                    this.masterVal = 0;
-                }
-                setter(val);
+                // Always trigger a rerender
+                setter({});
             }, key);
             return () => {
                 store.unsubscribe(token);
             };
         }, [store, key]);
-        return _;
     },
 };
 
