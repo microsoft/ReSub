@@ -570,19 +570,25 @@ describe('AutoSubscribe', function() {
     it('Test hook system', function() {
         SimpleStoreInstance = new SimpleStore();
 
+        let numCalls = 0;
         function FuncComp(): JSX.Element {
+            numCalls++;
             const val = SimpleStoreInstance.getDataSingleKeyed();
             return <>{ val.toString() }</>;
         }
         const WrappedFuncComp = withResubAutoSubscriptions(FuncComp);
 
+        expect(numCalls).toEqual(0);
         const container = mount(<WrappedFuncComp />);
+        expect(numCalls).toEqual(1);
         expect(container.text()).toEqual('0');
         expect(SimpleStoreInstance.test_getSubscriptions().get('A').length).toEqual(1);
         ReactTestUtils.act(() => {
             SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
         });
+        expect(numCalls).toEqual(2);
         container.update();
+        expect(numCalls).toEqual(2);
         expect(container.text()).toEqual('3');
         container.unmount();
         expect(SimpleStoreInstance.test_getSubscriptions().has('A')).toEqual(false);
