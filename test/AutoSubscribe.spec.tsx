@@ -16,10 +16,11 @@ import {
     each,
     uniq,
 } from 'lodash';
-import { mount, ReactWrapper } from 'enzyme';
+import * as ReactTestUtils from 'react-dom/test-utils';
+import { mount, ReactWrapper, shallow } from 'enzyme';
 
+import { withResubAutoSubscriptions } from '../src/AutoSubscriptions';
 import ComponentBase from '../src/ComponentBase';
-
 import { StoreBase } from '../src/StoreBase';
 import { formCompoundKey } from '../src/utils';
 
@@ -565,4 +566,55 @@ describe('AutoSubscribe', function() {
     });
 
     runTests(makeComponent);
+
+    it('Test hook system', function() {
+        SimpleStoreInstance = new SimpleStore();
+
+        let numCalls = 0;
+        function FuncComp(): JSX.Element {
+            numCalls++;
+            const val = SimpleStoreInstance.getDataSingleKeyed();
+            return <>{ val.toString() }</>;
+        }
+        const WrappedFuncComp = withResubAutoSubscriptions(FuncComp);
+
+        expect(numCalls).toEqual(0);
+        const container = mount(<WrappedFuncComp />);
+        expect(numCalls).toEqual(1);
+        expect(container.text()).toEqual('0');
+        expect(SimpleStoreInstance.test_getSubscriptions().get('A').length).toEqual(1);
+        ReactTestUtils.act(() => {
+            SimpleStoreInstance.setStoreDataForKeyedSubscription('A', 3);
+        });
+        expect(numCalls).toEqual(2);
+        container.update();
+        expect(numCalls).toEqual(2);
+        expect(container.text()).toEqual('3');
+        container.unmount();
+        expect(SimpleStoreInstance.test_getSubscriptions().has('A')).toEqual(false);
+    });
+
+    it('Throw when called from render function without wrapping', function() {
+        SimpleStoreInstance = new SimpleStore();
+
+        function FuncComp(): JSX.Element {
+            const val = SimpleStoreInstance.getDataSingleKeyed();
+            return <>{ val.toString() }</>;
+        }
+
+        // This awkward method of testing suggested by https://github.com/enzymejs/enzyme/issues/1255 and appears to work.
+        expect(() => shallow(<FuncComp />)).toThrow();
+    });
+
+    it('Does not throw when called from render function with wrapping', function() {
+        SimpleStoreInstance = new SimpleStore();
+
+        function FuncComp(): JSX.Element {
+            const val = SimpleStoreInstance.getDataSingleKeyed();
+            return <>{ val.toString() }</>;
+        }
+        const WrappedFuncComp = withResubAutoSubscriptions(FuncComp);
+
+        expect(() => shallow(<WrappedFuncComp />)).not.toThrow();
+    });
 });

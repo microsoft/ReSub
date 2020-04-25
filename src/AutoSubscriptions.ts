@@ -61,6 +61,8 @@
 // super.render, the descriptor's logic only applies until the end of that method, not the end of yours. This is why that functionality is
 // exposes as a function instead of a decorator.
 
+import { useEffect, useState } from 'react';
+
 import * as Decorator from './Decorator';
 import Options from './Options';
 import { KeyOrKeys, assert, formCompoundKey, isFunction, isNumber, isString, normalizeKeys } from './utils';
@@ -225,6 +227,24 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
         // Note: we need to be given 'this', so cannot use '=>' syntax.
         descriptor.value = function AutoSubscribe(this: any, ...args: any[]) {
             assert(targetWithMetadata.__resubMetadata.__decorated, `Missing @AutoSubscribeStore class decorator: "${ methodNameString }"`);
+
+            if (Options.development) {
+                // This is a check to see if we're in a rendering function component function.  If you are, then calling useState will
+                // noop.  If you aren't, then useState will throw an exception.  So, we want to make sure that either you're inside render
+                // and have the call going through a wrapped component, or that you're not inside render, and hence calling the getter
+                // from a store or service or other random non-lifecycled instance, so it's on you to figure out how to manage
+                // subscriptions in that instance.
+                let inRender = false;
+                try {
+                    useState();
+                    inRender = true;
+                } catch {
+                    // I guess we weren't in render.
+                }
+
+                assert(!inRender || !!handlerWrapper, 'Autosubscribe method called from inside a render function ' +
+                    'or function component without using withResubAutoSubscriptions');
+            }
 
             // Just call the method if no handler is setup.
             const scopedHandleWrapper = handlerWrapper;
@@ -402,4 +422,23 @@ export function warnIfAutoSubscribeEnabled<T extends Function>(target: InstanceT
     } as any as T;
 
     return descriptor;
+}
+
+const autoSubscribeHookHandler = {
+    handle(self: any, store: StoreBase, key: string) {
+        const [ , setter ] = useState();
+        useEffect(() => {
+            const token = store.subscribe(() => {
+                // Always trigger a rerender
+                setter({});
+            }, key);
+            return () => {
+                store.unsubscribe(token);
+            };
+        }, [store, key]);
+    },
+};
+
+export function withResubAutoSubscriptions<T extends Function>(func: T): T {
+    return createAutoSubscribeWrapper(autoSubscribeHookHandler, AutoOptions.Enabled, func, autoSubscribeHookHandler);
 }
