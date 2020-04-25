@@ -229,6 +229,11 @@ function makeAutoSubscribeDecorator(shallow = false, autoSubscribeKeys?: string[
             assert(targetWithMetadata.__resubMetadata.__decorated, `Missing @AutoSubscribeStore class decorator: "${ methodNameString }"`);
 
             if (Options.development) {
+                // This is a check to see if we're in a rendering function component function.  If you are, then calling useState will
+                // noop.  If you aren't, then useState will throw an exception.  So, we want to make sure that either you're inside render
+                // and have the call going through a wrapped component, or that you're not inside render, and hence calling the getter
+                // from a store or service or other random non-lifecycled instance, so it's on you to figure out how to manage
+                // subscriptions in that instance.
                 let inRender = false;
                 try {
                     useState();
