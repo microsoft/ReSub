@@ -440,5 +440,5 @@ const autoSubscribeHookHandler = {
 };
 
 export function withResubAutoSubscriptions<T extends Function>(func: T): T {
-    return createAutoSubscribeWrapper(autoSubscribeHookHandler, 1, func, autoSubscribeHookHandler);
+    return createAutoSubscribeWrapper(autoSubscribeHookHandler, AutoOptions.Enabled, func, autoSubscribeHookHandler);
 }
