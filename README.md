@@ -363,6 +363,12 @@ Subclasses do not need to call super.
 
 Subclasses do not need to call super.
 
+## Extensions
+
+A small ecosystem is starting up around ReSub, so if you bring up an extension based on it, let us know and we'll add it to a list here:
+
+* [ReSub-entity](https://github.com/BiggA94/resub-entity): This project eases the use of ReSub by providing a simple function to create a Store for an entity 
+
 ## Data Flow
 
 ReSub avoids taking a strong opinion on data flow in your project.
