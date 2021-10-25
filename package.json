@@ -4,7 +4,7 @@
   "description": "A library for writing React components that automatically manage subscriptions to data sources simply by accessing them.",
   "author": "ReactXP Team <reactxp@microsoft.com>",
   "scripts": {
-    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "clean:dist": "rimraf dist*",
     "build:types": "tsc -p tsconfig/types.json",
     "build:es2015": "tsc -p tsconfig.json",
@@ -68,6 +68,11 @@
   "types": "dist-types/ReSub.d.ts",
   "module": "dist-es2015/ReSub.js",
   "main": "dist/ReSub.js",
+  "files": [
+    "dist",
+    "dist-es2015",
+    "dist-types"
+  ],
   "keywords": [
     "react",
     "flux",
