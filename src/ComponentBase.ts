@@ -72,23 +72,23 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
 
     // Subclasses may redeclare, but must call ComponentBase.getDerivedStateFromProps
     static getDerivedStateFromProps: React.GetDerivedStateFromProps<unknown, unknown> =
-    (nextProps, prevState: unknown) => {
-        const internalState = prevState as Readonly<InternalState>;
-        if (!internalState._resubGetInstance) {
-            throw new Error('Resub internal state missing - ensure you aren\'t setting state directly in component construtor');
-        }
-        let newState: unknown & Partial<InternalState>;
-        const instance = internalState._resubGetInstance();
-        if (!instance._isMounted) {
-            newState = instance._buildInitialState();
-        } else {
-            newState = instance._handleUpdate(nextProps, internalState) || {};
-        }
+        (nextProps, prevState: unknown) => {
+            const internalState = prevState as Readonly<InternalState>;
+            if (!internalState._resubGetInstance) {
+                throw new Error('Resub internal state missing - ensure you aren\'t setting state directly in component construtor');
+            }
+            let newState: unknown & Partial<InternalState>;
+            const instance = internalState._resubGetInstance();
+            if (!instance._isMounted) {
+                newState = instance._buildInitialState();
+            } else {
+                newState = instance._handleUpdate(nextProps, internalState) || {};
+            }
 
-        // reset dirty bit
-        newState._resubDirty = false;
-        return newState;
-    };
+            // reset dirty bit
+            newState._resubDirty = false;
+            return newState;
+        };
 
     private _handleUpdate(nextProps: Readonly<P>, incomingState: Readonly<S>): Partial<S> | null {
         if (!Options.shouldComponentUpdateComparator(this.props, nextProps)) {

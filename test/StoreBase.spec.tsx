@@ -67,7 +67,7 @@ class TriggerableStore extends StoreBase {
 //       or in some other file.
 
 describe('StoreBase', function() {
-    it('Non-timed/Non-bypass Store', () => {        
+    it('Non-timed/Non-bypass Store', () => {
         const store = new BraindeadStore(0, false);
         store.setupSubs();
 
@@ -158,12 +158,12 @@ describe('StoreBase', function() {
         beforeEach(() => {
             jasmine.clock().install();
             jasmine.clock().mockDate(new Date());
-    
+
             // Setup setTimeout/clearTimeout to respect clock mocking
             Options.setTimeout = setTimeout.bind(null);
             Options.clearTimeout = clearTimeout.bind(null);
         });
-    
+
         afterEach(() => {
             jasmine.clock().uninstall();
             Options.setTimeout = setTimeout.bind(null);
@@ -191,19 +191,19 @@ describe('StoreBase', function() {
             const subCallback = (): void => {
                 callbackCount++;
             };
-    
+
             store.subscribe(subCallback, store.Key_Something);
             store.subscribe(subCallback, store.Key_Something2);
             store.subscribe(subCallback);
             store.emitSomething();
             store.emitSomethings();
             store.emitAll();
-    
+
             expect(callbackCount).toBe(0);
             jasmine.clock().tick(100);
             expect(callbackCount).toBe(1);
         });
-    
+
         it('Callback throttling validation', () => {
             const store = new BraindeadStore(100, false);
             const store2 = new BraindeadStore(0, false);
@@ -212,22 +212,22 @@ describe('StoreBase', function() {
                 expect(keys).toEqual(['abc', 'def']);
                 callbackCount++;
             };
-    
+
             store.subscribe(subCallback, store.Key_Something);
             store.subscribe(subCallback, store.Key_Something2);
             store.subscribe(subCallback);
             store2.subscribe(subCallback);
             expect(callbackCount).toBe(0);
-    
+
             // This second emit should callback subCallback right away since its not throttled
             store.emitSomethings();
             store2.emitSomething();
             expect(callbackCount).toBe(1);
-    
+
             // At this point the throttled store has no need to trigger since the callback has already been called
             jasmine.clock().tick(200);
             expect(callbackCount).toBe(1);
-        });    
+        });
     });
 
     it('Double Trigger w/ Unsubscribe', () => {
@@ -279,7 +279,7 @@ describe('StoreBase', function() {
         expect(callbackCalled).toBeTruthy();
     });
 
-    it('Started/StoppedTrackingSub', async () => {
+    it('Started/StoppedTrackingSub', async() => {
         @AutoSubscribeStore
         class KeyStore extends StoreBase {
             getKeyCalls = 0;
@@ -337,5 +337,5 @@ describe('StoreBase', function() {
         expect(s.getKeyCalls).toEqual(2);
         expect(s.getCalls).toEqual(2);
         expect(s.subCount).toEqual(0);
-});
+    });
 });
