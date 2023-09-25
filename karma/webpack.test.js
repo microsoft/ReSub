@@ -24,6 +24,6 @@ module.exports = {
     },
 
     plugins: [
-        new ForkTsCheckerWebpackPlugin({ tsconfig: TS_CONFIG_PATH }),
+        new ForkTsCheckerWebpackPlugin(),
     ],
 };

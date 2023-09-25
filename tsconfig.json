@@ -2,6 +2,7 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "suppressImplicitAnyIndexErrors":  true,
+    "ignoreDeprecations": "5.0",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitReturns": true,

@@ -138,7 +138,7 @@ export abstract class ComponentBase<P = {}, S = {}> extends React.Component<P, S
     }
 
     private _onAutoSubscriptionChanged = (): void => {
-        ComponentBase._onAutoSubscriptionChangedUnbound(this);
+        ComponentBase._onAutoSubscriptionChangedUnbound(this as any);
     };
 
     private _handleAutoSubscribe(store: StoreBase, key: string): void {
