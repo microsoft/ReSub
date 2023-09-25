@@ -8,6 +8,7 @@
 
 import { mount } from 'enzyme';
 import * as React from 'react';
+import { act } from 'react-dom/test-utils';
 
 import { ComponentBase } from '../src/ComponentBase';
 import { StoreBase } from '../src/StoreBase';
@@ -66,22 +67,7 @@ class TriggerableStore extends StoreBase {
 //       or in some other file.
 
 describe('StoreBase', function() {
-    beforeEach(() => {
-        jasmine.clock().install();
-        jasmine.clock().mockDate(new Date());
-
-        // Setup setTimeout/clearTimeout to respect clock mocking
-        Options.setTimeout = setTimeout.bind(null);
-        Options.clearTimeout = clearTimeout.bind(null);
-    });
-
-    afterEach(() => {
-        jasmine.clock().uninstall();
-        Options.setTimeout = setTimeout.bind(null);
-        Options.clearTimeout = clearTimeout.bind(null);
-    });
-
-    it('Non-timed/Non-bypass Store', () => {
+    it('Non-timed/Non-bypass Store', () => {        
         const store = new BraindeadStore(0, false);
         store.setupSubs();
 
@@ -168,19 +154,80 @@ describe('StoreBase', function() {
         expect(store.foundAll).toBeFalsy();
     });
 
-    it('Timed/non-Bypass Store', () => {
-        const store = new BraindeadStore(100, false);
-        store.setupSubs();
+    describe('Timing mocking', () => {
+        beforeEach(() => {
+            jasmine.clock().install();
+            jasmine.clock().mockDate(new Date());
+    
+            // Setup setTimeout/clearTimeout to respect clock mocking
+            Options.setTimeout = setTimeout.bind(null);
+            Options.clearTimeout = clearTimeout.bind(null);
+        });
+    
+        afterEach(() => {
+            jasmine.clock().uninstall();
+            Options.setTimeout = setTimeout.bind(null);
+            Options.clearTimeout = clearTimeout.bind(null);
+        });
 
-        // Try all emit -- should do nothing at the moment
-        store.emitAll();
-        expect(store.foundAll).toBeFalsy();
+        it('Timed/non-Bypass Store', () => {
+            const store = new BraindeadStore(100, false);
+            store.setupSubs();
 
-        jasmine.clock().tick(10);
-        expect(store.foundAll).toBe(false);
+            // Try all emit -- should do nothing at the moment
+            store.emitAll();
+            expect(store.foundAll).toBeFalsy();
 
-        jasmine.clock().tick(90);
-        expect(store.foundAll).toBeTruthy();
+            jasmine.clock().tick(10);
+            expect(store.foundAll).toBe(false);
+
+            jasmine.clock().tick(90);
+            expect(store.foundAll).toBeTruthy();
+        });
+
+        it('Subscription callbacks de-dupe', () => {
+            const store = new BraindeadStore(100, false);
+            let callbackCount = 0;
+            const subCallback = (): void => {
+                callbackCount++;
+            };
+    
+            store.subscribe(subCallback, store.Key_Something);
+            store.subscribe(subCallback, store.Key_Something2);
+            store.subscribe(subCallback);
+            store.emitSomething();
+            store.emitSomethings();
+            store.emitAll();
+    
+            expect(callbackCount).toBe(0);
+            jasmine.clock().tick(100);
+            expect(callbackCount).toBe(1);
+        });
+    
+        it('Callback throttling validation', () => {
+            const store = new BraindeadStore(100, false);
+            const store2 = new BraindeadStore(0, false);
+            let callbackCount = 0;
+            const subCallback = (keys?: string[]): void => {
+                expect(keys).toEqual(['abc', 'def']);
+                callbackCount++;
+            };
+    
+            store.subscribe(subCallback, store.Key_Something);
+            store.subscribe(subCallback, store.Key_Something2);
+            store.subscribe(subCallback);
+            store2.subscribe(subCallback);
+            expect(callbackCount).toBe(0);
+    
+            // This second emit should callback subCallback right away since its not throttled
+            store.emitSomethings();
+            store2.emitSomething();
+            expect(callbackCount).toBe(1);
+    
+            // At this point the throttled store has no need to trigger since the callback has already been called
+            jasmine.clock().tick(200);
+            expect(callbackCount).toBe(1);
+        });    
     });
 
     it('Double Trigger w/ Unsubscribe', () => {
@@ -209,50 +256,6 @@ describe('StoreBase', function() {
         expect(callCount2).toEqual(1);
     });
 
-    it('Subscription callbacks de-dupe', () => {
-        const store = new BraindeadStore(100, false);
-        let callbackCount = 0;
-        const subCallback = (): void => {
-            callbackCount++;
-        };
-
-        store.subscribe(subCallback, store.Key_Something);
-        store.subscribe(subCallback, store.Key_Something2);
-        store.subscribe(subCallback);
-        store.emitSomething();
-        store.emitSomethings();
-        store.emitAll();
-
-        expect(callbackCount).toBe(0);
-        jasmine.clock().tick(100);
-        expect(callbackCount).toBe(1);
-    });
-
-    it('Callback throttling validation', () => {
-        const store = new BraindeadStore(100, false);
-        const store2 = new BraindeadStore(0, false);
-        let callbackCount = 0;
-        const subCallback = (keys?: string[]): void => {
-            expect(keys).toEqual(['abc', 'def']);
-            callbackCount++;
-        };
-
-        store.subscribe(subCallback, store.Key_Something);
-        store.subscribe(subCallback, store.Key_Something2);
-        store.subscribe(subCallback);
-        store2.subscribe(subCallback);
-        expect(callbackCount).toBe(0);
-
-        // This second emit should callback subCallback right away since its not throttled
-        store.emitSomethings();
-        store2.emitSomething();
-        expect(callbackCount).toBe(1);
-
-        // At this point the throttled store has no need to trigger since the callback has already been called
-        jasmine.clock().tick(200);
-        expect(callbackCount).toBe(1);
-    });
-
     it('Trigger stack overflow test', () => {
         // Test an insane amount of trigger keys so we don't end up with a stack overflow
         const store = new TriggerableStore();
@@ -276,7 +279,7 @@ describe('StoreBase', function() {
         expect(callbackCalled).toBeTruthy();
     });
 
-    it('Started/StoppedTrackingSub', () => {
+    it('Started/StoppedTrackingSub', async () => {
         @AutoSubscribeStore
         class KeyStore extends StoreBase {
             getKeyCalls = 0;
@@ -324,7 +327,9 @@ describe('StoreBase', function() {
         expect(s.getKeyCalls).toEqual(1);
         expect(s.getCalls).toEqual(1);
         expect(s.subCount).toEqual(2);
-        (s as any).trigger();
+        act(() => {
+            (s as any).trigger();
+        });
         expect(s.getKeyCalls).toEqual(2);
         expect(s.getCalls).toEqual(2);
         expect(s.subCount).toEqual(2);
@@ -332,5 +337,5 @@ describe('StoreBase', function() {
         expect(s.getKeyCalls).toEqual(2);
         expect(s.getCalls).toEqual(2);
         expect(s.subCount).toEqual(0);
-    });
+});
 });
