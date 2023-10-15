@@ -42,7 +42,7 @@ export abstract class StoreBase {
     private readonly _subsByNum: Map<number, {
         key: string;
         callback: SubscriptionCallbackFunction;
-    }> = new Map();;
+    }> = new Map();
 
     readonly storeId = `store${StoreBase._storeIdCounter++}`;
 

@@ -29,7 +29,7 @@ export class Instrumentation {
         const w = typeof window !== 'undefined' ? window : undefined;
         const { performance } = (g || w || {performance: undefined});
 
-        if (performance && performance.mark && performance.measure) {
+        if (performance && !!performance.mark && !!performance.measure) {
             return performance;
         }
 
